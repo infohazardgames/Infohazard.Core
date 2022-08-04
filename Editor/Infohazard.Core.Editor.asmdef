@@ -1,6 +1,6 @@
 {
     "name": "Infohazard.Core.Editor",
-    "rootNamespace": "",
+    "rootNamespace": "Infohazard.Core.Editor",
     "references": [
         "GUID:6e6eabb6dbfd0c64296bf63916880825"
     ],

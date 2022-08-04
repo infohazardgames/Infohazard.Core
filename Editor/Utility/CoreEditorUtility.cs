@@ -33,13 +33,33 @@ namespace Infohazard.Core.Editor {
     public static class CoreEditorUtility {
         private const string ResourceFolder = "Resources/";
         private const string AssetsFolder = "Assets";
-        private static BuildTargetGroup[] _buildTargetGroups = new BuildTargetGroup[] {
+        private static readonly BuildTargetGroup[] BuildTargetGroups = new BuildTargetGroup[] {
             BuildTargetGroup.Standalone,
             BuildTargetGroup.Android,
             BuildTargetGroup.iOS,
             BuildTargetGroup.WSA,
             BuildTargetGroup.WebGL,
         };
+        
+        public const string DataFolder = "Assets/Infohazard.Core.Data/";
+        private const string DataAsmdefContent = @"{
+    ""name"": ""Infohazard.Core.Data"",
+    ""rootNamespace"": ""Infohazard.Core.Runtime"",
+    ""references"": [
+        ""GUID:6e6eabb6dbfd0c64296bf63916880825""
+    ],
+    ""includePlatforms"": [],
+    ""excludePlatforms"": [],
+    ""allowUnsafeCode"": false,
+    ""overrideReferences"": false,
+    ""precompiledReferences"": [],
+    ""autoReferenced"": true,
+    ""defineConstraints"": [],
+    ""versionDefines"": [],
+    ""noEngineReferences"": false
+}
+";
+        private const string DataAsmdefFile = "Infohazard.Core.Data.asmdef";
 
         /// <summary>
         /// Get the value of a SerializedProperty of any type.
@@ -177,7 +197,7 @@ namespace Infohazard.Core.Editor {
         }
 
         public static void SetSymbolDefined(string symbol, bool value) {
-            foreach (var group in _buildTargetGroups) {
+            foreach (var group in BuildTargetGroups) {
                 SetSymbolDefined(symbol, value, group);
             }
         }
@@ -252,6 +272,16 @@ namespace Infohazard.Core.Editor {
             string type = property.type;
             if (!type.StartsWith(PPtrText)) return type;
             return property.type.Substring(PPtrText.Length, type.Length - PPtrText.Length - 1);
+        }
+
+        public static void EnsureDataFolderExists() {
+            if (!Directory.Exists(DataFolder)) {
+                Directory.CreateDirectory(DataFolder);
+            }
+            string fullAsmRefPath = Path.Combine(DataFolder, DataAsmdefFile);
+            if (!File.Exists(fullAsmRefPath)) {
+                File.WriteAllText(fullAsmRefPath, DataAsmdefContent);
+            }
         }
     }
 }
