@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime.Utility {
+namespace Infohazard.Core.Runtime {
     [Serializable]
     public struct PassiveTimer {
         [SerializeField] private float _initialInterval;
