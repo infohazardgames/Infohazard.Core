@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public static class RandomUtility {
         private static byte[] _randBuf = new byte[8];
 

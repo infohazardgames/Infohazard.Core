@@ -23,7 +23,7 @@
 using System;
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     /// <summary>
     /// Attribute that tells Unity to only draw a property when a given condition is true.
     /// </summary>

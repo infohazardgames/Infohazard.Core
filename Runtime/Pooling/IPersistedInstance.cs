@@ -1,4 +1,4 @@
-﻿namespace Infohazard.Core.Runtime {
+﻿namespace Infohazard.Core {
     /// <summary>
     /// This is a hack so that PoolManager can send messages to PersistedGameObjects.
     /// </summary>

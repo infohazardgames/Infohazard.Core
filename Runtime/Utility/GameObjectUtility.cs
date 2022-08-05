@@ -26,7 +26,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public static class GameObjectUtility {
         public static void GetCapsuleInfo(float radius, float height, Vector3 center, int direction, Transform transform,
             out Vector3 point1, out Vector3 point2, out float worldRadius, out float worldHeight) {

@@ -1,5 +1,5 @@
 using System.Linq;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEditor;
 using UnityEngine;
 

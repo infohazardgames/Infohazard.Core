@@ -24,7 +24,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Linq;
 using System;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEditor.IMGUI.Controls;
 
 namespace Infohazard.Core.Editor {

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public class DrawSingleChildPropertyAttribute : PropertyAttribute {
         public string PropertyName { get; }
         

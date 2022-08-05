@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public class ExpandableAttribute : PropertyAttribute {
         public bool AlwaysExpanded { get; }
         public bool ShowNewButton { get; }

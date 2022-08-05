@@ -23,7 +23,7 @@
 using UnityEngine;
 using System;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     /// <summary>
     /// Attribute that is applied to string fields to draw them as a dropdown where a Type is selected.
     /// </summary>

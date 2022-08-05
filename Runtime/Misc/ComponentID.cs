@@ -1,8 +1,8 @@
 ﻿using System;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     [Serializable]
     public struct ComponentID {
 

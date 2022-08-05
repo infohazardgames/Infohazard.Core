@@ -24,7 +24,7 @@ using System;
 using UnityEngine;
 using Complex = System.Numerics.Complex;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     // This class is extended by Externals/Math3D.cs
     public static class MathUtility {
         #region Float Operations

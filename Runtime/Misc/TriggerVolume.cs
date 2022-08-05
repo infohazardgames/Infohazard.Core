@@ -27,7 +27,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public class TriggerVolume : MonoBehaviour {
         [SerializeField, FormerlySerializedAs("tagFilter")]
         private TagMask _tagFilter = TagMask.PlayerMask;

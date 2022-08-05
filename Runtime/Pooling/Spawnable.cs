@@ -3,7 +3,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public class Spawnable : MonoBehaviour {
         public bool IsSpawned { get; private set; }
         internal int PoolID { get; set; } = -1;

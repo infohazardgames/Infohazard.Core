@@ -23,7 +23,7 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     /// <summary>
     /// Despawns a GameObject after a set amount of time.
     /// The field timeToLive can be modified in code to extend or reduce the lifetime.

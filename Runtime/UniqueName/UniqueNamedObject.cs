@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public class UniqueNamedObject : MonoBehaviour {
         [SerializeField] private UniqueNameListEntry _uniqueName;
 

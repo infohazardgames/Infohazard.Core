@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public static class StringUtility {
         /// <summary>
         /// Splits a camel-case string into words separated by spaces.

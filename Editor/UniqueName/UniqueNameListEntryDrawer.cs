@@ -1,6 +1,6 @@
 using System.Linq;
 using Infohazard.Core.Editor;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;

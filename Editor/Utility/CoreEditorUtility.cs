@@ -44,7 +44,7 @@ namespace Infohazard.Core.Editor {
         public const string DataFolder = "Assets/Infohazard.Core.Data/";
         private const string DataAsmdefContent = @"{
     ""name"": ""Infohazard.Core.Data"",
-    ""rootNamespace"": ""Infohazard.Core.Runtime"",
+    ""rootNamespace"": ""Infohazard.Core"",
     ""references"": [
         ""GUID:6e6eabb6dbfd0c64296bf63916880825""
     ],

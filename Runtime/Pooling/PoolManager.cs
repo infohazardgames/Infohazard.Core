@@ -3,7 +3,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public class PoolManager : MonoBehaviour {
         private readonly List<SpawnPool> _pools = new List<SpawnPool>();
         private readonly Dictionary<Spawnable, SpawnPool> _poolsByPrefab = new Dictionary<Spawnable, SpawnPool>();

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public class TypeUtility {
         private static Assembly[] _allAssemblies;
 

@@ -23,7 +23,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public class SceneControl : MonoBehaviour {
         public static void Quit() {
     #if UNITY_EDITOR

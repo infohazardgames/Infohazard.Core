@@ -23,7 +23,7 @@
 using System;
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     /// <summary>
     /// Manages pausing and unpausing of the game.
     /// </summary>

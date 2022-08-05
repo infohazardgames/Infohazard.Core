@@ -6,7 +6,7 @@ using UnityEditor;
 
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public abstract class SingletonAssetBase : ScriptableObject {
         public abstract string ResourceFolderPath { get; }
         public abstract string ResourcePath { get; }

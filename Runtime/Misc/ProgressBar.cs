@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public class ProgressBar : MonoBehaviour {
         [SerializeField] private Image _fillImage;
         [SerializeField] [Range(0, 1)] private float _fillAmount = 0.5f;

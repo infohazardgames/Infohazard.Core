@@ -1,5 +1,5 @@
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public class EditNameOnlyAttribute : PropertyAttribute { }
 }

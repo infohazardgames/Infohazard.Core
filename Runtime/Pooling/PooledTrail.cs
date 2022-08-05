@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     [RequireComponent(typeof(TrailRenderer))]
     public class PooledTrail : MonoBehaviour {
         private TrailRenderer _trail = null;

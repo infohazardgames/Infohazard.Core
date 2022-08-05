@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public static class DebugUtility {
         /// <summary>
         /// Draw the given Bounds in the scene view for one frame.

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     [Serializable]
     public struct SceneRef {
         [SerializeField] private string _path;

@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEditor;
 
 using UnityEngine;

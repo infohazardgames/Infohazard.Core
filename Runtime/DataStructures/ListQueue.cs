@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     /// <summary>
     /// A data structure similar to a Queue, except that it implements all List operations.
     /// This enables much greater flexibility than the builtin .NET Queue class.

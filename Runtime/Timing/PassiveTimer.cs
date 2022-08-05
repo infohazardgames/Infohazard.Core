@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     [Serializable]
     public struct PassiveTimer {
         [SerializeField] private float _initialInterval;
@@ -23,7 +23,7 @@ namespace Infohazard.Core.Runtime {
             set => _mode = value;
         }
 
-        public bool IntervalPassed => Time.time - IntervalStartTime >= _interval;
+        public bool IsIntervalEnded => Time.time - IntervalStartTime >= _interval;
         public float IntervalStartTime { get; set; }
         public float IntervalEndTime => IntervalStartTime + _interval;
         public bool IsInitialized { get; private set; }
@@ -35,10 +35,10 @@ namespace Infohazard.Core.Runtime {
         public float TimeSinceIntervalStart => Mathf.Max(CurrentTime - IntervalStartTime, 0);
         public float RatioSinceIntervalStart => Mathf.Min(TimeSinceIntervalStart / _interval, 0);
 
-        public bool IntervalPassedThisFrame {
+        public bool DidIntervalEndThisFrame {
             get {
                 if (_mode == PassiveTimerMode.Realtime) return false;
-                return HasIntervalStarted && IntervalPassed && CurrentTime - DeltaTime <= IntervalStartTime + _interval;
+                return HasIntervalStarted && IsIntervalEnded && CurrentTime - DeltaTime <= IntervalStartTime + _interval;
             }
         }
 
@@ -90,10 +90,10 @@ namespace Infohazard.Core.Runtime {
         }
         
 
-        public PassiveTimer(float interval, PassiveTimerMode mode = PassiveTimerMode.Scaled, bool initialize = false) :
+        public PassiveTimer(float interval, PassiveTimerMode mode = PassiveTimerMode.Scaled, bool initialize = true) :
             this(interval, interval, mode, initialize) { }
 
-        public PassiveTimer(float initialInterval, float interval, PassiveTimerMode mode = PassiveTimerMode.Scaled, bool initialize = false) {
+        public PassiveTimer(float initialInterval, float interval, PassiveTimerMode mode = PassiveTimerMode.Scaled, bool initialize = true) {
             _initialInterval = initialInterval;
             _interval = interval;
             _mode = mode;
@@ -114,7 +114,7 @@ namespace Infohazard.Core.Runtime {
         }
 
         public bool TryConsume() {
-            if (!IntervalPassed) return false;
+            if (!IsIntervalEnded) return false;
             StartInterval();
             return true;
         }

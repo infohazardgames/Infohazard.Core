@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public class SingletonBase : MonoBehaviour {
         public virtual void Initialize() { }
     }

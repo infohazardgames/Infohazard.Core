@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     public static class EnumerableUtility {
         public delegate bool SelectWhereDelegate<in T1, T2>(T1 input, out T2 output);
 

@@ -24,7 +24,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -44,7 +44,7 @@ namespace Infohazard.Core.Editor {
 using UnityEngine;
 using UnityEditor;
 
-namespace Infohazard.Core.Runtime {{
+namespace Infohazard.Core {{
     public static class GameTagMask {{
 {0}
 {1}

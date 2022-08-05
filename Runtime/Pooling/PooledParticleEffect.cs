@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Infohazard.Core.Runtime {
+namespace Infohazard.Core {
     [RequireComponent(typeof(ParticleSystem))]
     public class PooledParticleEffect : MonoBehaviour {
         private Spawnable _spawnable = null;

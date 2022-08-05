@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using Infohazard.Core.Runtime;
+using Infohazard.Core;
 using UnityEditor;
 using UnityEngine;
 
