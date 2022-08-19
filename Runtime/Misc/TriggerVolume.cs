@@ -32,9 +32,6 @@ namespace Infohazard.Core {
         [SerializeField, FormerlySerializedAs("tagFilter")]
         private TagMask _tagFilter = TagMask.PlayerMask;
         
-        [SerializeField, FormerlySerializedAs("hideOnPlay")]
-        private bool _hideOnPlay = true;
-
         public event Action<GameObject> TriggerEntered;
         public event Action<GameObject> TriggerExited;
         public event Action<GameObject> AllExited;
@@ -42,16 +39,25 @@ namespace Infohazard.Core {
         [SerializeField, FormerlySerializedAs("events")]
         private TriggerEvents _events = default;
 
+        public TriggerEvents Events {
+            get => _events;
+            set => _events = value;
+        }
+
         [Serializable]
-        private struct TriggerEvents {
+        public struct TriggerEvents {
             [SerializeField, FormerlySerializedAs("OnTriggerEnter")]
-            public UnityEvent _onTriggerEnter;
+            private UnityEvent _onTriggerEnter;
             
             [SerializeField, FormerlySerializedAs("OnTriggerExit")]
-            public UnityEvent _onTriggerExit;
+            private UnityEvent _onTriggerExit;
             
             [SerializeField, FormerlySerializedAs("OnAllExit")]
-            public UnityEvent _onAllExit;
+            private UnityEvent _onAllExit;
+
+            public UnityEvent OnTriggerEnter => _onTriggerEnter;
+            public UnityEvent OnTriggerExit => _onTriggerExit;
+            public UnityEvent OnAllExit => _onAllExit;
         }
 
         private HashSet<GameObject> _objects = new HashSet<GameObject>();
@@ -76,22 +82,22 @@ namespace Infohazard.Core {
 
         private void HandleEnter(GameObject other) {
             if (!enabled) return;
-            if (!other.CompareTag(_tagFilter)) return;
+            if (!other.CompareTagMask(_tagFilter)) return;
             if (!_objects.Add(other.gameObject)) return;
             
-            _events._onTriggerEnter?.Invoke();
+            _events.OnTriggerEnter?.Invoke();
             TriggerEntered?.Invoke(other);
         }
 
         private void HandleExit(GameObject other) {
             if (!enabled) return;
-            if (!other.CompareTag(_tagFilter)) return;
+            if (!other.CompareTagMask(_tagFilter)) return;
             if (!_objects.Remove(other)) return;
             
-            _events._onTriggerExit?.Invoke();
+            _events.OnTriggerExit?.Invoke();
             TriggerExited?.Invoke(other.gameObject);
             if (_objects.Count == 0) {
-                _events._onAllExit?.Invoke();
+                _events.OnAllExit?.Invoke();
                 AllExited?.Invoke(other.gameObject);
             }
         }

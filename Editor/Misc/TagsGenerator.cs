@@ -36,8 +36,8 @@ namespace Infohazard.Core.Editor {
 
         public const string Newline = @"
 ";
-        private const string TagTemplate = "        public const int {0} = {1};" + Newline;
-        private const string TagMaskTemplate = "        public const int {0}Mask = 1 << {0};" + Newline;
+        private const string TagTemplate = "        public const string {0} = \"{1}\";" + Newline;
+        private const string TagMaskTemplate = "        public const long {0}Mask = 1 << {1};" + Newline;
         private const string TagArrayTemplate = "\"{0}\", ";
 
         private const string Template = @"using System;
@@ -45,16 +45,16 @@ using UnityEngine;
 using UnityEditor;
 
 namespace Infohazard.Core {{
-    public static class GameTagMask {{
+    public static class GameTag {{
 {0}
 {1}
-        public static readonly string[] GameTags = {{
+        public static readonly string[] Tags = {{
             {2}
         }};
 
         [InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod]
         private static void Initialize() {{
-            TagMask.GameOverrideTags = GameTags;
+            Tag.GameOverrideTags = Tags;
         }}
     }}
 }}
@@ -69,12 +69,12 @@ namespace Infohazard.Core {{
             if (_didGenerate || !EditorPrefs.GetBool(CheckTagsPref, true)) {
                 return;
             }
-            var tags = InternalEditorUtility.tags;
+            string[] tags = InternalEditorUtility.tags;
 
-            bool needsRegen = !Enumerable.SequenceEqual(tags.Where(ValidEnumValue), TagMask.Tags);
+            bool needsRegen = !Enumerable.SequenceEqual(tags, Tag.Tags);
 
             if (needsRegen) {
-                if (EditorUtility.DisplayDialog("Generate Tags", "Do you want to generate a Tag.cs file?", "OK", "No")) {
+                if (EditorUtility.DisplayDialog("Generate Tags", "Do you want to generate a GameTag.cs file?", "OK", "No")) {
                     DoGenerate();
                 } else {
                     EditorPrefs.SetBool(CheckTagsPref, false);
@@ -82,18 +82,16 @@ namespace Infohazard.Core {{
             }
         }
 
-        private static bool ValidEnumValue(string tag) => !tag.Contains(" ");
-
-        [MenuItem("Assets/Update Tag Enum")]
+        [MenuItem("Infohazard/Core/Update Tag Enum")]
         public static void Generate() {
-            if (EditorUtility.DisplayDialog("Update Tag Enum", "This will create or overwrite the file SBR_Data/Tag.cs. This may produce some errors in the console. Don't worry about it.", "OK", "Cancel")) {
+            if (EditorUtility.DisplayDialog("Update Tag Enum", "This will create or overwrite the file Infohazard.Core.Data/GameTag.cs. This may produce some errors in the console. Don't worry about it.", "OK", "Cancel")) {
                 DoGenerate();
             }
         }
 
-        [MenuItem("Assets/Remove Tag Enum")]
+        [MenuItem("Infohazard/Core/Remove Tag Enum")]
         public static void Remove() {
-            if (EditorUtility.DisplayDialog("Remove Tag Enum", "This will delete the generated Tags.cs file, and revert to using only the builtin tags.", "OK", "Cancel")) {
+            if (EditorUtility.DisplayDialog("Remove Tag Enum", "This will delete the generated GameTag.cs file, and revert to using only the builtin tags.", "OK", "Cancel")) {
                 DoRemove();
             }
         }
@@ -110,15 +108,16 @@ namespace Infohazard.Core {{
             for (int i = 0; i < tags.Length; i++) {
                 string tag = tags[i];
 
-                tagDecls += string.Format(TagTemplate, tag, i);
-                tagMasks += string.Format(TagMaskTemplate, tag);
+                string varName = tag.Replace(" ", "");
+                tagDecls += string.Format(TagTemplate, varName, tag);
+                tagMasks += string.Format(TagMaskTemplate, varName, i);
                 tagArray += string.Format(TagArrayTemplate, tag);
             }
             
             string generated = string.Format(Template, tagDecls, tagMasks, tagArray);
 
             CoreEditorUtility.EnsureDataFolderExists();
-            string defPath = Path.Combine(CoreEditorUtility.DataFolder, "GameTagMask.cs");
+            string defPath = Path.Combine(CoreEditorUtility.DataFolder, "GameTag.cs");
 
             StreamWriter outStream = new StreamWriter(defPath);
             outStream.Write(generated);
@@ -128,7 +127,7 @@ namespace Infohazard.Core {{
 
         private static void DoRemove() {
             EditorPrefs.SetBool(CheckTagsPref, false);
-            string defPath = Path.Combine(CoreEditorUtility.DataFolder, "GameTagMask.cs");
+            string defPath = Path.Combine(CoreEditorUtility.DataFolder, "GameTag.cs");
             if (File.Exists(defPath)) {
                 AssetDatabase.DeleteAsset(defPath);
                 AssetDatabase.Refresh();
