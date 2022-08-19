@@ -82,14 +82,14 @@ namespace Infohazard.Core {{
             }
         }
 
-        [MenuItem("Infohazard/Core/Update Tag Enum")]
+        [MenuItem("Infohazard/Generate/Update Tag Enum")]
         public static void Generate() {
             if (EditorUtility.DisplayDialog("Update Tag Enum", "This will create or overwrite the file Infohazard.Core.Data/GameTag.cs. This may produce some errors in the console. Don't worry about it.", "OK", "Cancel")) {
                 DoGenerate();
             }
         }
 
-        [MenuItem("Infohazard/Core/Remove Tag Enum")]
+        [MenuItem("Infohazard/Generate/Remove Tag Enum")]
         public static void Remove() {
             if (EditorUtility.DisplayDialog("Remove Tag Enum", "This will delete the generated GameTag.cs file, and revert to using only the builtin tags.", "OK", "Cancel")) {
                 DoRemove();
