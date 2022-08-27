@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace Infohazard.Core {
@@ -43,7 +44,7 @@ namespace Infohazard.Core {
     }
     
     [Serializable]
-    public struct TagMask {
+    public struct TagMask : IEquatable<TagMask> {
         public const long UntaggedMask = 1 << 0;
         public const long RespawnMask = 1 << 1;
         public const long FinishMask = 1 << 2;
@@ -53,11 +54,16 @@ namespace Infohazard.Core {
         public const long GameControllerMask = 1 << 6;
 
         [SerializeField] private long _value;
-        public long Value => _value;
+        public long Value {
+            get => _value;
+            set => _value = value;
+        }
 
         public TagMask(long value) {
             _value = value;
         }
+
+        #region Conversions
         
         public static implicit operator long(TagMask mask) {
             return mask._value;
@@ -65,6 +71,80 @@ namespace Infohazard.Core {
 
         public static implicit operator TagMask(long mask) {
             return new TagMask(mask);
+        }
+
+        #endregion
+
+        #region Operators
+
+        public static TagMask operator &(in TagMask lhs, in TagMask rhs) {
+            return new TagMask(lhs._value & rhs._value);
+        }
+
+        public static TagMask operator &(TagMask lhs, long rhs) {
+            return new TagMask(lhs._value & rhs);
+        }
+
+        public static long operator &(long lhs, TagMask rhs) {
+            return lhs & rhs._value;
+        }
+
+        public static TagMask operator |(TagMask lhs, TagMask rhs) {
+            return new TagMask(lhs._value | rhs._value);
+        }
+
+        public static TagMask operator |(TagMask lhs, long rhs) {
+            return new TagMask(lhs._value | rhs);
+        }
+
+        public static long operator |(long lhs, TagMask rhs) {
+            return lhs | rhs._value;
+        }
+
+        public static TagMask operator ^(TagMask lhs, TagMask rhs) {
+            return new TagMask(lhs._value ^ rhs._value);
+        }
+
+        public static TagMask operator ^(TagMask lhs, long rhs) {
+            return new TagMask(lhs._value ^ rhs);
+        }
+
+        public static long operator ^(long lhs, TagMask rhs) {
+            return lhs ^ rhs._value;
+        }
+
+        public static TagMask operator ~(TagMask mask) {
+            return new TagMask(~mask._value);
+        }
+
+        #endregion
+
+        private static StringBuilder _toStringBuilder = new StringBuilder();
+        public override string ToString() {
+            bool first = true;
+            for (int i = 0; i < Tag.Tags.Length; i++) {
+                if ((_value & (1 << i)) != 0) {
+                    if (first) _toStringBuilder.Append(", ");
+                    _toStringBuilder.Append(Tag.Tags[i]);
+                    first = false;
+                }
+            }
+
+            string result = _toStringBuilder.ToString();
+            _toStringBuilder.Clear();
+            return result;
+        }
+
+        public bool Equals(TagMask other) {
+            return _value == other._value;
+        }
+
+        public override bool Equals(object obj) {
+            return obj is TagMask other && Equals(other);
+        }
+
+        public override int GetHashCode() {
+            return _value.GetHashCode();
         }
 
         public static int NameToTag(string name) => Array.IndexOf(Tag.Tags, name);
@@ -86,7 +166,7 @@ namespace Infohazard.Core {
             return mask;
         }
         
-        public static int GetMask(string name) {
+        public static long GetMask(string name) {
             int index = NameToTag(name);
             if (index < 0) {
                 Debug.LogError($"Tag name {name} not found.");
@@ -155,7 +235,7 @@ namespace Infohazard.Core {
         /// </summary>
         /// <param name="obj">Object to read.</param>
         /// <returns>The GameObject's tag as a mask.</returns>
-        public static int GetTagMask(this GameObject obj) {
+        public static long GetTagMask(this GameObject obj) {
             return TagMask.GetMask(obj.tag);
         }
         
@@ -164,7 +244,7 @@ namespace Infohazard.Core {
         /// </summary>
         /// <param name="obj">Object to read.</param>
         /// <returns>The Component's tag as a mask.</returns>
-        public static int GetTagMask(this Component obj) {
+        public static long GetTagMask(this Component obj) {
             return TagMask.GetMask(obj.tag);
         }
     }

@@ -42,7 +42,10 @@ namespace Infohazard.Core.Editor {
 
         private const string Template = @"using System;
 using UnityEngine;
+
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 namespace Infohazard.Core {{
     public static class GameTag {{
@@ -52,7 +55,10 @@ namespace Infohazard.Core {{
             {2}
         }};
 
-        [InitializeOnLoadMethod, RuntimeInitializeOnLoadMethod]
+#if UNITY_EDITOR
+        [InitializeOnLoadMethod]
+#endif
+        [RuntimeInitializeOnLoadMethod]
         private static void Initialize() {{
             Tag.GameOverrideTags = Tags;
         }}
