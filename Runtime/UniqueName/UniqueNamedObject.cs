@@ -30,13 +30,13 @@ namespace Infohazard.Core {
 
         public string UniqueName { get; private set; }
 
-        private static Dictionary<string, UniqueNamedObject> _objects =
+        private static readonly Dictionary<string, UniqueNamedObject> InternalObjects =
             new Dictionary<string, UniqueNamedObject>();
 
-        public static IReadOnlyDictionary<string, UniqueNamedObject> Objects => _objects;
+        public static IReadOnlyDictionary<string, UniqueNamedObject> Objects => InternalObjects;
 
         public static bool TryGetObject(string name, out GameObject result) {
-            bool value = _objects.TryGetValue(name, out UniqueNamedObject obj);
+            bool value = InternalObjects.TryGetValue(name, out UniqueNamedObject obj);
             result = obj ? obj.gameObject : null;
             return value;
         }
@@ -54,19 +54,19 @@ namespace Infohazard.Core {
 
         private void OnEnable() {
             if (UniqueName == null) return;
-            if (_objects.TryGetValue(UniqueName, out UniqueNamedObject other)) {
+            if (InternalObjects.TryGetValue(UniqueName, out UniqueNamedObject other) && other != null) {
                 Debug.LogError(
                     $"Object {name} trying to use unique name {UniqueName} which is already in use by {other.name}");
                 return;
             }
 
-            _objects[UniqueName] = this;
+            InternalObjects[UniqueName] = this;
         }
 
         private void OnDisable() {
             if (UniqueName == null) return;
-            if (_objects[UniqueName] != this) return;
-            _objects[UniqueName] = null;
+            if (!ReferenceEquals(InternalObjects[UniqueName], this)) return;
+            InternalObjects.Remove(UniqueName);
         }
     }
 }
