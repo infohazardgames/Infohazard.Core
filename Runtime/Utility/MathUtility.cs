@@ -396,6 +396,42 @@ namespace Infohazard.Core {
 
         #endregion
 
+        #region Quaternion Operations
+
+        public static Quaternion XYRotation(Vector3 right, Vector3 upHint) {
+            Vector3 forward = Vector3.Cross(right, upHint);
+            Vector3 up = Vector3.Cross(forward, right);
+            return Quaternion.LookRotation(forward, up);
+        }
+
+        public static Quaternion YXRotation(Vector3 up, Vector3 rightHint) {
+            Vector3 forward = Vector3.Cross(rightHint, up);
+            return Quaternion.LookRotation(forward, up);
+        }
+
+        public static Quaternion XZRotation(Vector3 right, Vector3 forwardHint) {
+            Vector3 up = Vector3.Cross(forwardHint, right);
+            Vector3 forward = Vector3.Cross(right, up);
+            return Quaternion.LookRotation(forward, up);
+        }
+
+        public static Quaternion ZXRotation(Vector3 forward, Vector3 rightHint) {
+            Vector3 up = Vector3.Cross(forward, rightHint);
+            return Quaternion.LookRotation(forward, up);
+        }
+
+        public static Quaternion YZRotation(Vector3 up, Vector3 forwardHint) {
+            Vector3 right = Vector3.Cross(up, forwardHint);
+            Vector3 forward = Vector3.Cross(right, up);
+            return Quaternion.LookRotation(forward, up);
+        }
+
+        public static Quaternion ZYRotation(Vector3 forward, Vector3 upHint) {
+            return Quaternion.LookRotation(forward, upHint);
+        }
+
+        #endregion
+
         #region Bounds Operations
 
         public static readonly Vector3[] BoundsCornerArray = new Vector3[8]; 
