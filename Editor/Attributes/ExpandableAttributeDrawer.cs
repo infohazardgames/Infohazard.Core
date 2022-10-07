@@ -35,6 +35,16 @@ namespace Infohazard.Core.Editor {
         public static Action<ScriptableObject, string> SaveAction { get; set; } = null;
         private ExpandableAttribute Attribute => (ExpandableAttribute) attribute;
 
+        private SerializedObject _serializedObject;
+
+        private SerializedObject GetSerializedObject(Object value) {
+            if (_serializedObject?.targetObject != value) {
+                _serializedObject = new SerializedObject(value);
+            }
+            
+            return _serializedObject;
+        }
+
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
             ExpandableAttribute attr = Attribute;
             Object value = property.objectReferenceValue;
@@ -43,7 +53,7 @@ namespace Infohazard.Core.Editor {
             if (value != null && (property.isExpanded || attr.AlwaysExpanded)) {
                 height += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
 
-                SerializedObject so = new SerializedObject(value);
+                SerializedObject so = GetSerializedObject(value);
                 var iter = so.GetIterator();
                 bool first = true;
                 while (iter.NextVisible(first)) {
@@ -89,7 +99,7 @@ namespace Infohazard.Core.Editor {
                 Rect propsRect = position;
                 propsRect.yMin = propertyRect.yMax + EditorGUIUtility.standardVerticalSpacing;
 
-                SerializedObject so = new SerializedObject(value);
+                SerializedObject so = GetSerializedObject(value);
 
                 SerializedProperty nameProp = so.FindProperty("m_Name");
                 propsRect.height = EditorGUI.GetPropertyHeight(nameProp, GUIContent.none);
@@ -139,9 +149,10 @@ namespace Infohazard.Core.Editor {
                 } else if (!empty && folder[0] == '/') {
                     folder = folder.Substring(1);
                 } else {
-                    string assetPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(property.serializedObject.targetObject));
+                    string assetPath = AssetDatabase.GetAssetPath(property.serializedObject.targetObject);
                     folder ??= string.Empty;
                     if (!string.IsNullOrEmpty(assetPath)) {
+                        assetPath = Path.GetDirectoryName(assetPath);
                         assetPath = CoreEditorUtility.GetPathRelativeToAssetsFolder(assetPath);
                         folder = Path.Combine(assetPath, folder);
                     }
