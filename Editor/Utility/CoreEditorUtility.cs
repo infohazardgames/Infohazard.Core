@@ -26,6 +26,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Reflection;
 using System;
+using System.Diagnostics;
 using System.IO;
 using Object = UnityEngine.Object;
 
@@ -281,6 +282,28 @@ namespace Infohazard.Core.Editor {
             string fullAsmRefPath = Path.Combine(DataFolder, DataAsmdefFile);
             if (!File.Exists(fullAsmRefPath)) {
                 File.WriteAllText(fullAsmRefPath, DataAsmdefContent);
+            }
+        }
+        
+        public static bool ExecuteProcess(string command, string args, bool showMessages) {
+            ProcessStartInfo processInfo = new ProcessStartInfo(command, args) {
+                RedirectStandardError = true,
+                UseShellExecute = false,
+            };
+            Process process = Process.Start(processInfo);
+            if (process != null) {
+                process.WaitForExit();
+                bool success = process.ExitCode == 0;
+                if (!success && showMessages) {
+                    EditorUtility.DisplayDialog("Process returned failure", process.StandardError.ReadToEnd(), "OK");
+                }
+                process.Close();
+                return success;
+            } else {
+                if (showMessages) {
+                    EditorUtility.DisplayDialog("Process failed ot start", processInfo.ToString(), "OK");
+                }
+                return false;
             }
         }
     }
