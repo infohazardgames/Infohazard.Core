@@ -1,5 +1,7 @@
 # Core: a collection of useful functionality for Unity, which is used by my other packages.
 
+### Documentation: https://docs.google.com/document/d/1ag-HviqtTaPg28STD84CGzEHP5Tn0f6Ad7H4PndT9Pw/edit?usp=sharing
+
 ### Installation:
 
 #### Method 1 - Package Manager
