@@ -17,3 +17,5 @@ MonoBehaviour:
   _paths:
   - {fileID: 102900000, guid: 60e9418013ece9243af9e384553a3d40, type: 3}
   - {fileID: 102900000, guid: accd7f2af94635e42884d4f2efd62f8a, type: 3}
+  - {fileID: 102900000, guid: 08686ad1da2fb6941824bfdafa617842, type: 3}
+  - {fileID: 5897886265953266890, guid: 6b033b4c9e4a3f0478f43a6a74998585, type: 3}
