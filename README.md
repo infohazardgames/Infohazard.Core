@@ -1,12 +1,10 @@
 # Infohazard.Core: A Unity Utility Library
 
-### Documentation:
-
-#### [Package Overview](https://docs.google.com/document/d/1ag-HviqtTaPg28STD84CGzEHP5Tn0f6Ad7H4PndT9Pw/edit?usp=sharing)
+### Documentation
 
 #### [API Docs](https://www.infohazardgames.com/docs/Infohazard.Core/html/)
 
-### Installation:
+### Installation
 
 #### Method 1 - Package Manager
 
