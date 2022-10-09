@@ -58,7 +58,18 @@ namespace Infohazard.Core {
         /// </summary>
         public event Action<Spawnable> Despawned;
 
+        private Rigidbody _rigidbody;
+
+        private void Awake() {
+            _rigidbody = GetComponent<Rigidbody>();
+        }
+
         internal void WasSpawned() {
+            if (_rigidbody) {
+                _rigidbody.velocity = Vector3.zero;
+                _rigidbody.angularVelocity = Vector3.zero;
+            }
+            
             IsSpawned = true;
             Spawned?.Invoke(this);
             BroadcastMessage("OnSpawned", SendMessageOptions.DontRequireReceiver);
