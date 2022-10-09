@@ -28,35 +28,79 @@ using UnityEngine.Events;
 using UnityEngine.Serialization;
 
 namespace Infohazard.Core {
+    /// <summary>
+    /// A script that makes it easy to add events to a trigger collider.
+    /// </summary>
+    /// <remarks>
+    /// Provides both UnityEvents (assignable in the inspector) and normal C# events
+    /// for when an object enters or leaves the trigger,
+    /// and when all objects have left the trigger.
+    /// Also provides a tag filter, allowing you to control which types of object can activate it.
+    /// </remarks>
     public class TriggerVolume : MonoBehaviour {
-        [SerializeField, FormerlySerializedAs("tagFilter")]
-        private TagMask _tagFilter = TagMask.PlayerMask;
+        /// <summary>
+        /// (Serialized) Mask of tags that can activate the trigger.
+        /// </summary>
+        [SerializeField] private TagMask _tagFilter = TagMask.PlayerMask;
         
+        /// <summary>
+        /// Invoked when an object matching the tag filter enters the trigger.
+        /// </summary>
         public event Action<GameObject> TriggerEntered;
+        
+        /// <summary>
+        /// Invoked when an object matching the tag filter exits the trigger.
+        /// </summary>
         public event Action<GameObject> TriggerExited;
+        
+        /// <summary>
+        /// Invoked when the last object matching the tag filter exits the trigger.
+        /// </summary>
         public event Action<GameObject> AllExited;
 
-        [SerializeField, FormerlySerializedAs("events")]
-        private TriggerEvents _events = default;
+        /// <summary>
+        /// (Serialized) UnityEvents that enable you to assign functionality in the editor.
+        /// </summary>
+        [SerializeField] private TriggerEvents _events = default;
 
-        public TriggerEvents Events {
-            get => _events;
-            set => _events = value;
-        }
+        /// <summary>
+        /// UnityEvents that enable you to assign functionality in the editor.
+        /// </summary>
+        public TriggerEvents Events => _events;
 
+        /// <summary>
+        /// Class that stores the UnityEvents used by a TriggerVolume.
+        /// </summary>
         [Serializable]
-        public struct TriggerEvents {
-            [SerializeField, FormerlySerializedAs("OnTriggerEnter")]
-            private UnityEvent _onTriggerEnter;
+        public class TriggerEvents {
+            /// <summary>
+            /// (Serialized) Invoked when an object matching the tag filter enters the trigger.
+            /// </summary>
+            [SerializeField] private UnityEvent _onTriggerEnter;
             
-            [SerializeField, FormerlySerializedAs("OnTriggerExit")]
-            private UnityEvent _onTriggerExit;
+            /// <summary>
+            /// (Serialized) Invoked when an object matching the tag filter exits the trigger.
+            /// </summary>
+            [SerializeField] private UnityEvent _onTriggerExit;
             
-            [SerializeField, FormerlySerializedAs("OnAllExit")]
-            private UnityEvent _onAllExit;
-
+            /// <summary>
+            /// (Serialized) Invoked when the last object matching the tag filter exits the trigger.
+            /// </summary>
+            [SerializeField] private UnityEvent _onAllExit;
+            
+            /// <summary>
+            /// Invoked when an object matching the tag filter enters the trigger.
+            /// </summary>
             public UnityEvent OnTriggerEnter => _onTriggerEnter;
+            
+            /// <summary>
+            /// Invoked when an object matching the tag filter exits the trigger.
+            /// </summary>
             public UnityEvent OnTriggerExit => _onTriggerExit;
+            
+            /// <summary>
+            ///  Invoked when the last object matching the tag filter exits the trigger.
+            /// </summary>
             public UnityEvent OnAllExit => _onAllExit;
         }
 

@@ -23,19 +23,21 @@
 using System.Text.RegularExpressions;
 
 namespace Infohazard.Core {
+    /// <summary>
+    /// Contains string processing utilities.
+    /// </summary>
     public static class StringUtility {
         /// <summary>
         /// Splits a camel-case string into words separated by spaces.
-        /// Multiple consecutive capitals are considered the same word.
         /// </summary>
         /// <remarks>
-        /// From stackoverflow:
-        /// https://stackoverflow.com/questions/5796383/insert-spaces-between-words-on-a-camel-cased-token/5796793
+        /// Multiple consecutive capitals are considered the same word.
         /// </remarks>
         /// <param name="str">The string to split.</param>
         /// <param name="capitalizeFirst">Whether to capitalize the first letter.</param>
         /// <returns>The split string.</returns>
         public static string SplitCamelCase(this string str, bool capitalizeFirst = false) {
+            // https://stackoverflow.com/questions/5796383/insert-spaces-between-words-on-a-camel-cased-token/5796793
             string result = Regex.Replace(
                 Regex.Replace(
                     str,

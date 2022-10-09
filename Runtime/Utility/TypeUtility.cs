@@ -25,6 +25,9 @@ using System.Collections.Generic;
 using System.Reflection;
 
 namespace Infohazard.Core {
+    /// <summary>
+    /// Contains utilities for working with C# reflection types and getting a type by its name.
+    /// </summary>
     public class TypeUtility {
         private static Assembly[] _allAssemblies;
 
@@ -40,6 +43,9 @@ namespace Infohazard.Core {
             }
         }
 
+        /// <summary>
+        /// Returns an enumeration of all loaded types.
+        /// </summary>
         public static IEnumerable<Type> AllTypes {
             get {
                 foreach (Assembly assembly in AllAssemblies) {
@@ -61,6 +67,11 @@ namespace Infohazard.Core {
             }
         }
 
+        /// <summary>
+        /// Get a type given its full name (including namespace).
+        /// </summary>
+        /// <param name="fullName">Name of the type including namespace.</param>
+        /// <returns>The found type, or null.</returns>
         public static Type GetType(string fullName) {
             if (string.IsNullOrEmpty(fullName)) return null;
 

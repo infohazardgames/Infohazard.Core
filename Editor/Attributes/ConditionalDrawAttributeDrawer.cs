@@ -47,15 +47,20 @@ namespace Infohazard.Core.Editor {
         private bool ShouldDraw(SerializedProperty property) {
             var attr = (ConditionalDrawAttribute)attribute;
             
+            // Find condition property.
+            // Its path relative to the SerializedObject is the same as the main property path,
+            // with just the final part replaced.
             string propertyPath = property.propertyPath;
             string conditionPath = propertyPath.Replace(property.name, attr.Condition);
             SerializedProperty condProperty = property.serializedObject.FindProperty(conditionPath);
 
+            // Also check for the condition property on the root SerializedObject.
             if (condProperty == null) {
                 condProperty = property.serializedObject.FindProperty(attr.Condition);
             }
 
             if (condProperty == null) {
+                // If property is invalid, just draw as normal but with a log.
                 Debug.LogError("Could not find property " + attr.Condition + " on object " + property.serializedObject.targetObject);
                 return true;
             } else {

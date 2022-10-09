@@ -31,17 +31,19 @@ using System.IO;
 using Object = UnityEngine.Object;
 
 namespace Infohazard.Core.Editor {
+    /// <summary>
+    /// Contains several editor-only utilities.
+    /// </summary>
     public static class CoreEditorUtility {
         private const string ResourceFolder = "Resources/";
         private const string AssetsFolder = "Assets";
-        private static readonly BuildTargetGroup[] BuildTargetGroups = new BuildTargetGroup[] {
-            BuildTargetGroup.Standalone,
-            BuildTargetGroup.Android,
-            BuildTargetGroup.iOS,
-            BuildTargetGroup.WSA,
-            BuildTargetGroup.WebGL,
-        };
         
+        /// <summary>
+        /// Folder where all generated files used by the Infohazard libraries should live.
+        /// </summary>
+        /// <remarks>
+        /// Call <see cref="EnsureDataFolderExists"/> to make sure this folder exists before using it.
+        /// </remarks>
         public const string DataFolder = "Assets/Infohazard.Core.Data/";
         private const string DataAsmdefContent = @"{
     ""name"": ""Infohazard.Core.Data"",
@@ -127,7 +129,7 @@ namespace Infohazard.Core.Editor {
         }
 
         /// <summary>
-        /// Try to find the value of a given property using reflection.
+        /// Find the value of a given property using reflection and reading the field directly.
         /// </summary>
         /// <param name="prop">The property to read.</param>
         /// <returns>The value of the property.</returns>
@@ -135,14 +137,14 @@ namespace Infohazard.Core.Editor {
             return prop.FindValue<object>();
         }
 
-        // From Unify Community Wiki
         /// <summary>
-        /// Find the value of a given property using Reflection.
+        /// Find the value of a given property using Reflection and reading the field directly.
         /// </summary>
         /// <typeparam name="T">The type to cast the value to.</typeparam>
         /// <param name="prop">The property to read</param>
         /// <returns>The value of the property.</returns>
         public static T FindValue<T>(this SerializedProperty prop) {
+            // From Unify Community Wiki
             string[] separatedPaths = prop.propertyPath.Split('.');
 
             object reflectionTarget = prop.serializedObject.targetObject as object;
@@ -174,10 +176,21 @@ namespace Infohazard.Core.Editor {
             return (T)reflectionTarget;
         }
 
+        /// <summary>
+        /// Get the Unity PlayerSettings list of #define symbols for the given build target.
+        /// </summary>
+        /// <param name="group">The build target.</param>
+        /// <returns>A list of all defined symbols for that group.</returns>
         public static List<string> GetDefinesList(BuildTargetGroup group) {
             return new List<string>(PlayerSettings.GetScriptingDefineSymbolsForGroup(group).Split(';'));
         }
 
+        /// <summary>
+        /// Sets whether the given symbol is defined in the PlayerSettings for the given build target.
+        /// </summary>
+        /// <param name="symbol">The symbol to set.</param>
+        /// <param name="value">Whether the symbol should be defined.</param>
+        /// <param name="group">The build target.</param>
         public static void SetSymbolDefined(string symbol, bool value, BuildTargetGroup group) {
             var defines = GetDefinesList(group);
             if (value) {
@@ -197,18 +210,28 @@ namespace Infohazard.Core.Editor {
             PlayerSettings.SetScriptingDefineSymbolsForGroup(group, definesString);
         }
 
-        public static void SetSymbolDefined(string symbol, bool value) {
-            foreach (var group in BuildTargetGroups) {
-                SetSymbolDefined(symbol, value, group);
-            }
-        }
-
+        /// <summary>
+        /// Get the path an object lives in relative to a resource folder.
+        /// </summary>
+        /// <remarks>
+        /// The result path can be used with Resources.Load.
+        /// </remarks>
+        /// <param name="obj">The object to get the path for.</param>
+        /// <returns>The path relative to a resource folder, or null.</returns>
         public static string GetResourcePath(Object obj) {
             string path = AssetDatabase.GetAssetPath(obj);
             if (string.IsNullOrEmpty(path)) return null;
             return GetResourcePath(path);
         }
 
+        /// <summary>
+        /// Get the given path relative to a resource folder.
+        /// </summary>
+        /// <remarks>
+        /// The result path can be used with Resources.Load.
+        /// </remarks>
+        /// <param name="path">The path to search for.</param>
+        /// <returns>The path relative to a resource folder, or null.</returns>
         public static string GetResourcePath(string path) {
             int index = path.LastIndexOf(ResourceFolder, StringComparison.Ordinal);
             if (index < 0) return null;
@@ -219,6 +242,14 @@ namespace Infohazard.Core.Editor {
             return path;
         }
 
+        /// <summary>
+        /// Convert the given path to be relative to the Assets folder.
+        /// </summary>
+        /// <remarks>
+        /// Accepts absolute paths, paths staring with "Assets/", and paths starting with "/"'".
+        /// </remarks>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static string GetPathRelativeToAssetsFolder(string path) {
             path = path.Replace('\\', '/');
 
@@ -235,6 +266,20 @@ namespace Infohazard.Core.Editor {
             return path;
         }
 
+        /// <summary>
+        /// Create a dropdown button in the IMGUI, whose options will not be calculated until it is clicked.
+        /// </summary>
+        /// <remarks>
+        /// For a normal dropdown, you'd need to know all of the options before the button was clicked.
+        /// With lazy dropdown, they are not evaluated until needed.
+        /// They are also re-evaluated every time the dropdown is opened, preventing the need for cache invalidation.
+        /// </remarks>
+        /// <param name="position">Position to draw the dropdown button.</param>
+        /// <param name="content">Current value to show in the dropdown button (when not selected).</param>
+        /// <param name="optionsFunc">Function that will calculate and return the options.</param>
+        /// <param name="stringifier">Function that converts options to strings for display.</param>
+        /// <param name="setter">Function that sets the value when an option is chosen.</param>
+        /// <typeparam name="T">Type of the options before they are converted to strings.</typeparam>
         public static void DoLazyDropdown<T>(Rect position, GUIContent content, Func<T[]> optionsFunc, Func<T, string> stringifier, Action<T> setter) {
             if (!EditorGUI.DropdownButton(position, content, FocusType.Passive)) return;
             
@@ -247,6 +292,14 @@ namespace Infohazard.Core.Editor {
             menu.DropDown(position);
         }
 
+        /// <summary>
+        /// Find all the assets of the given type in the project.
+        /// </summary>
+        /// <remarks>
+        /// Only assets whose root object is the given type are included.
+        /// </remarks>
+        /// <typeparam name="T">The type of asset to find.</typeparam>
+        /// <returns>A sequence of all the found assets.</returns>
         public static IEnumerable<T> GetAssetsOfType<T>() where T : Object {
             string[] guids = AssetDatabase.FindAssets($"t:{typeof(T)}");
             for (int i = 0; i < guids.Length; i++) {
@@ -256,7 +309,14 @@ namespace Infohazard.Core.Editor {
                 if (asset) yield return asset;
             }
         }
-
+        /// <summary>
+        /// Find all the assets of the given type in the project.
+        /// </summary>
+        /// <remarks>
+        /// Only assets whose root object is the given type are included.
+        /// </remarks>
+        /// <param name="type">The type name of assets to find.</param>
+        /// <returns>A sequence of all the found assets.</returns>
         public static IEnumerable<Object> GetAssetsOfType(string type) {
             string[] guids = AssetDatabase.FindAssets($"t:{type}");
             for (int i = 0; i < guids.Length; i++) {
@@ -269,12 +329,20 @@ namespace Infohazard.Core.Editor {
         
         private const string PPtrText = "PPtr<$";
 
+        /// <summary>
+        /// Get the type full name (including assembly) of the type of the underlying field for the given property.
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
         public static string GetTypeName(this SerializedProperty property) {
             string type = property.type;
             if (!type.StartsWith(PPtrText)) return type;
             return property.type.Substring(PPtrText.Length, type.Length - PPtrText.Length - 1);
         }
 
+        /// <summary>
+        /// Ensure that the <see cref="DataFolder"/> directory exists in your project, and contains an assembly definition.
+        /// </summary>
         public static void EnsureDataFolderExists() {
             if (!Directory.Exists(DataFolder)) {
                 Directory.CreateDirectory(DataFolder);
@@ -285,6 +353,13 @@ namespace Infohazard.Core.Editor {
             }
         }
         
+        /// <summary>
+        /// Launch an external process using the given command and arguments, and wait for it to complete.
+        /// </summary>
+        /// <param name="command">The command (executable file) to run.</param>
+        /// <param name="args">The argument string to pass to the command.</param>
+        /// <param name="showMessages">Whether to display a dialog box if the command fails.</param>
+        /// <returns>Whether the command succeeded.</returns>
         public static bool ExecuteProcess(string command, string args, bool showMessages) {
             ProcessStartInfo processInfo = new ProcessStartInfo(command, args) {
                 RedirectStandardError = true,

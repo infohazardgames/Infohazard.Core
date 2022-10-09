@@ -23,5 +23,8 @@
 using UnityEngine;
 
 namespace Infohazard.Core {
+    /// <summary>
+    /// Attribute that draws only the name of an Object reference field.
+    /// </summary>
     public class EditNameOnlyAttribute : PropertyAttribute { }
 }

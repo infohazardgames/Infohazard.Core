@@ -26,11 +26,30 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Infohazard.Core {
+    /// <summary>
+    /// The singleton manager class that handles object pooling.
+    /// </summary>
+    /// <remarks>
+    /// There should only ever be on PoolManager at a time,
+    /// but this can be created either manually or automatically when needed.
+    /// You can have one PoolManager per scene, or have a shared one across all scenes.
+    /// The only time you'll typically need to interact with the PoolManager
+    /// is to call <see cref="ClearInactiveObjects"/> when loading a new level,
+    /// if the previously pooled objects are no longer necessary.
+    /// All normal spawning and despawning of instances should be done through the <see cref="Spawnable"/> class.
+    /// </remarks>
     public class PoolManager : MonoBehaviour {
         private readonly List<SpawnPool> _pools = new List<SpawnPool>();
         private readonly Dictionary<Spawnable, SpawnPool> _poolsByPrefab = new Dictionary<Spawnable, SpawnPool>();
 
         private static PoolManager _instance = null;
+        
+        /// <summary>
+        /// The singleton PoolManager instance.
+        /// </summary>
+        /// <remarks>
+        /// If this property is accessed when there is no active instance, one will be created automatically.
+        /// </remarks>
         public static PoolManager Instance {
             get {
                 if (_instance == null) {
@@ -46,7 +65,7 @@ namespace Infohazard.Core {
             }
         }
 
-        public Spawnable SpawnInstance(Spawnable prefab, Vector3? position, Quaternion? rotation, Transform parent,
+        internal Spawnable SpawnInstance(Spawnable prefab, Vector3? position, Quaternion? rotation, Transform parent,
                                        bool inWorldSpace, ulong persistedInstanceID, Scene? scene) {
             Debug.Assert(!prefab.IsSpawned);
             if (!_poolsByPrefab.TryGetValue(prefab, out SpawnPool pool)) {
@@ -58,16 +77,19 @@ namespace Infohazard.Core {
             return pool.Spawn(position, rotation, parent, inWorldSpace, persistedInstanceID, scene);
         }
 
-        public void DespawnInstance(Spawnable instance) {
+        internal void DespawnInstance(Spawnable instance) {
             Debug.Assert(instance.IsSpawned);
             Debug.Assert(instance.PoolID >= 0 && instance.PoolID < _pools.Count);
             _pools[instance.PoolID].Despawn(instance);
         }
 
-        public Spawnable GetPrefab(int poolID) {
+        internal Spawnable GetPrefab(int poolID) {
             return _pools[poolID].Prefab;
         }
 
+        /// <summary>
+        /// Remove and destroy any inactive pooled objects.
+        /// </summary>
         public void ClearInactiveObjects() {
             foreach (SpawnPool pool in _pools) {
                 pool.ClearInactiveObjects();
@@ -75,30 +97,25 @@ namespace Infohazard.Core {
         }
 
         private class SpawnPool {
-            public Spawnable Prefab { get; private set; }
-            public int PoolID { get; private set; }
-            public Transform Transform { get; private set; }
-            private List<Spawnable> _instances = new List<Spawnable>();
-            private Queue<int> _freeList = new Queue<int>();
+            internal Spawnable Prefab { get; }
+            
+            private readonly int _poolID;
+            private readonly Transform _transform;
+            private readonly Queue<Spawnable> _freeList = new Queue<Spawnable>();
 
-            public SpawnPool(Spawnable prefab, int poolID, Transform transform) {
+            internal SpawnPool(Spawnable prefab, int poolID, Transform transform) {
                 Prefab = prefab;
-                PoolID = poolID;
-                Transform = transform;
+                _poolID = poolID;
+                _transform = transform;
             }
 
-            public Spawnable Spawn(Vector3? position, Quaternion? rotation, Transform parent, bool inWorldSpace, ulong persistedInstanceID, Scene? scene) {
-                int instanceID = -1;
-
-                while (instanceID == -1 || !_instances[instanceID]) {
-                    if (_freeList.Count == 0) Instantiate();
-                    instanceID = _freeList.Dequeue();
-                }
+            internal Spawnable Spawn(Vector3? position, Quaternion? rotation, Transform parent, bool inWorldSpace, ulong persistedInstanceID, Scene? scene) {
+                if (_freeList.Count == 0) Instantiate();
+                Spawnable instance = _freeList.Dequeue();
                 
-                Spawnable instance = _instances[instanceID];
                 Debug.Assert(!instance.IsSpawned, $"Trying to spawn already-spawned instance {instance}");
 
-                instance.transform.Initialize(position, rotation, null, parent, inWorldSpace, scene);
+                instance.transform.Initialize(parent, position, rotation, null, inWorldSpace, scene);
 
                 instance.gameObject.SetActive(true);
                 if (instance.TryGetComponent(out IPersistedInstance obj)) {
@@ -109,45 +126,33 @@ namespace Infohazard.Core {
                 return instance;
             }
 
-            public void Despawn(Spawnable instance) {
+            internal void Despawn(Spawnable instance) {
                 Debug.Assert(instance.IsSpawned, $"Trying to despawn not-spawned instance {instance}");
 
                 instance.WasDespawned();
                 if (instance.TryGetComponent(out IPersistedInstance obj)) {
                     obj.RegisterDestroyed();
                 }
-                instance.transform.SetParent(Transform, false);
+                instance.transform.SetParent(_transform, false);
                 instance.gameObject.SetActive(false);
-                _freeList.Enqueue(instance.InstanceID);
+                _freeList.Enqueue(instance);
             }
 
-            private int Instantiate() {
-                Spawnable inst = Object.Instantiate(Prefab, Transform, false);
+            private void Instantiate() {
+                Spawnable inst = Object.Instantiate(Prefab, _transform, false);
                 inst.gameObject.SetActive(false);
-                inst.PoolID = PoolID;
-
-                int instanceID = _instances.Count;
-
-                inst.InstanceID = instanceID;
-                _instances.Add(inst);
-                _freeList.Enqueue(instanceID);
-                return instanceID;
+                inst.PoolID = _poolID;
+                
+                _freeList.Enqueue(inst);
             }
 
             public void ClearInactiveObjects() {
-                foreach (int instanceID in _freeList) {
-                    Spawnable instance = _instances[instanceID];
+                foreach (Spawnable instance in _freeList) {
                     if (instance) {
                         Destroy(instance.gameObject);
                     }
                 }
                 _freeList.Clear();
-
-                _instances.RemoveAll(s => !s);
-                for (int i = 0; i < _instances.Count; i++) {
-                    Spawnable instance = _instances[i];
-                    instance.InstanceID = i;
-                }
             }
         }
     }

@@ -26,49 +26,147 @@ using System.Text;
 using UnityEngine;
 
 namespace Infohazard.Core {
+    /// <summary>
+    /// Provides string constants for builtin Unity tags.
+    /// </summary>
+    /// <remarks>
+    /// To extend with custom tags, see <c>GameTag</c>,
+    /// which you can generate using the command Infohazard > Generate > Update GameTag.cs.
+    /// </remarks>
     public static class Tag {
+        /// <summary>
+        /// The string <c>"Untagged"</c>.
+        /// </summary>
         public const string Untagged = "Untagged";
+        
+        /// <summary>
+        /// The string <c>"Respawn"</c>.
+        /// </summary>
         public const string Respawn = "Respawn";
+        
+        /// <summary>
+        /// The string <c>"Finish"</c>.
+        /// </summary>
         public const string Finish = "Finish";
+        
+        /// <summary>
+        /// The string <c>"EditorOnly"</c>.
+        /// </summary>
         public const string EditorOnly = "EditorOnly";
+        
+        /// <summary>
+        /// The string <c>"MainCamera"</c>.
+        /// </summary>
         public const string MainCamera = "MainCamera";
+        
+        /// <summary>
+        /// The string <c>"Player"</c>.
+        /// </summary>
         public const string Player = "Player";
+        
+        /// <summary>
+        /// The string <c>"GameController"</c>.
+        /// </summary>
         public const string GameController = "GameController";
         
+        /// <summary>
+        /// Array of default tags provided by Unity.
+        /// </summary>
         public static readonly string[] DefaultTags = {
             "Untagged", "Respawn", "Finish", "EditorOnly", "MainCamera", "Player", "GameController",
         };
 
+        /// <summary>
+        /// Set by the generated <c>GameTag</c> script.
+        /// </summary>
         public static string[] GameOverrideTags = null;
-        public static string[] Tags => GameOverrideTags ?? Tag.DefaultTags;
+        
+        /// <summary>
+        /// Array of all default and custom tags in the project. 
+        /// </summary>
+        public static string[] Tags => GameOverrideTags ?? DefaultTags;
     }
     
+    /// <summary>
+    /// Used to select tags in the inspector, including the ability to select multiple tags.
+    /// </summary>
+    /// <remarks>
+    /// Works similar to LayerMask. If you have a custom <c>GameTag</c> script generated,
+    /// your custom tags will be available here too.
+    /// You can find code constants for those tags in <c>GameTagMask</c>.
+    /// Like LayerMask, TagMask is implicitly convertable to and from an integer value (long in this case).
+    /// </remarks>
     [Serializable]
     public struct TagMask : IEquatable<TagMask> {
+        /// <summary>
+        /// Mask value for the Untagged tag.
+        /// </summary>
         public const long UntaggedMask = 1 << 0;
+        
+        /// <summary>
+        /// Mask value for the Respawn tag.
+        /// </summary>
         public const long RespawnMask = 1 << 1;
+        
+        /// <summary>
+        /// Mask value for the Finish tag.
+        /// </summary>
         public const long FinishMask = 1 << 2;
+        
+        /// <summary>
+        /// Mask value for the EditorOnly tag.
+        /// </summary>
         public const long EditorOnlyMask = 1 << 3;
+        
+        /// <summary>
+        /// Mask value for the MainCamera tag.
+        /// </summary>
         public const long MainCameraMask = 1 << 4;
+        
+        /// <summary>
+        /// Mask value for the Player tag.
+        /// </summary>
         public const long PlayerMask = 1 << 5;
+        
+        /// <summary>
+        /// Mask value for the GameController tag.
+        /// </summary>
         public const long GameControllerMask = 1 << 6;
 
         [SerializeField] private long _value;
+        
+        /// <summary>
+        /// The value of the mask as a 64-bit integer.
+        /// </summary>
         public long Value {
             get => _value;
             set => _value = value;
         }
 
+        /// <summary>
+        /// Initialize a new TagMask with the given value.
+        /// </summary>
+        /// <param name="value">The value to initialize with, representing which tags are "on".</param>
         public TagMask(long value) {
             _value = value;
         }
 
         #region Conversions
         
+        /// <summary>
+        /// Convert a TagMask to a long.
+        /// </summary>
+        /// <param name="mask">TagMask to convert.</param>
+        /// <returns>The mask's value.</returns>
         public static implicit operator long(TagMask mask) {
             return mask._value;
         }
 
+        /// <summary>
+        /// Convert a long to a TagMask.
+        /// </summary>
+        /// <param name="mask">The mask value.</param>
+        /// <returns>The created TagMask.</returns>
         public static implicit operator TagMask(long mask) {
             return new TagMask(mask);
         }
@@ -77,42 +175,72 @@ namespace Infohazard.Core {
 
         #region Operators
 
+        /// <summary>
+        /// Apply bitwise AND operator to two TagMasks.
+        /// </summary>
         public static TagMask operator &(in TagMask lhs, in TagMask rhs) {
             return new TagMask(lhs._value & rhs._value);
         }
 
+        /// <summary>
+        /// Apply bitwise AND operator to a TagMask and a long.
+        /// </summary>
         public static TagMask operator &(TagMask lhs, long rhs) {
             return new TagMask(lhs._value & rhs);
         }
-
+        
+        /// <summary>
+        /// Apply bitwise AND operator to a long and a TagMask.
+        /// </summary>
         public static long operator &(long lhs, TagMask rhs) {
             return lhs & rhs._value;
         }
 
+        /// <summary>
+        /// Apply bitwise OR operator to a TagMask and a TagMask.
+        /// </summary>
         public static TagMask operator |(TagMask lhs, TagMask rhs) {
             return new TagMask(lhs._value | rhs._value);
         }
 
+        /// <summary>
+        /// Apply bitwise OR operator to a TagMask and a long.
+        /// </summary>
         public static TagMask operator |(TagMask lhs, long rhs) {
             return new TagMask(lhs._value | rhs);
         }
 
+        /// <summary>
+        /// Apply bitwise OR operator to a long and a TagMask.
+        /// </summary>
         public static long operator |(long lhs, TagMask rhs) {
             return lhs | rhs._value;
         }
 
+        /// <summary>
+        /// Apply bitwise XOR operator to a TagMask and a TagMask.
+        /// </summary>
         public static TagMask operator ^(TagMask lhs, TagMask rhs) {
             return new TagMask(lhs._value ^ rhs._value);
         }
 
+        /// <summary>
+        /// Apply bitwise XOR operator to a TagMask and a long.
+        /// </summary>
         public static TagMask operator ^(TagMask lhs, long rhs) {
             return new TagMask(lhs._value ^ rhs);
         }
 
+        /// <summary>
+        /// Apply bitwise XOR operator to a long and a TagMask.
+        /// </summary>
         public static long operator ^(long lhs, TagMask rhs) {
             return lhs ^ rhs._value;
         }
 
+        /// <summary>
+        /// Apply bitwise NOT operator to a TagMask.
+        /// </summary>
         public static TagMask operator ~(TagMask mask) {
             return new TagMask(~mask._value);
         }
@@ -120,6 +248,8 @@ namespace Infohazard.Core {
         #endregion
 
         private static StringBuilder _toStringBuilder = new StringBuilder();
+        
+        /// <inheritdoc/>
         public override string ToString() {
             bool first = true;
             for (int i = 0; i < Tag.Tags.Length; i++) {
@@ -135,21 +265,40 @@ namespace Infohazard.Core {
             return result;
         }
 
+        /// <inheritdoc cref="System.IEquatable{T}.Equals(T)"/>
         public bool Equals(TagMask other) {
             return _value == other._value;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj) {
             return obj is TagMask other && Equals(other);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode() {
             return _value.GetHashCode();
         }
 
+        /// <summary>
+        /// Gets the index of a given tag in the <see cref="Tag.Tags"/> array.
+        /// </summary>
+        /// <param name="name">Tag name.</param>
+        /// <returns>The index of the tag or -1 if it doesn't exist.</returns>
         public static int NameToTag(string name) => Array.IndexOf(Tag.Tags, name);
+        
+        /// <summary>
+        /// Gets the tag name at the given index in the <see cref="Tag.Tags"/> array.
+        /// </summary>
+        /// <param name="tag">Tag index. Must be in range [0, TAG COUNT - 1].</param>
+        /// <returns>The tag's name.</returns>
         public static string TagToName(int tag) => Tag.Tags[tag];
 
+        /// <summary>
+        /// Get a mask value that contains all the given tag names.
+        /// </summary>
+        /// <param name="names">Names of tags to include in the mask.</param>
+        /// <returns>The created mask.</returns>
         public static long GetMask(params string[] names) {
             long mask = 0;
             for (var i = 0; i < names.Length; i++) {
@@ -165,7 +314,11 @@ namespace Infohazard.Core {
 
             return mask;
         }
-        
+        /// <summary>
+        /// Get a mask value that contains the given tag name.
+        /// </summary>
+        /// <param name="name">Name of tag to include in the mask.</param>
+        /// <returns>The created mask.</returns>
         public static long GetMask(string name) {
             int index = NameToTag(name);
             if (index < 0) {

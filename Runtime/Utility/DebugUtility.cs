@@ -25,12 +25,17 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Infohazard.Core {
+    /// <summary>
+    /// Contains various static methods relating to debugging and diagnostics.
+    /// </summary>
     public static class DebugUtility {
         /// <summary>
-        /// Draw the given Bounds in the scene view for one frame.
+        /// Draw the given Bounds in the scene view.
         /// </summary>
         /// <param name="bounds">Bounds to draw.</param>
-        /// <param name="color">Color to draw.</param>
+        /// <param name="color">Color to use.</param>
+        /// <param name="duration">Time, in seconds, to draw the lines for.</param>
+        /// <param name="depthTest">Whether to depth dest the drawn lines.</param>
         public static void DrawDebugBounds(Bounds bounds, Color color, float duration = 0.0f, bool depthTest = true) {
             Debug.DrawLine(new Vector3(bounds.min.x, bounds.min.y, bounds.min.z), new Vector3(bounds.max.x, bounds.min.y, bounds.min.z), color, duration, depthTest);
             Debug.DrawLine(new Vector3(bounds.min.x, bounds.max.y, bounds.min.z), new Vector3(bounds.max.x, bounds.max.y, bounds.min.z), color, duration, depthTest);
@@ -46,6 +51,15 @@ namespace Infohazard.Core {
             Debug.DrawLine(new Vector3(bounds.min.x, bounds.max.y, bounds.min.z), new Vector3(bounds.min.x, bounds.max.y, bounds.max.z), color, duration, depthTest);
         }
 
+        /// <summary>
+        /// Pause the editor after a given number of frames, using a Coroutine and Debug.Break().
+        /// </summary>
+        /// <remarks>
+        /// Only works in play mode. Will not cause errors if used in a standalone build,
+        /// but will do unnecessary work.
+        /// </remarks>
+        /// <param name="cmp">Component to attach the Coroutine to.</param>
+        /// <param name="frames">Number of frames to wait before pausing.</param>
         public static void DebugBreakAfterFrames(this MonoBehaviour cmp, int frames) {
             if (frames == 0) {
                 Debug.Break();

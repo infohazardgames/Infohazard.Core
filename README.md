@@ -1,6 +1,10 @@
-# Core: a collection of useful functionality for Unity, which is used by my other packages.
+# Infohazard.Core: A Unity Utility Library
 
-### Documentation: https://docs.google.com/document/d/1ag-HviqtTaPg28STD84CGzEHP5Tn0f6Ad7H4PndT9Pw/edit?usp=sharing
+### Documentation:
+
+#### [Package Overview](https://docs.google.com/document/d/1ag-HviqtTaPg28STD84CGzEHP5Tn0f6Ad7H4PndT9Pw/edit?usp=sharing)
+
+#### [API Docs](https://www.infohazardgames.com/docs/Infohazard.Core/html/)
 
 ### Installation:
 
@@ -37,4 +41,9 @@ If you wish to make changes to the library without dealing with a git submodule 
 1. In the main page for this repo, click on Code > Download Zip.
 2. Extract the zip on your computer.
 3. Make a HyperNav folder under your project's Assets folder.
-4. Copy the `Editor` and `Runtime` folders from the extracted zip to the newly created HyperNav volder.
+4. Copy the `Editor` and `Runtime` folders from the extracted zip to the newly created HyperNav folder.
+
+#### Method 4 - Asset Store
+
+If you’d rather use the asset store than the package manager, you can get the project at LINK TBD.
+Simply add it to the project as you would any other asset.

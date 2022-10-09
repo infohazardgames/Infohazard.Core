@@ -25,10 +25,24 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Infohazard.Core {
+    /// <summary>
+    /// A list used to organize unique names used by objects.
+    /// </summary>
+    /// <remarks>
+    /// You can have one or many UniqueNameLists in your project, it is totally up to you.
+    /// When selecting a unique name for an object,
+    /// you will have the option to create a new one in any UniqueNameList.
+    /// </remarks>
     [CreateAssetMenu(menuName = "Infohazard/Unique Name List")]
     public class UniqueNameList : ScriptableObject {
+        /// <summary>
+        /// (Serialized) All unique name assets in this list.
+        /// </summary>
         [SerializeField, EditNameOnly] private UniqueNameListEntry[] _entries;
 
+        /// <summary>
+        /// All unique name assets in this list.
+        /// </summary>
         public IReadOnlyList<UniqueNameListEntry> Entries => _entries;
     }
 }

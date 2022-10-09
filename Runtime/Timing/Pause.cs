@@ -29,24 +29,31 @@ namespace Infohazard.Core {
     /// </summary>
     /// <remarks>
     /// Any actions that should only happen when the game is not paused should check Pause.paused.
-    /// Controllers and motors will not have DoInput, DoOutput, and PostOutput called if paused.
     /// Can be used statically if pause is controlled elsewhere,
-    /// or placed as a component to automatically pause when a button is pressed.
-    /// For creating a pause menu, see PauseMenu.cs.
+    /// or placed as a component to pause the game from a UnityEvent.
+    /// The game will automatically unpause when a new scene is loaded.
     /// </remarks>
     public static class Pause {
         private static bool _paused;
         private static float _timeScale;
 
+        /// <summary>
+        /// Invoked when the game pauses.
+        /// </summary>
         public static event Action GamePaused;
+        
+        /// <summary>
+        /// Invoked when the game un-pauses.
+        /// </summary>
         public static event Action GameResumed;
 
         /// <summary>
         /// Controls paused state of the game. 
-        /// This cannot completely prevent game actions from happening, but it does the following:
-        /// - Sets Time.timeScale to 0 so that Physics and animation will stop.
-        /// - Disables all Motors and Controllers from updating.
         /// </summary>
+        /// <remarks>
+        /// This cannot completely prevent game actions from happening,
+        /// but it does sets Time.timeScale to 0 so that Physics and animation will stop.
+        /// </remarks>
         public static bool Paused {
             get => _paused;
             set {

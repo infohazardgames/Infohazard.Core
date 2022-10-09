@@ -30,11 +30,17 @@ using UnityEditorInternal;
 using UnityEngine;
 
 namespace Infohazard.Core.Editor {
+    /// <summary>
+    /// Class used to generate the GameTag.cs file to use your custom tags in code.
+    /// </summary>
+    /// <remarks>
+    /// To generate this file, use the menu item Infohazard > Generate > Update GameTag.cs.
+    /// </remarks>
     [InitializeOnLoad]
     public static class TagsGenerator {
-        public const string CheckTagsPref = "CheckTags";
+        private const string CheckTagsPref = "CheckTags";
 
-        public const string Newline = @"
+        private const string Newline = @"
 ";
         private const string TagTemplate = "        public const string {0} = \"{1}\";" + Newline;
         private const string TagMaskTemplate = "        public const long {0}Mask = 1 << {1};" + Newline;
@@ -88,16 +94,22 @@ namespace Infohazard.Core {{
             }
         }
 
-        [MenuItem("Infohazard/Generate/Update Tag Enum")]
+        /// <summary>
+        /// Generate the GameTag file.
+        /// </summary>
+        [MenuItem("Infohazard/Generate/Update GameTag.cs")]
         public static void Generate() {
-            if (EditorUtility.DisplayDialog("Update Tag Enum", "This will create or overwrite the file Infohazard.Core.Data/GameTag.cs. This may produce some errors in the console. Don't worry about it.", "OK", "Cancel")) {
+            if (EditorUtility.DisplayDialog("Update GameTag.cs", "This will create or overwrite the file Infohazard.Core.Data/GameTag.cs. This may produce some errors in the console. Don't worry about it.", "OK", "Cancel")) {
                 DoGenerate();
             }
         }
 
-        [MenuItem("Infohazard/Generate/Remove Tag Enum")]
+        /// <summary>
+        /// Remove the GameTag file.
+        /// </summary>
+        [MenuItem("Infohazard/Generate/Remove GameTag.cs")]
         public static void Remove() {
-            if (EditorUtility.DisplayDialog("Remove Tag Enum", "This will delete the generated GameTag.cs file, and revert to using only the builtin tags.", "OK", "Cancel")) {
+            if (EditorUtility.DisplayDialog("Remove GameTag.cs", "This will delete the generated GameTag.cs file, and revert to using only the builtin tags.", "OK", "Cancel")) {
                 DoRemove();
             }
         }

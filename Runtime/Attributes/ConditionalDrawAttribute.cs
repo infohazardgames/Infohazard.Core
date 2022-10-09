@@ -25,10 +25,9 @@ using UnityEngine;
 
 namespace Infohazard.Core {
     /// <summary>
-    /// Attribute that tells Unity to only draw a property when a given condition is true.
+    /// Attribute draws a property when a given condition is true.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property |
-        AttributeTargets.Class | AttributeTargets.Struct, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Field)]
     public class ConditionalDrawAttribute : PropertyAttribute {
         /// <summary>
         /// ConditionalAttribute that requires a serialized boolean field to be true.
@@ -48,8 +47,19 @@ namespace Infohazard.Core {
             IsEqual = isEqual;
         }
 
+        /// <summary>
+        /// The serialized field to check.
+        /// </summary>
         public string Condition { get; }
+        
+        /// <summary>
+        /// The value to compare the Condition field to.
+        /// </summary>
         public object Value { get; }
+        
+        /// <summary>
+        /// Whether the value of the condition field should be equal to the given value in order to draw.
+        /// </summary>
         public bool IsEqual { get; }
     }
 
