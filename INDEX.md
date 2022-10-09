@@ -40,7 +40,7 @@ Using the Package Manager is the easiest way to install HyperNav to your project
 1. In Unity, open the Package Manager (Window > Package Manager).
 2. Click the '+' button in the top right of the window.
 3. Click "Add package from git URL...".
-4. Paste in `https://github.com/vcmiller/Infohazard.Core.git`.
+4. Paste in `https://github.com/infohazardgames/Infohazard.Core.git`.
 5. Click Add.
 
 ### Method 2 - Git Submodule
@@ -48,7 +48,7 @@ Using the Package Manager is the easiest way to install HyperNav to your project
 Using a git submodule is an option if you are using git for your project source control. This method will enable you to make changes to the package, but those changes will need to be tracked in a separate git repository.
 
 1. Close the Unity Editor.
-2. Using your preferred git client or the command line, add `https://github.com/vcmiller/Infohazard.Core.git` as a submodule in your project's Packages folder.
+2. Using your preferred git client or the command line, add `https://github.com/infohazardgames/Infohazard.Core.git` as a submodule in your project's Packages folder.
 3. Re-open the Unity Editor.
 
 If you wish to make changes when you use this method, you'll need to fork the HyperNav repo. Once you've made your changes, you can submit a pull request to get those changes merged back to this repository if you wish.

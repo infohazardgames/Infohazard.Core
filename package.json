@@ -6,7 +6,7 @@
   "description": "A collection of useful functionality for Unity, which is used by my other packages.",
   "keywords": [],
   "repository": {
-    "url": "https://github.com/vcmiller/Infohazard.Core.git",
+    "url": "https://github.com/infohazardgames/Infohazard.Core.git",
     "type": "git",
     "revision": "ef1bd531b680871f97a0a8aae37ace80448b6291"
   }
