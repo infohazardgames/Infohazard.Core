@@ -1,0 +1,3 @@
+root = true
+[*]
+file_header_template=This file is part of the Infohazard.Core package.\nCopyright (c) 2022-present Vincent Miller (Infohazard Games).

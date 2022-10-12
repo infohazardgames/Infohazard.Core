@@ -1,27 +1,9 @@
-﻿// The MIT License (MIT)
-// 
-// Copyright (c) 2022-present Vincent Miller
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+﻿// This file is part of the Infohazard.Core package.
+// Copyright (c) 2022-present Vincent Miller (Infohazard Games).
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace Infohazard.Core {
@@ -74,6 +56,28 @@ namespace Infohazard.Core {
                 yield return null;
             }
             Debug.Break();
+        }
+
+        /// <summary>
+        /// Checks whether in play mode (including standalone), and prints an error if it is.
+        /// </summary>
+        /// <remarks>
+        /// Used to ensure certain properties are not edited while playing.
+        /// </remarks>
+        /// <param name="propertySet">Whether the caller is a property set accessor (changes error log).</param>
+        /// <param name="callerName">Set automatically, do not supply a value for this parameter.</param>
+        /// <returns>True if in play mode.</returns>
+        public static bool CheckPlaying(bool propertySet = false, [CallerMemberName] string callerName = "") {
+            if (Application.isPlaying) {
+                if (propertySet) {
+                    Debug.LogError($"{callerName} cannot be set while game is running.");
+                } else {
+                    Debug.LogError($"{callerName} cannot be used while game is running.");
+                }
+                return true;
+            }
+
+            return false;
         }
     }
 }

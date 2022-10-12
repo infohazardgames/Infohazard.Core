@@ -1,24 +1,5 @@
-﻿// The MIT License (MIT)
-// 
-// Copyright (c) 2022-present Vincent Miller
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+﻿// This file is part of the Infohazard.Core package.
+// Copyright (c) 2022-present Vincent Miller (Infohazard Games).
 
 using System;
 using UnityEngine;
@@ -311,6 +292,11 @@ namespace Infohazard.Core {
         /// Find the point on a bounded line segment where it is nearest to a position,
         /// and return whether that point is in the segment's bounds.
         /// </summary>
+        /// <remarks>
+        /// Does not return points on the ends of the segment.
+        /// If the nearest point on the segment's line is outside the segment,
+        /// will fail and not return a valid point.
+        /// </remarks>
         /// <param name="v1">The start of the segment.</param>
         /// <param name="v2">The end of the segment.</param>
         /// <param name="point">The point to search for.</param>
@@ -328,11 +314,78 @@ namespace Infohazard.Core {
             pointOnSegment = v1 + proj;
             return true;
         }
+        
+        /// <summary>
+        /// Find the point on a triangle (including its bounds) where it is nearest to a position.
+        /// </summary>
+        /// <remarks>
+        /// If nearest point is on the triangle's bounds, that point will be returned,
+        /// unlike <see cref="GetNearestPointOnTriangle"/>.
+        /// </remarks>
+        /// <param name="v1">The first triangle point.</param>
+        /// <param name="v2">The second triangle point.</param>
+        /// <param name="v3">The third triangle point.</param>
+        /// <param name="point">The point to search for.</param>
+        /// <returns>The nearest point on the triangle to the given point.</returns>
+        public static Vector3 GetNearestPointOnTriangleIncludingBounds(Vector3 v1, Vector3 v2, Vector3 v3,
+                                                                       Vector3 point) {
+            
+            // Helper function to check a single edge of the triangle.
+            static bool CheckNearestPointOnTriangleEdge(Vector3 v1, Vector3 v2, Vector3 point, 
+                                                        ref Vector3 nearestOnEdge, ref float shortestEdgeSqrDist) {
+            
+                if (GetNearestPointOnSegment(v1, v2, point, out Vector3 edgePos)) {
+                    CheckTrianglePointNearest(edgePos, point, ref nearestOnEdge, ref shortestEdgeSqrDist);
+                    return true;
+                }
+
+                return false;
+            }
+
+            // Helper function to check a single point.
+            static void CheckTrianglePointNearest(Vector3 pos, Vector3 point,
+                                                  ref Vector3 nearestOnEdge, ref float shortestEdgeSqrDist) {
+            
+                float sqrDist = Vector3.SqrMagnitude(pos - point);
+                if (sqrDist < shortestEdgeSqrDist) {
+                    nearestOnEdge = pos;
+                    shortestEdgeSqrDist = sqrDist;
+                }
+            }
+            
+            // Check the triangle itself to see if the nearest point is within the triangle.
+            if (GetNearestPointOnTriangle(v1, v2, v3, point, out Vector3 tPos)) {
+                return tPos;
+            }
+
+            Vector3 nearest = Vector3.zero;
+            float nearestSqrDist = float.PositiveInfinity;
+            
+            // Check each edge of the triangle to see if the nearest point is within that edge.
+            bool e12 = CheckNearestPointOnTriangleEdge(v1, v2, point, ref nearest, ref nearestSqrDist);
+            bool e23 = CheckNearestPointOnTriangleEdge(v2, v3, point, ref nearest, ref nearestSqrDist);
+            bool e31 = CheckNearestPointOnTriangleEdge(v3, v1, point, ref nearest, ref nearestSqrDist);
+            
+            // Check each vertex of the triangle to see if they are closer than the current best point.
+            // Each vertex only needs to be checked if neither adjacent edge has a valid nearest point.
+            // If either adjacent edge does have a valid nearest point,
+            // then a closer point than that vertex has already been found.
+            if (!e12 && !e31) CheckTrianglePointNearest(v1, point, ref nearest, ref nearestSqrDist);
+            if (!e12 && !e23) CheckTrianglePointNearest(v2, point, ref nearest, ref nearestSqrDist);
+            if (!e23 && !e31) CheckTrianglePointNearest(v3, point, ref nearest, ref nearestSqrDist);
+            
+            return nearest;
+        }
 
         /// <summary>
         /// Find the point on a triangle where it is nearest to a position,
-        /// and return whether that point is in the triangles's bounds.
+        /// and return whether that point is in the triangle's bounds.
         /// </summary>
+        /// <remarks>
+        /// Does not return points on the edge of the triangle.
+        /// If the nearest point on the triangle's plane is outside the triangle,
+        /// will fail and not return a valid point.
+        /// </remarks>
         /// <param name="v1">The first triangle point.</param>
         /// <param name="v2">The second triangle point.</param>
         /// <param name="v3">The third triangle point.</param>
