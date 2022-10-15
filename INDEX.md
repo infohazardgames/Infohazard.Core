@@ -24,12 +24,14 @@
 
 ## Introduction
 
-Infohazard.Core is a collection of systems and utilities that I’ve found super helpful in making many different kinds of games, so I hope you find it helpful too! This document will cover setup and basic usage of the code in Infohazard.Core. You can find full API documentation in the code and at LINK TBD.
+Infohazard.Core is a collection of systems and utilities that I’ve found super helpful in making many different kinds of games, so I hope you find it helpful too! This document will cover setup and basic usage of the code in Infohazard.Core.
+You can find full API documentation here and in the code.
 
 ## License
 
-Infohazard.Core uses the [MIT license](https://opensource.org/licenses/MIT), which means you can use it in any project you want, including commercial projects. You are also welcome to use it as a dependency for your own assets, but I would prefer that you direct users to my asset store page or github repo rather than embedding it in your packages.
-
+If Infohazard.Core is acquired from the Unity Asset Store, you must follow the Unity Asset Store license.
+The open-source repository uses the [MIT license](https://opensource.org/licenses/MIT).
+You are welcome to have your own packages or assets depend on this package.
 
 ## Installation
 

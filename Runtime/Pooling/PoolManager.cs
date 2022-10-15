@@ -82,17 +82,27 @@ namespace Infohazard.Core {
             
             private readonly int _poolID;
             private readonly Transform _transform;
-            private readonly Queue<Spawnable> _freeList = new Queue<Spawnable>();
+            private readonly Pool<Spawnable> _pool;
 
             internal SpawnPool(Spawnable prefab, int poolID, Transform transform) {
                 Prefab = prefab;
                 _poolID = poolID;
                 _transform = transform;
+
+                _pool = new Pool<Spawnable>(() => {
+                    Spawnable inst = Instantiate(Prefab, _transform, false);
+                    inst.gameObject.SetActive(false);
+                    inst.PoolID = _poolID;
+                    return inst;
+                }) {
+                    DestroyAction = inst => {
+                        Destroy(inst.gameObject);
+                    },
+                };
             }
 
             internal Spawnable Spawn(Vector3? position, Quaternion? rotation, Transform parent, bool inWorldSpace, ulong persistedInstanceID, Scene? scene) {
-                if (_freeList.Count == 0) Instantiate();
-                Spawnable instance = _freeList.Dequeue();
+                Spawnable instance = _pool.Get();
                 
                 Debug.Assert(!instance.IsSpawned, $"Trying to spawn already-spawned instance {instance}");
 
@@ -116,24 +126,11 @@ namespace Infohazard.Core {
                 }
                 instance.transform.SetParent(_transform, false);
                 instance.gameObject.SetActive(false);
-                _freeList.Enqueue(instance);
-            }
-
-            private void Instantiate() {
-                Spawnable inst = Object.Instantiate(Prefab, _transform, false);
-                inst.gameObject.SetActive(false);
-                inst.PoolID = _poolID;
-                
-                _freeList.Enqueue(inst);
+                _pool.Release(instance);
             }
 
             public void ClearInactiveObjects() {
-                foreach (Spawnable instance in _freeList) {
-                    if (instance) {
-                        Destroy(instance.gameObject);
-                    }
-                }
-                _freeList.Clear();
+                _pool.Clear();
             }
         }
     }

@@ -34,9 +34,9 @@ namespace Infohazard.Core {
         [SerializeField] private float _interval;
         
         /// <summary>
-        /// What value for time that the timer uses (scaled, unscaled, or realtime).
+        /// (Serialized) What value for time that the timer uses (scaled, unscaled, or realtime).
         /// </summary>
-        [SerializeField] private PassiveTimerMode _mode;
+        [SerializeField] private TimeMode _mode;
         
         /// <summary>
         /// Initial interval to set the timer for in seconds.
@@ -64,7 +64,7 @@ namespace Infohazard.Core {
         /// <summary>
         /// What value for time that the timer uses (scaled, unscaled, or realtime).
         /// </summary>
-        public PassiveTimerMode Mode {
+        public TimeMode Mode {
             get => _mode;
             set => _mode = value;
         }
@@ -123,7 +123,7 @@ namespace Infohazard.Core {
         /// </remarks>
         public bool DidIntervalEndThisFrame {
             get {
-                if (_mode == PassiveTimerMode.Realtime) return false;
+                if (_mode == TimeMode.Realtime) return false;
                 return HasIntervalStarted && IsIntervalEnded && CurrentTime - DeltaTime <= IntervalStartTime + _interval;
             }
         }
@@ -135,9 +135,9 @@ namespace Infohazard.Core {
         public float CurrentTimeWithoutPause {
             get {
                 return _mode switch {
-                    PassiveTimerMode.Realtime => Time.realtimeSinceStartup,
-                    PassiveTimerMode.Scaled => Time.time,
-                    PassiveTimerMode.Unscaled => Time.unscaledTime,
+                    TimeMode.Realtime => Time.realtimeSinceStartup,
+                    TimeMode.Scaled => Time.time,
+                    TimeMode.Unscaled => Time.unscaledTime,
                     _ => throw new ArgumentOutOfRangeException()
                 };
             }
@@ -162,8 +162,8 @@ namespace Infohazard.Core {
                 if (_isPaused) return 0;
                 
                 return _mode switch {
-                    PassiveTimerMode.Scaled => Time.deltaTime,
-                    PassiveTimerMode.Unscaled => Time.unscaledDeltaTime,
+                    TimeMode.Scaled => Time.deltaTime,
+                    TimeMode.Unscaled => Time.unscaledDeltaTime,
                     _ => throw new ArgumentOutOfRangeException()
                 };
             }
@@ -203,7 +203,7 @@ namespace Infohazard.Core {
         /// <param name="interval">The initial and repeat interval.</param>
         /// <param name="mode">Time mode to use.</param>
         /// <param name="initialize">Whether to initialize the timer and start counting immediately.</param>
-        public PassiveTimer(float interval, PassiveTimerMode mode = PassiveTimerMode.Scaled, bool initialize = true) :
+        public PassiveTimer(float interval, TimeMode mode = TimeMode.Scaled, bool initialize = true) :
             this(interval, interval, mode, initialize) { }
 
         /// <summary>
@@ -213,7 +213,7 @@ namespace Infohazard.Core {
         /// <param name="interval">The repeat interval.</param>
         /// <param name="mode">Time mode to use.</param>
         /// <param name="initialize">Whether to initialize the timer and start counting immediately.</param>
-        public PassiveTimer(float initialInterval, float interval, PassiveTimerMode mode = PassiveTimerMode.Scaled, bool initialize = true) {
+        public PassiveTimer(float initialInterval, float interval, TimeMode mode = TimeMode.Scaled, bool initialize = true) {
             _initialInterval = initialInterval;
             _interval = interval;
             _mode = mode;
@@ -273,25 +273,25 @@ namespace Infohazard.Core {
         public void EndInterval() {
             IntervalStartTime = CurrentTime - _interval;
         }
-    }
 
-    /// <summary>
-    /// The various modes available for timers.
-    /// </summary>
-    public enum PassiveTimerMode {
         /// <summary>
-        /// Use Unity scaled time (Time.time).
+        /// The various modes available for timers.
         /// </summary>
-        Scaled,
+        public enum TimeMode {
+            /// <summary>
+            /// Use Unity scaled time (Time.time).
+            /// </summary>
+            Scaled,
         
-        /// <summary>
-        /// Use Unity unscaled time (Time.unscaledTime).
-        /// </summary>
-        Unscaled,
+            /// <summary>
+            /// Use Unity unscaled time (Time.unscaledTime).
+            /// </summary>
+            Unscaled,
         
-        /// <summary>
-        /// Use Unity realtime (Time.realtimeSinceStartup).
-        /// </summary>
-        Realtime,
+            /// <summary>
+            /// Use Unity realtime (Time.realtimeSinceStartup).
+            /// </summary>
+            Realtime,
+        }
     }
 }

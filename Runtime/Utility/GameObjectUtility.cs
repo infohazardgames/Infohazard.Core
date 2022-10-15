@@ -169,6 +169,16 @@ namespace Infohazard.Core {
                 Object.DestroyImmediate(transform.GetChild(i).gameObject);
             }
         }
+        
+        /// <summary>
+        /// Despawn all of the child GameObjects of a Transform.
+        /// </summary>
+        /// <param name="transform">Transform to despawn children of.</param>
+        public static void DespawnChildren(this Transform transform) {
+            for (int i = transform.childCount - 1; i >= 0; i--) {
+                Spawnable.Despawn(transform.GetChild(i).gameObject);
+            }
+        }
 
         /// <summary>
         /// Like GetComponentInParent, but more convenient if using in conditionals and also using the component value.
