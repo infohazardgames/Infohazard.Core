@@ -362,5 +362,60 @@ namespace Infohazard.Core.Editor {
                 return false;
             }
         }
+        
+        /// <summary>
+        /// Instantiate the given prefab in the scene, as a child of the selected GameObject if there is one.
+        /// </summary>
+        /// <param name="path">Prefab path to load.</param>
+        /// <param name="name">Name to assign to the object, or null.</param>
+        /// <returns>The instantiated GameObject.</returns>
+        public static GameObject InstantiatePrefabInScene(string path, string name) {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            GameObject inst = Object.Instantiate(prefab);
+            if (Selection.activeGameObject) {
+                inst.transform.SetParentAndReset(Selection.activeGameObject.transform);
+            }
+
+            if (!string.IsNullOrEmpty(name)) {
+                inst.name = name;
+            }
+            
+            Undo.RegisterCreatedObjectUndo(inst, $"Create {inst.name}");
+            return inst;
+        }
+
+        /// <summary>
+        /// Create an empty GameObject in the scene, as a child of the selected GameObject if there is one.
+        /// </summary>
+        /// <param name="name">Name to assign to the object.</param>
+        /// <returns>The created GameObject.</returns>
+        public static GameObject CreateGameObjectInScene(string name) {
+            GameObject inst = new GameObject(name);
+            if (Selection.activeGameObject) {
+                inst.transform.SetParentAndReset(Selection.activeGameObject.transform);
+            }
+            
+            Undo.RegisterCreatedObjectUndo(inst, $"Create {name}");
+            return inst;
+        }
+
+        /// <summary>
+        /// Create a GameObject in the scene with a given component,
+        /// as a child of the selected GameObject if there is one.
+        /// </summary>
+        /// <param name="name">Name to assign to the object.</param>
+        /// <typeparam name="T">The type of component to add.</typeparam>
+        /// <returns>The created component.</returns>
+        public static T CreateGameObjectInSceneWithComponent<T>(string name) where T : Component {
+            GameObject inst = new GameObject(name);
+            if (Selection.activeGameObject) {
+                inst.transform.SetParentAndReset(Selection.activeGameObject.transform);
+            }
+
+            T component = inst.AddComponent<T>();
+            Undo.RegisterCreatedObjectUndo(inst, $"Create {name}");
+            Undo.RegisterCreatedObjectUndo(component, $"Create {name}");
+            return component;
+        }
     }
 }
