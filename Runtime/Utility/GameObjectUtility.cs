@@ -144,7 +144,7 @@ namespace Infohazard.Core {
         /// <param name="position">The position (if null, do not set).</param>
         /// <param name="rotation">The rotation (if null, do not set).</param>
         /// <param name="scale">The scale (if null, do not set).</param>
-        private static void Initialize(this Transform transform, Vector3? position, Quaternion? rotation, Vector3? scale) {
+        public static void Initialize(this Transform transform, Vector3? position = null, Quaternion? rotation = null, Vector3? scale = null) {
             if (position != null) transform.localPosition = position.Value;
             if (rotation != null) transform.localRotation = rotation.Value;
             if (scale != null) transform.localScale = scale.Value;
