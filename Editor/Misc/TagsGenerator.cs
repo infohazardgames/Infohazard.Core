@@ -78,7 +78,7 @@ namespace Infohazard.Core {{
         /// <summary>
         /// Generate the GameTag file.
         /// </summary>
-        [MenuItem("Infohazard/Generate/Update GameTag.cs")]
+        [MenuItem("Tools/Infohazard/Generate/Update GameTag.cs", priority = 0)]
         public static void Generate() {
             if (EditorUtility.DisplayDialog("Update GameTag.cs", "This will create or overwrite the file Infohazard.Core.Data/GameTag.cs. This may produce some errors in the console. Don't worry about it.", "OK", "Cancel")) {
                 DoGenerate();
@@ -88,7 +88,7 @@ namespace Infohazard.Core {{
         /// <summary>
         /// Remove the GameTag file.
         /// </summary>
-        [MenuItem("Infohazard/Generate/Remove GameTag.cs")]
+        [MenuItem("Tools/Infohazard/Generate/Remove GameTag.cs", priority = 0)]
         public static void Remove() {
             if (EditorUtility.DisplayDialog("Remove GameTag.cs", "This will delete the generated GameTag.cs file, and revert to using only the builtin tags.", "OK", "Cancel")) {
                 DoRemove();
