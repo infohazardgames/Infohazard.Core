@@ -2,9 +2,11 @@
 // Copyright (c) 2022-present Vincent Miller (Infohazard Games).
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Infohazard.Core;
 using UnityEditor;
 using UnityEditorInternal;
@@ -23,9 +25,9 @@ namespace Infohazard.Core.Editor {
 
         private const string Newline = @"
 ";
-        private const string TagTemplate = "        public const string {0} = \"{1}\";" + Newline;
+        private const string TagTemplate = "        public const string {0} = @\"{1}\";" + Newline;
         private const string TagMaskTemplate = "        public const long {0}Mask = 1 << {1};" + Newline;
-        private const string TagArrayTemplate = "\"{0}\", ";
+        private const string TagArrayTemplate = "@\"{0}\", ";
 
         private const string Template = @"using System;
 using UnityEngine;
@@ -64,7 +66,15 @@ namespace Infohazard.Core {{
             }
             string[] tags = InternalEditorUtility.tags;
 
-            bool needsRegen = !Enumerable.SequenceEqual(tags, Tag.Tags);
+            bool needsRegen = false;
+            for (int i = 0; i < 64; i++) {
+                if (i == tags.Length && i == Tag.Tags.Length) break;
+
+                if (i >= tags.Length || i >= Tag.Tags.Length || tags[i] != Tag.Tags[i]) {
+                    needsRegen = true;
+                    break;
+                }
+            }
 
             if (needsRegen) {
                 if (EditorUtility.DisplayDialog("Generate Tags", "Do you want to generate a GameTag.cs file?", "OK", "No")) {
@@ -74,13 +84,13 @@ namespace Infohazard.Core {{
                 }
             }
         }
-
+        
         /// <summary>
         /// Generate the GameTag file.
         /// </summary>
         [MenuItem("Tools/Infohazard/Generate/Update GameTag.cs", priority = 0)]
         public static void Generate() {
-            if (EditorUtility.DisplayDialog("Update GameTag.cs", "This will create or overwrite the file Infohazard.Core.Data/GameTag.cs. This may produce some errors in the console. Don't worry about it.", "OK", "Cancel")) {
+            if (EditorUtility.DisplayDialog("Update GameTag.cs", "This will create or overwrite the file Infohazard.Core.Data/GameTag.cs.", "OK", "Cancel")) {
                 DoGenerate();
             }
         }
@@ -104,13 +114,44 @@ namespace Infohazard.Core {{
             string tagArray = string.Empty;
             
             string[] tags = InternalEditorUtility.tags;
+
+            int maskTags = 0;
+
+            HashSet<string> tagVars = new HashSet<string>();
             for (int i = 0; i < tags.Length; i++) {
                 string tag = tags[i];
+                
+                // Remove all characters except letters, numbers, and underscore.
+                string varName = Regex.Replace(tag, "\\W", "");
+                
+                // Strings are generated as verbatim, so replace single quotes with double quotes.
+                string tagString = tag.Replace("\"", "\"\"");
 
-                string varName = tag.Replace(" ", "");
-                tagDecls += string.Format(TagTemplate, varName, tag);
-                tagMasks += string.Format(TagMaskTemplate, varName, i);
-                tagArray += string.Format(TagArrayTemplate, tag);
+                bool generateMask = maskTags < 64;
+
+                // Dont create empty variables or duplicate variables.
+                if (!string.IsNullOrEmpty(varName) && tagVars.Add(varName)) {
+                    // Ensure first character is not a digit.
+                    if (char.IsDigit(varName[0])) {
+                        varName = '_' + varName;
+                    }
+
+                    // Add @ character in case var name is a keyword.
+                    if (!varName.StartsWith('@')) {
+                        varName = '@' + varName;
+                    }
+                    
+                    tagDecls += string.Format(TagTemplate, varName, tagString);
+
+                    if (generateMask) {
+                        tagMasks += string.Format(TagMaskTemplate, varName, maskTags);
+                    }
+                }
+
+                if (generateMask) {
+                    tagArray += string.Format(TagArrayTemplate, tagString);
+                    maskTags++;
+                }
             }
             
             string generated = string.Format(Template, tagDecls, tagMasks, tagArray);
