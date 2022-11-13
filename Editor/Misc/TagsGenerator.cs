@@ -137,9 +137,7 @@ namespace Infohazard.Core {{
                     }
 
                     // Add @ character in case var name is a keyword.
-                    if (!varName.StartsWith('@')) {
-                        varName = '@' + varName;
-                    }
+                    varName = '@' + varName;
                     
                     tagDecls += string.Format(TagTemplate, varName, tagString);
 
