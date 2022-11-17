@@ -34,6 +34,37 @@ namespace Infohazard.Core {
         }
 
         /// <summary>
+        /// Draw the given circle in the scene view.
+        /// </summary>
+        /// <param name="point">Center of the circle.</param>
+        /// <param name="normal">Normal that is perpendicular to the circle.</param>
+        /// <param name="radius">Radius of the circle.</param>
+        /// <param name="color">Color to use.</param>
+        /// <param name="duration">Time, in seconds, to draw the circle for.</param>
+        /// <param name="depthTest">Whether to depth dest the drawn circle.</param>
+        /// <param name="pointCount">How many points the circle will consist of.</param>
+        public static void DrawDebugCircle(Vector3 point, Vector3 normal, float radius,
+                                           Color color, float duration = 0.0f, bool depthTest = true, int pointCount = 32) {
+
+            Vector3 up = normal.GetPerpendicularVector();
+            Vector3 right = Vector3.Cross(normal, up);
+
+            float anglePer = 360.0f / (pointCount - 1);
+
+            Vector3 last = point + up * radius;
+            for (int i = 1; i < pointCount; i++) {
+                float angle = i * anglePer;
+
+                float sin = Mathf.Sin(Mathf.Deg2Rad * angle);
+                float cos = Mathf.Cos(Mathf.Deg2Rad * angle);
+
+                Vector3 cur = point + up * (cos * radius) + right * (sin * radius);
+                Debug.DrawLine(last, cur, color, duration, depthTest);
+                last = cur;
+            }
+        }
+
+        /// <summary>
         /// Pause the editor after a given number of frames, using a Coroutine and Debug.Break().
         /// </summary>
         /// <remarks>

@@ -500,6 +500,17 @@ namespace Infohazard.Core {
         }
 
         /// <summary>
+        /// Returns a vector that is perpendicular to the given vector.
+        /// </summary>
+        /// <param name="vector">Input vector.</param>
+        /// <returns>A perpendicular vector.</returns>
+        public static Vector3 GetPerpendicularVector(this Vector3 vector) {
+            Vector3 crossRight = Vector3.Cross(vector, Vector3.right);
+            if (crossRight.sqrMagnitude > 0) return crossRight.normalized;
+            return Vector3.Cross(vector, Vector3.up).normalized;
+        }
+
+        /// <summary>
         /// Dot product of two int vectors.
         /// </summary>
         public static int Dot(Vector3Int v1, Vector3Int v2) {
