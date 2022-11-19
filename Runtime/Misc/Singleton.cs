@@ -38,6 +38,7 @@ namespace Infohazard.Core {
                     _instance = FindObjectOfType<T>();
                     if (_instance == null) {
                         Debug.LogError($"{typeof(T)} instance not found!");
+                        return null;
                     }
 
                     _instance.Initialize();
