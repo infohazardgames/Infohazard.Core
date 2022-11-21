@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * DebugUtility.DrawDebugCircle.
 * MathUtility.GetPerpendicularVector.
 
+### Fixed
+* Fixed TagMaskEditor messing up values when editing multiple objects.
+
 ## [1.1.0] - 2022-11-13
 
 ### Changed

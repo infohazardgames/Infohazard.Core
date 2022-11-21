@@ -11,7 +11,13 @@ namespace Infohazard.Core.Editor {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             GUIContent realLabel = EditorGUI.BeginProperty(position, label, property);
             SerializedProperty prop = property.FindPropertyRelative("_value");
-            prop.longValue = EditorGUI.MaskField(position, realLabel, (int)prop.longValue, Tag.Tags);
+            
+            EditorGUI.BeginChangeCheck();
+            long newValue = EditorGUI.MaskField(position, realLabel, (int)prop.longValue, Tag.Tags);
+            if (EditorGUI.EndChangeCheck()) {
+                prop.longValue = newValue;
+            }
+            
             EditorGUI.EndProperty();
         }
     }
