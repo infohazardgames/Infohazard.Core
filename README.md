@@ -5,7 +5,7 @@
 - [Infohazard.Core Documentation](#infohazardcore-documentation)
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
-  - [Documentation](#documentation)
+  - [Documentation and Support](#documentation-and-support)
   - [License](#license)
   - [Installation](#installation)
     - [Method 1 - Package Manager](#method-1---package-manager)
@@ -30,11 +30,13 @@
 Infohazard.Core is a collection of systems and utilities that I’ve found super helpful in making many different kinds of games, so I hope you find it helpful too! This document will cover setup and basic usage of the code in Infohazard.Core.
 You can find full API documentation here and in the code.
 
-## Documentation
+## Documentation and Support
 
 [API Docs](https://www.infohazardgames.com/docs/Infohazard.Core/html/)
 
 [Tutorial Playlist](https://www.youtube.com/playlist?list=PLpnNr8QNHD90TDqamYqA95ENh4eIQVvhS)
+
+[Discord](https://discord.gg/QF6yNFk7)
 
 ## License
 
