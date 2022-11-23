@@ -1,7 +1,7 @@
 {
   "name": "com.infohazard.core",
   "displayName": "Infohazard.Core",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "unity": "2020.3",
   "description": "A collection of useful functionality for Unity, which is used by my other packages.",
   "keywords": [],
