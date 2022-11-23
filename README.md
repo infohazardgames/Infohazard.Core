@@ -15,8 +15,14 @@
   - [Setup](#setup)
     - [General Setup](#general-setup)
     - [SRP Setup](#srp-setup)
-  - [Features Guide](#features-guide)
+  - [Demos](#demos)
     - [Attributes](#attributes)
+    - [Pooling and Timing](#pooling-and-timing)
+    - [Quartic Solver](#quartic-solver)
+    - [Tags and Trigger Volume](#tags-and-trigger-volume)
+    - [Unique name](#unique-name)
+  - [Features Guide](#features-guide)
+    - [Attributes](#attributes-1)
     - [Data Structures](#data-structures)
     - [Pooling](#pooling)
     - [Timing](#timing)
@@ -95,6 +101,30 @@ The only setup required beyond installation is to add references to the Infohaza
 ### SRP Setup
 
 If you are using a scriptable render pipeline (URP, HDRP, etc) and wish to run the demos, you will need to upgrade the materials using your render pipeline's material upgrade system. The materials you'll need to upgrade are in `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Materials` and `Assets/Plugins/Infohazard/Demos/Shared Demo Assets/Materials`.
+
+## Demos
+
+The following demo scenes are provided to cover the various features of Infohazard.Core.
+
+### Attributes
+
+This demo, located at `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Scenes/Demo_Attributes.unity`, demonstrates how you can use the various attributes provided in Infohazard.Core to improve your parameter editing experience.
+
+### Pooling and Timing
+
+This demo, located at `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Scenes/Demo_PoolingAndTiming.unity`, shows how to use the object pooling system to improve performance when spawning many objects, and how to use a timer to control the timing of this spawning (as well as using the pause system).
+
+### Quartic Solver
+
+This demo, located at `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Scenes/Demo_QuarticSolver.unity`, demonstrates how to use the math utility to solve a quartic equation. This functionality is useful for scenarios such as aiming at an accelerating target.
+
+### Tags and Trigger Volume
+
+This demo, located at `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Scenes/Demo_TagsAndTriggerVolume.unity`, deomonstrates how to use the TriggerVolume script to set up triggers in the editor, as well as how to use a tag mask to filter which objects are considered by the trigger.
+
+### Unique name
+
+This demo, located at `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Scenes/Demo_UniqueName.unity`, demonstrates how to use the UniqueName system to reference and find specific objects without having a direct reference (such as if they are in another scene).
 
 ## Features Guide
 
