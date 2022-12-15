@@ -49,6 +49,8 @@ namespace Infohazard.Core {
         /// </summary>
         public TriggerEvents Events => _events;
 
+        public HashSet<GameObject> Occupants => _objects;
+
         /// <summary>
         /// Class that stores the UnityEvents used by a TriggerVolume.
         /// </summary>
