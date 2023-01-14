@@ -17,17 +17,16 @@ namespace Infohazard.Core {
     /// When it is despawned, it will broadcast the <c>OnDespawned</c> method.
     /// </remarks>
     public class Spawnable : MonoBehaviour {
+        [SerializeField] private bool _pooled = true;
+
+        public bool Pooled => _pooled;
+        
         /// <summary>
         /// Whether or not this object is an active, spawned instance.
         /// </summary>
         public bool IsSpawned { get; private set; }
         
         internal int PoolID { get; set; } = -1;
-        
-        /// <summary>
-        /// A reference to the prefab that this object was spawned from.
-        /// </summary>
-        public Spawnable Prefab => PoolID < 0 ? null : PoolManager.Instance.GetPrefab(PoolID);
 
         /// <summary>
         /// Invoked when the Spawnable is spawned.
@@ -38,11 +37,20 @@ namespace Infohazard.Core {
         /// Invoke when the Spawnable is despawned.
         /// </summary>
         public event Action<Spawnable> Despawned;
+        
+        /// <summary>
+        /// Invoked when the Spawnable is destroyed (not just despawned).
+        /// </summary>
+        public event Action<Spawnable> Destroyed;
 
         private Rigidbody _rigidbody;
 
         private void Awake() {
             _rigidbody = GetComponent<Rigidbody>();
+        }
+
+        private void OnDestroy() {
+            Destroyed?.Invoke(this);
         }
 
         internal void WasSpawned() {
@@ -84,7 +92,7 @@ namespace Infohazard.Core {
         public static Spawnable Spawn(Spawnable prefab, Vector3? position = null, Quaternion? rotation = null,
             Transform parent = null, bool inWorldSpace = false, ulong persistedInstanceID = 0, Scene? scene = null) {
 
-            return PoolManager.Instance.SpawnInstance(prefab, position, rotation, parent, inWorldSpace, persistedInstanceID, scene);
+            return PoolManager.Instance.SpawnPrefab(prefab, position, rotation, parent, inWorldSpace, persistedInstanceID, scene);
         }
 
         /// <summary>

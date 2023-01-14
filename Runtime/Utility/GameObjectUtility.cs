@@ -121,7 +121,7 @@ namespace Infohazard.Core {
         /// <param name="scene">An optional scene to move the object to.</param>
         public static void Initialize(this Transform transform, Transform parent, 
                                       Vector3? position = null, Quaternion? rotation = null, Vector3? scale = null,
-                                      bool inWorldSpace = false, Scene? scene = null) {
+                                      bool inWorldSpace = false, in Scene? scene = null) {
 
             if (inWorldSpace) {
                 transform.SetParent(null, false);

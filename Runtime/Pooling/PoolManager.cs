@@ -20,8 +20,8 @@ namespace Infohazard.Core {
     /// All normal spawning and despawning of instances should be done through the <see cref="Spawnable"/> class.
     /// </remarks>
     public class PoolManager : MonoBehaviour {
-        private readonly List<SpawnPool> _pools = new List<SpawnPool>();
-        private readonly Dictionary<Spawnable, SpawnPool> _poolsByPrefab = new Dictionary<Spawnable, SpawnPool>();
+        private readonly List<IPoolHandler> _pools = new List<IPoolHandler>();
+        private readonly Dictionary<object, IPoolHandler> _poolsByKey = new Dictionary<object, IPoolHandler>();
 
         private static PoolManager _instance = null;
         
@@ -46,91 +46,86 @@ namespace Infohazard.Core {
             }
         }
 
-        internal Spawnable SpawnInstance(Spawnable prefab, Vector3? position, Quaternion? rotation, Transform parent,
-                                       bool inWorldSpace, ulong persistedInstanceID, Scene? scene) {
+        public Transform PoolTransform => transform;
+
+        public Spawnable SpawnPrefab(Spawnable prefab, Vector3? position, Quaternion? rotation, Transform parent,
+                                       bool inWorldSpace, ulong persistedInstanceID, in Scene? scene) {
             Debug.Assert(!prefab.IsSpawned);
-            if (!_poolsByPrefab.TryGetValue(prefab, out SpawnPool pool)) {
-                pool = new SpawnPool(prefab, _pools.Count, transform);
-                _pools.Add(pool);
-                _poolsByPrefab.Add(prefab, pool);
+            if (!_poolsByKey.TryGetValue(prefab, out IPoolHandler pool)) {
+                pool = new DefaultPoolHandler(prefab, PoolTransform);
+                AddPoolHandler(prefab, pool);
             }
 
-            return pool.Spawn(position, rotation, parent, inWorldSpace, persistedInstanceID, scene);
+            Spawnable instance = pool.Spawn();
+            InitializeSpawnedInstance(instance, position, rotation, parent, inWorldSpace, persistedInstanceID, scene);
+            return instance;
         }
 
-        internal void DespawnInstance(Spawnable instance) {
-            Debug.Assert(instance.IsSpawned);
-            Debug.Assert(instance.PoolID >= 0 && instance.PoolID < _pools.Count);
+        public Spawnable SpawnFromKey(object key, Vector3? position, Quaternion? rotation, Transform parent,
+                                       bool inWorldSpace, ulong persistedInstanceID, in Scene? scene) {
+            if (!_poolsByKey.TryGetValue(key, out IPoolHandler pool)) {
+                Debug.LogError($"No pool handler registered for key {key}.");
+                return null;
+            }
+
+            Spawnable instance = pool.Spawn();
+            InitializeSpawnedInstance(instance, position, rotation, parent, inWorldSpace, persistedInstanceID, scene);
+            return instance;
+        }
+
+        public bool HasPoolHandler(object key) {
+            return _poolsByKey.ContainsKey(key);
+        }
+
+        public bool TryGetPoolHandler(object key, out IPoolHandler handler) {
+            return _poolsByKey.TryGetValue(key, out handler);
+        }
+
+        public void AddPoolHandler(object key, IPoolHandler handler) {
+            if (!_poolsByKey.TryAdd(key, handler)) {
+                Debug.LogError($"A pool handler is already registered for key {key}.");
+                return;
+            }
+            
+            _pools.Add(handler);
+        }
+
+        private void InitializeSpawnedInstance(Spawnable instance, Vector3? position, Quaternion? rotation, Transform parent,
+                                               bool inWorldSpace, ulong persistedInstanceID, in Scene? scene) {
+            
+            instance.transform.Initialize(parent, position, rotation, null, inWorldSpace, scene);
+
+            if (instance.TryGetComponent(out IPersistedInstance obj)) {
+                obj.SetupDynamicInstance(persistedInstanceID);
+            }
+                
+            instance.WasSpawned();
+        }
+
+        public void DespawnInstance(Spawnable instance) {
+            if (!instance.IsSpawned) {
+                Debug.LogError($"Trying to despawn not-spawned instance {instance}.", instance);
+                return;
+            }
+
+            if (instance.PoolID < 0 || instance.PoolID >= _pools.Count) {
+                Debug.LogError($"Instance {instance} has invalid pool ID.", instance);
+                return;
+            }
+            
+            instance.WasDespawned();
+            if (instance.TryGetComponent(out IPersistedInstance obj)) {
+                obj.RegisterDestroyed();
+            }
             _pools[instance.PoolID].Despawn(instance);
-        }
-
-        internal Spawnable GetPrefab(int poolID) {
-            return _pools[poolID].Prefab;
         }
 
         /// <summary>
         /// Remove and destroy any inactive pooled objects.
         /// </summary>
         public void ClearInactiveObjects() {
-            foreach (SpawnPool pool in _pools) {
+            foreach (IPoolHandler pool in _pools) {
                 pool.ClearInactiveObjects();
-            }
-        }
-
-        private class SpawnPool {
-            internal Spawnable Prefab { get; }
-            
-            private readonly int _poolID;
-            private readonly Transform _transform;
-            private readonly Pool<Spawnable> _pool;
-
-            internal SpawnPool(Spawnable prefab, int poolID, Transform transform) {
-                Prefab = prefab;
-                _poolID = poolID;
-                _transform = transform;
-
-                _pool = new Pool<Spawnable>(() => {
-                    Spawnable inst = Instantiate(Prefab, _transform, false);
-                    inst.gameObject.SetActive(false);
-                    inst.PoolID = _poolID;
-                    return inst;
-                }) {
-                    DestroyAction = inst => {
-                        Destroy(inst.gameObject);
-                    },
-                };
-            }
-
-            internal Spawnable Spawn(Vector3? position, Quaternion? rotation, Transform parent, bool inWorldSpace, ulong persistedInstanceID, Scene? scene) {
-                Spawnable instance = _pool.Get();
-                
-                Debug.Assert(!instance.IsSpawned, $"Trying to spawn already-spawned instance {instance}");
-
-                instance.transform.Initialize(parent, position, rotation, null, inWorldSpace, scene);
-
-                instance.gameObject.SetActive(true);
-                if (instance.TryGetComponent(out IPersistedInstance obj)) {
-                    obj.SetupDynamicInstance(persistedInstanceID);
-                }
-                
-                instance.WasSpawned();
-                return instance;
-            }
-
-            internal void Despawn(Spawnable instance) {
-                Debug.Assert(instance.IsSpawned, $"Trying to despawn not-spawned instance {instance}");
-
-                instance.WasDespawned();
-                if (instance.TryGetComponent(out IPersistedInstance obj)) {
-                    obj.RegisterDestroyed();
-                }
-                instance.transform.SetParent(_transform, false);
-                instance.gameObject.SetActive(false);
-                _pool.Release(instance);
-            }
-
-            public void ClearInactiveObjects() {
-                _pool.Clear();
             }
         }
     }
