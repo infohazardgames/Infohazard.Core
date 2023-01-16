@@ -20,7 +20,7 @@ namespace Infohazard.Core {
     /// All normal spawning and despawning of instances should be done through the <see cref="Spawnable"/> class.
     /// </remarks>
     public class PoolManager : MonoBehaviour {
-        private readonly List<IPoolHandler> _pools = new List<IPoolHandler>();
+        private readonly List<IPoolHandler> _autoPools = new List<IPoolHandler>();
         private readonly Dictionary<object, IPoolHandler> _poolsByKey = new Dictionary<object, IPoolHandler>();
 
         private static PoolManager _instance = null;
@@ -48,28 +48,30 @@ namespace Infohazard.Core {
 
         public Transform PoolTransform => transform;
 
-        public Spawnable SpawnPrefab(Spawnable prefab, Vector3? position, Quaternion? rotation, Transform parent,
-                                       bool inWorldSpace, ulong persistedInstanceID, in Scene? scene) {
+        public Spawnable SpawnPrefab(Spawnable prefab, in SpawnParams spawnParams = default) {
             Debug.Assert(!prefab.IsSpawned);
             if (!_poolsByKey.TryGetValue(prefab, out IPoolHandler pool)) {
                 pool = new DefaultPoolHandler(prefab, PoolTransform);
+                pool.Retain();
+                _autoPools.Add(pool);
                 AddPoolHandler(prefab, pool);
             }
 
             Spawnable instance = pool.Spawn();
-            InitializeSpawnedInstance(instance, position, rotation, parent, inWorldSpace, persistedInstanceID, scene);
+            instance.PoolHandler = pool;
+            InitializeSpawnedInstance(instance, spawnParams);
             return instance;
         }
 
-        public Spawnable SpawnFromKey(object key, Vector3? position, Quaternion? rotation, Transform parent,
-                                       bool inWorldSpace, ulong persistedInstanceID, in Scene? scene) {
+        public Spawnable SpawnFromKey(object key, in SpawnParams spawnParams = default) {
             if (!_poolsByKey.TryGetValue(key, out IPoolHandler pool)) {
                 Debug.LogError($"No pool handler registered for key {key}.");
                 return null;
             }
 
             Spawnable instance = pool.Spawn();
-            InitializeSpawnedInstance(instance, position, rotation, parent, inWorldSpace, persistedInstanceID, scene);
+            instance.PoolHandler = pool;
+            InitializeSpawnedInstance(instance, spawnParams);
             return instance;
         }
 
@@ -82,21 +84,19 @@ namespace Infohazard.Core {
         }
 
         public void AddPoolHandler(object key, IPoolHandler handler) {
-            if (!_poolsByKey.TryAdd(key, handler)) {
+            if (_poolsByKey.ContainsKey(key)) {
                 Debug.LogError($"A pool handler is already registered for key {key}.");
                 return;
             }
             
-            _pools.Add(handler);
+            _poolsByKey.Add(key, handler);
         }
 
-        private void InitializeSpawnedInstance(Spawnable instance, Vector3? position, Quaternion? rotation, Transform parent,
-                                               bool inWorldSpace, ulong persistedInstanceID, in Scene? scene) {
-            
-            instance.transform.Initialize(parent, position, rotation, null, inWorldSpace, scene);
+        private void InitializeSpawnedInstance(Spawnable instance, in SpawnParams spawnParams) {
+            instance.transform.Initialize(spawnParams);
 
             if (instance.TryGetComponent(out IPersistedInstance obj)) {
-                obj.SetupDynamicInstance(persistedInstanceID);
+                obj.SetupDynamicInstance(spawnParams.PersistedInstanceID);
             }
                 
             instance.WasSpawned();
@@ -107,25 +107,26 @@ namespace Infohazard.Core {
                 Debug.LogError($"Trying to despawn not-spawned instance {instance}.", instance);
                 return;
             }
-
-            if (instance.PoolID < 0 || instance.PoolID >= _pools.Count) {
-                Debug.LogError($"Instance {instance} has invalid pool ID.", instance);
-                return;
-            }
             
             instance.WasDespawned();
             if (instance.TryGetComponent(out IPersistedInstance obj)) {
                 obj.RegisterDestroyed();
             }
-            _pools[instance.PoolID].Despawn(instance);
+
+            if (instance.PoolHandler != null) {
+                instance.PoolHandler.Despawn(instance);
+            } else {
+                Destroy(instance.gameObject);
+            }
         }
 
         /// <summary>
         /// Remove and destroy any inactive pooled objects.
         /// </summary>
         public void ClearInactiveObjects() {
-            foreach (IPoolHandler pool in _pools) {
-                pool.ClearInactiveObjects();
+            foreach (IPoolHandler pool in _autoPools) {
+                pool.Release();
+                pool.Retain();
             }
         }
     }

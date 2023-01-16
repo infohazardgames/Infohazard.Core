@@ -3,10 +3,14 @@
 
 namespace Infohazard.Core {
     public interface IPoolHandler {
+        public int RetainCount { get; }
+        
         public Spawnable Spawn();
 
         public void Despawn(Spawnable instance);
 
-        public void ClearInactiveObjects();
+        public void Retain();
+
+        public void Release();
     }
 }

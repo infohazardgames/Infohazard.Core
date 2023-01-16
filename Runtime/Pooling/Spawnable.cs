@@ -26,7 +26,7 @@ namespace Infohazard.Core {
         /// </summary>
         public bool IsSpawned { get; private set; }
         
-        internal int PoolID { get; set; } = -1;
+        internal IPoolHandler PoolHandler { get; set; }
 
         /// <summary>
         /// Invoked when the Spawnable is spawned.
@@ -47,6 +47,13 @@ namespace Infohazard.Core {
 
         private void Awake() {
             _rigidbody = GetComponent<Rigidbody>();
+        }
+
+        // For spawnable objects placed in the scene.
+        private void Start() {
+            if (!IsSpawned) {
+                WasSpawned();
+            }
         }
 
         private void OnDestroy() {
@@ -92,7 +99,25 @@ namespace Infohazard.Core {
         public static Spawnable Spawn(Spawnable prefab, Vector3? position = null, Quaternion? rotation = null,
             Transform parent = null, bool inWorldSpace = false, ulong persistedInstanceID = 0, Scene? scene = null) {
 
-            return PoolManager.Instance.SpawnPrefab(prefab, position, rotation, parent, inWorldSpace, persistedInstanceID, scene);
+            return PoolManager.Instance.SpawnPrefab(prefab, new SpawnParams {
+                Position = position,
+                Rotation = rotation,
+                Parent = parent,
+                InWorldSpace = inWorldSpace,
+                PersistedInstanceID = persistedInstanceID,
+                Scene = scene,
+            });
+        }
+
+        /// <summary>
+        /// Spawn a new pooled instance with the given properties.
+        /// </summary>
+        /// <param name="prefab">The prefab to spawn.</param>
+        /// <param name="spawnParams">Spawn properties.</param>
+        /// <returns>The spawned instance.</returns>
+        public static Spawnable Spawn(Spawnable prefab, in SpawnParams spawnParams = default) {
+
+            return PoolManager.Instance.SpawnPrefab(prefab, spawnParams);
         }
 
         /// <summary>
@@ -121,19 +146,37 @@ namespace Infohazard.Core {
         /// <param name="scene">The scene to spawn in.</param>
         /// <returns>The spawned instance.</returns>
         public static GameObject Spawn(GameObject prefab, Vector3? position = null, Quaternion? rotation = null,
-            Transform parent = null, bool inWorldSpace = false, ulong persistedInstanceID = 0, Scene? scene = null) {
-            var spawnable = prefab.GetComponent<Spawnable>();
-            if (spawnable) {
-                return Spawn(spawnable, position, rotation, parent, inWorldSpace, persistedInstanceID, scene).gameObject;
+                                       Transform parent = null, bool inWorldSpace = false, ulong persistedInstanceID = 0, Scene? scene = null) {
+            return Spawn(prefab, new SpawnParams {
+                Position = position,
+                Rotation = rotation,
+                Parent = parent,
+                InWorldSpace = inWorldSpace,
+                PersistedInstanceID = persistedInstanceID,
+                Scene = scene,
+            });
+        }
+
+        /// <summary>
+        /// Spawn a new instance with the given properties,
+        /// using the pooling system if the prefab has a Spawnable script.
+        /// </summary>
+        /// <param name="prefab">The prefab to spawn.</param>
+        /// <param name="spawnParams">Spawn properties.</param>
+        /// <returns>The spawned instance.</returns>
+        public static GameObject Spawn(GameObject prefab, in SpawnParams spawnParams = default) {
+            if (prefab.TryGetComponent(out Spawnable spawnable)) {
+                return Spawn(spawnable, spawnParams).gameObject;
             } else {
                 GameObject instance = Instantiate(prefab);
-                instance.transform.Initialize(parent, position, rotation, null, inWorldSpace, scene);
+                instance.transform.Initialize(spawnParams);
                 if (instance.TryGetComponent(out IPersistedInstance obj)) {
-                    obj.SetupDynamicInstance(persistedInstanceID);
+                    obj.SetupDynamicInstance(spawnParams.PersistedInstanceID);
                 }
                 return instance;
             }
         }
+        
         /// <summary>
         /// Despawn an instance, optionally after some time has passed,
         /// using the pooling system if the prefab has a Spawnable script.
@@ -141,8 +184,7 @@ namespace Infohazard.Core {
         /// <param name="instance">The instance to despawn.</param>
         /// <param name="inSeconds">The time to wait before despawning. If zero, despawn is synchronous.</param>
         public static void Despawn(GameObject instance, float inSeconds = 0.0f) {
-            var spawnable = instance.GetComponent<Spawnable>();
-            if (spawnable) {
+            if (instance.TryGetComponent(out Spawnable spawnable)) {
                 Despawn(spawnable, inSeconds);
             } else {
                 if (instance.TryGetComponent(out IPersistedInstance obj)) {
@@ -168,6 +210,17 @@ namespace Infohazard.Core {
         public static T Spawn<T>(T prefab, Vector3? position = null, Quaternion? rotation = null, Transform parent = null,
                                  bool inWorldSpace = false, ulong persistedInstanceID = 0, Scene? scene = null) where T : Component {
             return Spawn(prefab.gameObject, position, rotation, parent, inWorldSpace, persistedInstanceID, scene).GetComponent<T>();
+        }
+
+        /// <summary>
+        /// Spawn a new instance with the given properties,
+        /// using the pooling system if the prefab has a Spawnable script.
+        /// </summary>
+        /// <param name="prefab">The prefab to spawn.</param>
+        /// <param name="spawnParams">Spawn properties.</param>
+        /// <returns>The spawned instance.</returns>
+        public static T Spawn<T>(T prefab, in SpawnParams spawnParams = default) where T : Component {
+            return Spawn(prefab.gameObject, spawnParams).GetComponent<T>();
         }
     }
 }

@@ -16,10 +16,16 @@ namespace Infohazard.Core {
 
         public virtual bool ShouldPool => Prefab.Pooled;
 
+        public int RetainCount { get; private set; }
+
         public DefaultPoolHandler(Spawnable prefab, Transform transform) {
             Prefab = prefab;
             Transform = transform;
             Pool = new Pool<Spawnable>(Instantiate, OnGet, OnRelease, Destroy);
+        }
+
+        public override string ToString() {
+            return $"{GetType().Name} ({Prefab})";
         }
 
         protected virtual void OnGet(Spawnable obj) { }
@@ -33,7 +39,7 @@ namespace Infohazard.Core {
         }
 
         protected virtual void Destroy(Spawnable obj) {
-            Object.Destroy(obj);
+            Object.Destroy(obj.gameObject);
         }
         
         public virtual Spawnable Spawn() {
@@ -43,7 +49,7 @@ namespace Infohazard.Core {
         }
 
         public virtual void Despawn(Spawnable instance) {
-            if (ShouldPool) {
+            if (ShouldPool && !ShouldClear()) {
                 instance.transform.SetParent(Transform, false);
                 instance.gameObject.SetActive(false);
                 Pool.Release(instance);
@@ -51,8 +57,28 @@ namespace Infohazard.Core {
                 Destroy(instance);
             }
         }
+        
+        public virtual void Retain() {
+            RetainCount++;
+        }
 
-        public virtual void ClearInactiveObjects() {
+        public virtual void Release() {
+            if (RetainCount < 1) {
+                Debug.LogError($"Releasing {this} more times than it was retained.");
+                return;
+            }
+
+            RetainCount--;
+            CheckClear();
+        }
+
+        protected void CheckClear() {
+            if (ShouldClear()) Clear();
+        }
+
+        protected virtual bool ShouldClear() => RetainCount == 0;
+
+        protected virtual void Clear() {
             Pool.Clear();
         }
     }

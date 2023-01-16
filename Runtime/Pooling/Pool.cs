@@ -10,7 +10,7 @@ namespace Infohazard.Core {
     /// </summary>
     /// <typeparam name="T">Type of pooled object.</typeparam>
     public class Pool<T> : IDisposable {
-        private Stack<T> _stack = new Stack<T>();
+        private List<T> _stack = new List<T>();
 
         /// <summary>
         /// Function invoked to create an instance, which must not be null.
@@ -61,7 +61,8 @@ namespace Infohazard.Core {
         public T Get() {
             T item;
             if (_stack.Count > 0) {
-                item = _stack.Pop();
+                item = _stack[_stack.Count - 1];
+                _stack.RemoveAt(_stack.Count - 1);
                 GetAction?.Invoke(item);
                 return item;
             }
@@ -80,7 +81,7 @@ namespace Infohazard.Core {
             if (MaxCount > 0 && _stack.Count >= MaxCount) {
                 DestroyAction?.Invoke(item);
             } else {
-                _stack.Push(item);
+                _stack.Add(item);
             }
         }
 
@@ -94,6 +95,14 @@ namespace Infohazard.Core {
                 }
             }
             _stack.Clear();
+        }
+
+        /// <summary>
+        /// Remove an item from the pool without cleaning it up.
+        /// </summary>
+        /// <param name="item">Item to remove.</param>
+        public void Remove(T item) {
+            _stack.Remove(item);
         }
 
         /// <summary>

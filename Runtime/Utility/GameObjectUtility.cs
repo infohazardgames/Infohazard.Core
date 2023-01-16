@@ -138,6 +138,16 @@ namespace Infohazard.Core {
         }
 
         /// <summary>
+        /// Initialize the transform with the given spawn params.
+        /// </summary>
+        /// <param name="transform">The transform to initialize.</param>
+        /// <param name="spawnParams">The spawn parameters.</param>
+        public static void Initialize(this Transform transform, in SpawnParams spawnParams = default) {
+            Initialize(transform, spawnParams.Parent, spawnParams.Position, spawnParams.Rotation, spawnParams.Scale,
+                       spawnParams.InWorldSpace, spawnParams.Scene);
+        }
+
+        /// <summary>
         /// Set's the transform's position, and rotation, and scale (if they are specified).
         /// </summary>
         /// <param name="transform">The transform to initialize.</param>
