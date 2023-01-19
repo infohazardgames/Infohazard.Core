@@ -35,12 +35,18 @@ namespace Infohazard.Core {
         public static T Instance {
             get {
                 if (_instance == null) {
-                    _instance = FindObjectOfType<T>();
-                    if (_instance == null) {
+                    T newInstance = FindObjectOfType<T>();
+                    if (newInstance == null) {
+                        // Return destroyed instance, which can be used to unsubscribe from events.
+                        if (!ReferenceEquals(_instance, null)) {
+                            return _instance;
+                        }
+                        
                         Debug.LogError($"{typeof(T)} instance not found!");
                         return null;
                     }
 
+                    _instance = newInstance;
                     _instance.Initialize();
                 }
 

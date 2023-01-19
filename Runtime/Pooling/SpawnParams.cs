@@ -18,8 +18,8 @@ namespace Infohazard.Core {
 
         public static SpawnParams At(Transform transform, bool parented = false) {
             return new SpawnParams {
-                Position = transform.position,
-                Rotation = transform.rotation,
+                Position = parented ? Vector3.zero : transform.position,
+                Rotation = parented ? Quaternion.identity : transform.rotation,
                 Parent = parented ? transform : null,
             };
         }
