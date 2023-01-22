@@ -94,21 +94,18 @@ namespace Infohazard.Core {
 
         private void InitializeSpawnedInstance(Spawnable instance, in SpawnParams spawnParams) {
             instance.transform.Initialize(spawnParams);
+            instance.WasSpawned();
 
             if (instance.TryGetComponent(out IPersistedInstance obj)) {
                 obj.SetupDynamicInstance(spawnParams.PersistedInstanceID);
             }
-                
-            instance.WasSpawned();
         }
 
         public void DespawnInstance(Spawnable instance) {
-            if (!instance.IsSpawned) {
-                Debug.LogError($"Trying to despawn not-spawned instance {instance}.", instance);
-                return;
+            if (instance.IsSpawned) {
+                instance.WasDespawned();
             }
             
-            instance.WasDespawned();
             if (instance.TryGetComponent(out IPersistedInstance obj)) {
                 obj.RegisterDestroyed();
             }

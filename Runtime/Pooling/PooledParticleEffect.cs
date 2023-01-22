@@ -45,7 +45,7 @@ namespace Infohazard.Core {
         }
 
         private void OnParticleSystemStopped() {
-            if (_despawnOnDone && _spawnable.IsSpawned) Spawnable.Despawn(_spawnable);
+            if (_despawnOnDone) Spawnable.Despawn(_spawnable);
         }
     }
 }

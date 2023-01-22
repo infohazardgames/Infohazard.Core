@@ -49,13 +49,6 @@ namespace Infohazard.Core {
             _rigidbody = GetComponent<Rigidbody>();
         }
 
-        // For spawnable objects placed in the scene.
-        private void Start() {
-            if (!IsSpawned) {
-                WasSpawned();
-            }
-        }
-
         private void OnDestroy() {
             Destroyed?.Invoke(this);
         }
