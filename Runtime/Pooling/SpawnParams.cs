@@ -16,11 +16,12 @@ namespace Infohazard.Core {
 
         public static readonly SpawnParams Default = new SpawnParams();
 
-        public static SpawnParams At(Transform transform, bool parented = false) {
+        public static SpawnParams At(Transform transform, bool parented = false, bool includeScene = false) {
             return new SpawnParams {
                 Position = parented ? Vector3.zero : transform.position,
                 Rotation = parented ? Quaternion.identity : transform.rotation,
                 Parent = parented ? transform : null,
+                Scene = includeScene ? transform.gameObject.scene : default,
             };
         }
     }
