@@ -72,7 +72,7 @@ namespace Infohazard.Core {
         /// <summary>
         /// Whether the timer is in the expired state, meaning the current interval has elapsed.
         /// </summary>
-        public bool IsIntervalEnded => Time.time - IntervalStartTime >= _interval;
+        public bool IsIntervalEnded => CurrentTime - IntervalStartTime >= _interval;
         
         /// <summary>
         /// The start time for the current interval.
