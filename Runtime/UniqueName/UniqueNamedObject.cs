@@ -26,6 +26,11 @@ namespace Infohazard.Core {
         /// <summary>
         /// Unique name asset for the object.
         /// </summary>
+        public UniqueNameListEntry UniqueNameListEntry => _uniqueName;
+
+        /// <summary>
+        /// Unique name string for the object.
+        /// </summary>
         public string UniqueName { get; private set; }
 
         private static readonly Dictionary<string, UniqueNamedObject> InternalObjects =
@@ -35,6 +40,16 @@ namespace Infohazard.Core {
         /// Dictionary of all active UniqueNamedObjects keyed by their unique names.
         /// </summary>
         public static IReadOnlyDictionary<string, UniqueNamedObject> Objects => InternalObjects;
+
+        /// <summary>
+        /// Invoked when a new UniqueNamedObject is added to the dictionary.
+        /// </summary>
+        public static event Action<UniqueNamedObject> ObjectAdded;
+        
+        /// <summary>
+        /// Invoked when a UniqueNamedObject is removed from the dictionary.
+        /// </summary>
+        public static event Action<UniqueNamedObject> ObjectRemoved;
 
         /// <summary>
         /// Try to get a GameObject with the given unique name, and return whether it was found.
@@ -74,12 +89,14 @@ namespace Infohazard.Core {
             }
 
             InternalObjects[UniqueName] = this;
+            ObjectAdded?.Invoke(this);
         }
 
         private void OnDisable() {
             if (UniqueName == null) return;
             if (!ReferenceEquals(InternalObjects[UniqueName], this)) return;
             InternalObjects.Remove(UniqueName);
+            ObjectRemoved?.Invoke(this);
         }
     }
 }
