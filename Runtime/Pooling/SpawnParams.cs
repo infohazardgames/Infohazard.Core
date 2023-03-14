@@ -21,7 +21,7 @@ namespace Infohazard.Core {
                 Position = parented ? Vector3.zero : transform.position,
                 Rotation = parented ? Quaternion.identity : transform.rotation,
                 Parent = parented ? transform : null,
-                Scene = includeScene ? transform.gameObject.scene : default,
+                Scene = includeScene ? (Scene?)transform.gameObject.scene : null,
             };
         }
     }
