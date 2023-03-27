@@ -39,6 +39,11 @@ namespace Infohazard.Core {
         /// If unset, this will use the same path as the containing object if it is an asset.
         /// </remarks>
         public string SavePath { get; }
+        
+        /// <summary>
+        /// Whether to show a dropdown of all types extending the type of the variable.
+        /// </summary>
+        public bool ShowChildTypes { get; }
 
         /// <summary>
         /// Construct a new ExpandableAttribute.
@@ -46,10 +51,12 @@ namespace Infohazard.Core {
         /// <param name="alwaysExpanded">Whether the attribute is always expanded.</param>
         /// <param name="savePath">Whether to show a "New" button to create new instances.</param>
         /// <param name="showNewButton">The default path to save newly created ScriptableObjects at.</param>
-        public ExpandableAttribute(bool alwaysExpanded = false, string savePath = null, bool showNewButton = true) {
+        /// <param name="showChildTypes">Whether to show a dropdown of all types extending the type of the variable.</param>
+        public ExpandableAttribute(bool alwaysExpanded = false, string savePath = null, bool showNewButton = true, bool showChildTypes = false) {
             AlwaysExpanded = alwaysExpanded;
             SavePath = savePath;
             ShowNewButton = showNewButton;
+            ShowChildTypes = showChildTypes;
         }
     }
 }

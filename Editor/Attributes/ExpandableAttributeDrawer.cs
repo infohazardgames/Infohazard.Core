@@ -80,12 +80,27 @@ namespace Infohazard.Core.Editor {
 
             // Draw the new button if desired, and reduce size of the main property.
             if (attr.ShowNewButton) {
-                Rect newButtonRect = propertyRect;
-                propertyRect.xMax -= 70;
-                newButtonRect.xMin = propertyRect.xMax + EditorGUIUtility.standardVerticalSpacing;
+                string typeName = property.GetTypeName();
+                Type type = TypeUtility.GetType(typeName);
 
-                if (GUI.Button(newButtonRect, "New")) {
-                    CreateNew(property);
+                if (attr.ShowChildTypes) {
+                    Rect newButtonRect = propertyRect;
+                    propertyRect.xMax -= 70;
+                    newButtonRect.xMin = propertyRect.xMax + EditorGUIUtility.standardVerticalSpacing;
+
+                    if (EditorGUI.DropdownButton(newButtonRect, new GUIContent("New"), FocusType.Passive)) {
+                        CreateNewContextMenu(property, type, newButtonRect);
+                    }
+                } else if (type is { IsClass: true, IsAbstract: false, IsInterface: false, IsGenericType: false } &&
+                           typeof(ScriptableObject).IsAssignableFrom(type)) {
+                    
+                    Rect newButtonRect = propertyRect;
+                    propertyRect.xMax -= 70;
+                    newButtonRect.xMin = propertyRect.xMax + EditorGUIUtility.standardVerticalSpacing;
+
+                    if (GUI.Button(newButtonRect, "New")) {
+                        CreateNew(property, type);
+                    }
                 }
             }
 
@@ -153,11 +168,26 @@ namespace Infohazard.Core.Editor {
             EditorGUI.indentLevel = indent;
         }
 
-        private void CreateNew(SerializedProperty property) {
+        private void CreateNewContextMenu(SerializedProperty property, Type type, Rect buttonRect) {
+            GenericMenu menu = new GenericMenu();
+
+            foreach (Type t in TypeUtility.AllTypes) {
+                if (t is { IsClass: true, IsAbstract: false, IsInterface: false, IsGenericType: false } &&
+                    type.IsAssignableFrom(t)) {
+                    
+                    menu.AddItem(new GUIContent(t.FullName), false, () => {
+                        CreateNew(property, t);
+                    });
+                }
+            }
+            
+            menu.DropDown(buttonRect);
+        }
+
+        private void CreateNew(SerializedProperty property, Type type) {
             ExpandableAttribute attr = Attribute;
 
-            string typeName = property.GetTypeName();
-            string path = $"New{typeName}.asset";
+            string path = $"New{type.Name}.asset";
 
             // If there is already a value, set the default name of the new object to reflect this.
             ScriptableObject currentValue = property.objectReferenceValue as ScriptableObject;
@@ -203,8 +233,8 @@ namespace Infohazard.Core.Editor {
             }
 
             // If there is a current value, copy it, otherwise create a new instance.
-            ScriptableObject asset = currentValue == null
-                ? ScriptableObject.CreateInstance(typeName)
+            ScriptableObject asset = currentValue == null || currentValue.GetType() != type
+                ? ScriptableObject.CreateInstance(type)
                 : Object.Instantiate(currentValue);
             
             // Save the asset.
