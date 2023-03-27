@@ -40,6 +40,11 @@ namespace Infohazard.Core {
         public event Action<GameObject> AllExited;
 
         /// <summary>
+        /// (Serialized) List of colliders to enable/disable along with this component.
+        /// </summary>
+        [SerializeField] private Collider[] _controlledColliders;
+
+        /// <summary>
         /// (Serialized) UnityEvents that enable you to assign functionality in the editor.
         /// </summary>
         [SerializeField] private TriggerEvents _events = default;
@@ -49,7 +54,15 @@ namespace Infohazard.Core {
         /// </summary>
         public TriggerEvents Events => _events;
 
+        /// <summary>
+        /// All objects currently inside the trigger volume.
+        /// </summary>
         public HashSet<GameObject> Occupants => _objects;
+
+        /// <summary>
+        /// List of colliders to enable/disable along with this component.
+        /// </summary>
+        public Collider[] ControlledColliders => _controlledColliders;
 
         /// <summary>
         /// Class that stores the UnityEvents used by a TriggerVolume.
@@ -92,6 +105,26 @@ namespace Infohazard.Core {
         
         private void Update() {
             CheckForDeactivatedObjects();
+        }
+
+        private void Awake() {
+            if (!enabled) OnDisable();
+        }
+
+        private void OnEnable() {
+            if (_controlledColliders != null) {
+                foreach (Collider col in _controlledColliders) {
+                    col.enabled = true;
+                }
+            }
+        }
+
+        private void OnDisable() {
+            if (_controlledColliders != null) {
+                foreach (Collider col in ControlledColliders) {
+                    col.enabled = false;
+                }
+            }
         }
 
         private void CheckForDeactivatedObjects() {
