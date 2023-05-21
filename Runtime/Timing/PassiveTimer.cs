@@ -83,6 +83,11 @@ namespace Infohazard.Core {
         /// The time at which the current interval will end (or has ended).
         /// </summary>
         public float IntervalEndTime => IntervalStartTime + _interval;
+
+        /// <summary>
+        /// Time that has passed since the current interval ended (or, if not ended, a negative value).
+        /// </summary>
+        public float TimeSinceIntervalEnded => CurrentTime - IntervalEndTime;
         
         /// <summary>
         /// Whether the timer is initialized.
