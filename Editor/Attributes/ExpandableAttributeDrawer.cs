@@ -81,7 +81,7 @@ namespace Infohazard.Core.Editor {
 
             // Draw the new button if desired, and reduce size of the main property.
             if (attr.ShowNewButton) {
-                Type type = fieldInfo.FieldType;
+                Type type = this.GetFieldType();
 
                 if (attr.ShowChildTypes) {
                     Rect newButtonRect = propertyRect;

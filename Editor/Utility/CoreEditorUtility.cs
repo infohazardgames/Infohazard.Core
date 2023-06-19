@@ -327,6 +327,26 @@ namespace Infohazard.Core.Editor {
         }
 
         /// <summary>
+        /// Get the type of the field the property drawer is drawing.
+        /// If the type is an array or list, returns the element type.
+        /// </summary>
+        /// <param name="drawer">Drawer to get the type of.</param>
+        /// <returns>Type of the drawer's field.</returns>
+        public static Type GetFieldType(this PropertyDrawer drawer) {
+            Type type = drawer.fieldInfo.FieldType;
+
+            if (type.HasElementType) {
+                return type.GetElementType();
+            }
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)) {
+                return type.GetGenericArguments()[0];
+            }
+
+            return type;
+        }
+
+        /// <summary>
         /// Ensure that the <see cref="DataFolder"/> directory exists in your project, and contains an assembly definition.
         /// </summary>
         public static void EnsureDataFolderExists() {
