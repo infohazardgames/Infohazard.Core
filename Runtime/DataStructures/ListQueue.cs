@@ -15,7 +15,7 @@ namespace Infohazard.Core {
     /// Unlike a List, it has O(1) performance for both Enqueue and Dequeue operations (assuming there is enough room).
     /// </remarks>
     /// <typeparam name="T">Type of elements in the structure.</typeparam>
-    public class ListQueue<T> : IList<T> {
+    public class ListQueue<T> : IList<T>, IReadOnlyList<T> {
         private T[] _array;
         private int _firstItem;
 
@@ -61,6 +61,8 @@ namespace Infohazard.Core {
         /// <param name="enumerable">Sequence to initialize the queue.</param>
         public ListQueue(IEnumerable<T> enumerable) {
             _array = enumerable.ToArray();
+            _firstItem = 0;
+            Count = _array.Length;
         }
 
         /// <summary>
