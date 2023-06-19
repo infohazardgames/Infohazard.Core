@@ -313,8 +313,13 @@ namespace Infohazard.Core.Editor {
         /// <summary>
         /// Get the type full name (including assembly) of the type of the underlying field for the given property.
         /// </summary>
-        /// <param name="property"></param>
-        /// <returns></returns>
+        /// <remarks>
+        /// Due to how Unity works, this will not include the namespace.
+        /// If you need to access the property type from a PropertyDrawer,
+        /// use PropertyDrawer.fieldInfo.FieldType instead.
+        /// </remarks>
+        /// <param name="property">Property to get type of.</param>
+        /// <returns>Type name of the property's underlying type, without namespace.</returns>
         public static string GetTypeName(this SerializedProperty property) {
             string type = property.type;
             if (!type.StartsWith(PPtrText)) return type;

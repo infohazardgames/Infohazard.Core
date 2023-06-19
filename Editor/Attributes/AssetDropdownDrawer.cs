@@ -28,7 +28,7 @@ namespace Infohazard.Core.Editor {
             // Use a lazy dropdown so we only have to find all valid assets when the dropdown is tapped.
             CoreEditorUtility.DoLazyDropdown(dropdownRect,
                 new GUIContent(ObjectToString(property.objectReferenceValue)),
-                () => CoreEditorUtility.GetAssetsOfType(property.GetTypeName()).Prepend(null).ToArray(),
+                () => CoreEditorUtility.GetAssetsOfType(fieldInfo.FieldType.FullName).Prepend(null).ToArray(),
                 ObjectToString,
                 t => {
                     property.serializedObject.Update();

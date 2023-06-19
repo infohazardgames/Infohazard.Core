@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using Infohazard.Core;
 using UnityEditor;
 
@@ -14,12 +15,12 @@ namespace Infohazard.Core.Editor {
     [CustomPropertyDrawer(typeof(ExpandableAttribute))]
     public class ExpandableAttributeDrawer : PropertyDrawer {
         /// <summary>
-        /// A delegate that can be used to save created ScriptableObjects in some way other than as root assets.
+        /// A delegate that can be used to save created Objects in some way other than as root assets.
         /// </summary>
         /// <remarks>
         /// For example, this could add them to another asset as a child object.
         /// </remarks>
-        public static Action<ScriptableObject, string> SaveAction { get; set; } = null;
+        public static Action<Object, string> SaveAction { get; set; } = null;
         private ExpandableAttribute Attribute => (ExpandableAttribute) attribute;
 
         // Cache the SerializedObject of the referenced object to avoid creating it every frame.
@@ -80,8 +81,7 @@ namespace Infohazard.Core.Editor {
 
             // Draw the new button if desired, and reduce size of the main property.
             if (attr.ShowNewButton) {
-                string typeName = property.GetTypeName();
-                Type type = TypeUtility.GetType(typeName);
+                Type type = fieldInfo.FieldType;
 
                 if (attr.ShowChildTypes) {
                     Rect newButtonRect = propertyRect;
@@ -92,7 +92,9 @@ namespace Infohazard.Core.Editor {
                         CreateNewContextMenu(property, type, newButtonRect);
                     }
                 } else if (type is { IsClass: true, IsAbstract: false, IsInterface: false, IsGenericType: false } &&
-                           typeof(ScriptableObject).IsAssignableFrom(type)) {
+                           typeof(Object).IsAssignableFrom(type) &&
+                           !typeof(Component).IsAssignableFrom(type) &&
+                           !typeof(GameObject).IsAssignableFrom(type)) {
                     
                     Rect newButtonRect = propertyRect;
                     propertyRect.xMax -= 70;
@@ -190,7 +192,7 @@ namespace Infohazard.Core.Editor {
             string path = $"New{type.Name}.asset";
 
             // If there is already a value, set the default name of the new object to reflect this.
-            ScriptableObject currentValue = property.objectReferenceValue as ScriptableObject;
+            Object currentValue = property.objectReferenceValue;
             if (currentValue) path = Path.GetFileNameWithoutExtension(currentValue.name) + "_Copy.asset";
             
             // If we have a custom save action, no need to do any filesystem stuff.
@@ -233,22 +235,27 @@ namespace Infohazard.Core.Editor {
             }
 
             // If there is a current value, copy it, otherwise create a new instance.
-            ScriptableObject asset = currentValue == null || currentValue.GetType() != type
-                ? ScriptableObject.CreateInstance(type)
-                : Object.Instantiate(currentValue);
+            Object newAsset = null;
+            if (currentValue != null && currentValue.GetType() == type) {
+                newAsset = Object.Instantiate(currentValue);
+            } else if (typeof(ScriptableObject).IsAssignableFrom(type)) {
+                newAsset = ScriptableObject.CreateInstance(type);
+            } else {
+                newAsset = (Object)type.GetConstructor(Array.Empty<Type>())!.Invoke(Array.Empty<object>());
+            }
             
             // Save the asset.
-            if (asset == null) return;
-            asset.name = Path.GetFileNameWithoutExtension(path);
-            Save(asset, path);
+            if (newAsset == null) return;
+            newAsset.name = Path.GetFileNameWithoutExtension(path);
+            Save(newAsset, path);
 
             // Update the serialized property value.
             property.serializedObject.Update();
-            property.objectReferenceValue = asset;
+            property.objectReferenceValue = newAsset;
             property.serializedObject.ApplyModifiedProperties();
         }
 
-        private static void Save(ScriptableObject asset, string path) {
+        private static void Save(Object asset, string path) {
             // If we have a SaveAction, all we need to do is invoke it.
             if (SaveAction != null) {
                 SaveAction(asset, path);
