@@ -42,7 +42,7 @@ You can find full API documentation here and in the code.
 
 [Tutorial Playlist](https://www.youtube.com/playlist?list=PLpnNr8QNHD90TDqamYqA95ENh4eIQVvhS)
 
-[Discord](https://discord.gg/QF6yNFk7)
+[Discord](https://discord.gg/V2jTnpS8zZ)
 
 ## License
 
@@ -54,7 +54,7 @@ You are welcome to have your own packages or assets depend on this package.
 
 ### Method 1 - Package Manager
 
-Using the Package Manager is the easiest way to install HyperNav to your project. Simply install the project as a git URL. Note that if you go this route, you will not be able to make any edits to the package.
+Using the Package Manager is the easiest way to install the package to your project. Simply install the project as a git URL. Note that if you go this route, you will not be able to make any edits to the package.
 
 1. In Unity, open the Package Manager (Window > Package Manager).
 2. Click the '+' button in the top right of the window.
@@ -70,10 +70,10 @@ Using a git submodule is an option if you are using git for your project source 
 2. Using your preferred git client or the command line, add `https://github.com/infohazardgames/Infohazard.Core.git` as a submodule in your project's Packages folder.
 3. Re-open the Unity Editor.
 
-If you wish to make changes when you use this method, you'll need to fork the HyperNav repo. Once you've made your changes, you can submit a pull request to get those changes merged back to this repository if you wish.
+If you wish to make changes when you use this method, you'll need to fork the package repo. Once you've made your changes, you can submit a pull request to get those changes merged back to this repository if you wish.
 
 1. Fork this repository. Open your newly created fork, and copy the git URL.
-2. In your project's Packages folder, open the HyperNav repository.
+2. In your project's Packages folder, open the package repository.
 3. Change the `origin` remote to the copied URL.
 4. Make your changes, commit, and push.
 5. (Optional) Open your fork again, and create a pull request.
@@ -84,12 +84,12 @@ If you wish to make changes to the library without dealing with a git submodule 
 
 1. In the main page for this repo, click on Code > Download Zip.
 2. Extract the zip on your computer.
-3. Make a HyperNav folder under your project's Assets folder.
-4. Copy the `Editor` and `Runtime` folders from the extracted zip to the newly created HyperNav folder.
+3. Make an Infohazard.Core folder under your project's Assets folder.
+4. Copy the `Editor` and `Runtime` folders from the extracted zip to the newly created folder.
 
 ### Method 4 - Asset Store
 
-If you’d rather use the asset store than the package manager, you can get the project at LINK TBD.
+If you’d rather use the asset store than the package manager, you can get the project [here](https://assetstore.unity.com/packages/add-ons/infohazard-core-utility-library-235104).
 Simply add it to the project as you would any other asset.
 
 ## Setup
