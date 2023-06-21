@@ -55,7 +55,7 @@ namespace Infohazard.Core {
         }
 
         /// <summary>
-        /// Add a new user to the <see cref="SpawnRef"/>, creating the <see cref="DefaultPoolHandler"/> if necessary.
+        /// Add a user to the <see cref="SpawnRef"/>, creating the <see cref="DefaultPoolHandler"/> if necessary.
         /// </summary>
         /// <remarks>
         /// The <see cref="IPoolHandler"/> for the object will be retained.
@@ -130,7 +130,7 @@ namespace Infohazard.Core {
     }
 
     /// <summary>
-    /// <see cref="SpawnRefBase"/> for spawning a GameObject directly.
+    /// <see cref="SpawnRef"/> for spawning a GameObject directly.
     /// </summary>
     [Serializable]
     public class SpawnRef : SpawnRefBase<GameObject> {
@@ -153,7 +153,7 @@ namespace Infohazard.Core {
     }
     
     /// <summary>
-    /// <see cref="SpawnRefBase"/> for spawning a GameObject via one of its components.
+    /// <see cref="SpawnRef"/> for spawning a GameObject via one of its components.
     /// </summary>
     [Serializable]
     public class SpawnRef<T> : SpawnRefBase<T> where T : Component {
