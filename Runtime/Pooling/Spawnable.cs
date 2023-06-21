@@ -17,8 +17,14 @@ namespace Infohazard.Core {
     /// When it is despawned, it will broadcast the <c>OnDespawned</c> method.
     /// </remarks>
     public class Spawnable : MonoBehaviour {
+        /// <summary>
+        /// (Serialized) Whether this object should be pooled.
+        /// </summary>
         [SerializeField] private bool _pooled = true;
 
+        /// <summary>
+        /// Whether this object should be pooled.
+        /// </summary>
         public bool Pooled => _pooled;
         
         /// <summary>
@@ -26,6 +32,9 @@ namespace Infohazard.Core {
         /// </summary>
         public bool IsSpawned { get; private set; }
         
+        /// <summary>
+        /// <see cref="IPoolHandler"/> which was used to spawn the object.
+        /// </summary>
         internal IPoolHandler PoolHandler { get; set; }
 
         /// <summary>

@@ -46,8 +46,21 @@ namespace Infohazard.Core {
             }
         }
 
+        /// <summary>
+        /// Transform that inactive instances will be parented to.
+        /// </summary>
         public Transform PoolTransform => transform;
 
+        /// <summary>
+        /// Spawn an instance of the specified prefab,
+        /// creating a <see cref="DefaultPoolHandler"/> if one does not already exist.
+        /// </summary>
+        /// <remarks>
+        /// If a new <see cref="DefaultPoolHandler"/> is created, it will be retained by the <see cref="PoolManager"/>.
+        /// </remarks>
+        /// <param name="prefab">The prefab to spawn.</param>
+        /// <param name="spawnParams">Additional spawn information.</param>
+        /// <returns>The spawned instance.</returns>
         public Spawnable SpawnPrefab(Spawnable prefab, in SpawnParams spawnParams = default) {
             Debug.Assert(!prefab.IsSpawned);
             if (!_poolsByKey.TryGetValue(prefab, out IPoolHandler pool)) {
@@ -63,6 +76,18 @@ namespace Infohazard.Core {
             return instance;
         }
 
+        /// <summary>
+        /// Spawn an instance with the specified key. If no <see cref="IPoolHandler"/> is registered for
+        /// <see cref="key"/>, an error is logged and null is returned.
+        /// </summary>
+        /// <remarks>
+        /// The key may be a prefab that was previously registered using <see cref="SpawnPrefab"/>,
+        /// or another object for which an <see cref="IPoolHandler"/>
+        /// was manually registered using <see cref="AddPoolHandler"/>.
+        /// </remarks>
+        /// <param name="key">Key of the <see cref="IPoolHandler"/>, such as the prefab itself.</param>
+        /// <param name="spawnParams">Additional spawn info.</param>
+        /// <returns>The spawned instance, or null if no handler found.</returns>
         public Spawnable SpawnFromKey(object key, in SpawnParams spawnParams = default) {
             if (!_poolsByKey.TryGetValue(key, out IPoolHandler pool)) {
                 Debug.LogError($"No pool handler registered for key {key}.");
@@ -75,14 +100,33 @@ namespace Infohazard.Core {
             return instance;
         }
 
+        /// <summary>
+        /// Return whether a <see cref="IPoolHandler"/> has been registered with the given key.
+        /// </summary>
+        /// <param name="key">Key of the <see cref="IPoolHandler"/>, such as the prefab itself.</param>
+        /// <returns>Whether there is an <see cref="IPoolHandler"/> for <see cref="key"/>.</returns>
         public bool HasPoolHandler(object key) {
             return _poolsByKey.ContainsKey(key);
         }
-
+        
+        /// <summary>
+        /// Get the <see cref="IPoolHandler"/> for the given key, if one is registered (return false otherwise).
+        /// </summary>
+        /// <param name="key">Key of the <see cref="IPoolHandler"/>, such as the prefab itself.</param>
+        /// <param name="handler">The registered <see cref="IPoolHandler"/> for <see cref="key"/>, or null if none.</param>
+        /// <returns>Whether there is an <see cref="IPoolHandler"/> for <see cref="key"/>.</returns>
         public bool TryGetPoolHandler(object key, out IPoolHandler handler) {
             return _poolsByKey.TryGetValue(key, out handler);
         }
 
+        /// <summary>
+        /// Register a new <see cref="IPoolHandler"/> for the given key.
+        /// </summary>
+        /// <remarks>
+        /// The registered <see cref="IPoolHandler"/> will NOT be retained by the <see cref="PoolManager"/>.
+        /// </remarks>
+        /// <param name="key">Key used to spawn objects using <see cref="handler"/>.</param>
+        /// <param name="handler"><see cref="IPoolHandler"/> used to spawn objects for <see cref="key"/>.</param>
         public void AddPoolHandler(object key, IPoolHandler handler) {
             if (_poolsByKey.ContainsKey(key)) {
                 Debug.LogError($"A pool handler is already registered for key {key}.");
@@ -92,15 +136,10 @@ namespace Infohazard.Core {
             _poolsByKey.Add(key, handler);
         }
 
-        private void InitializeSpawnedInstance(Spawnable instance, in SpawnParams spawnParams) {
-            instance.transform.Initialize(spawnParams);
-            instance.WasSpawned();
-
-            if (instance.TryGetComponent(out IPersistedInstance obj)) {
-                obj.SetupDynamicInstance(spawnParams.PersistedInstanceID);
-            }
-        }
-
+        /// <summary>
+        /// Despawn the given instance, returning it back to its pool if it has one.
+        /// </summary>
+        /// <param name="instance"></param>
         public void DespawnInstance(Spawnable instance) {
             if (instance.IsSpawned) {
                 instance.WasDespawned();
@@ -118,12 +157,27 @@ namespace Infohazard.Core {
         }
 
         /// <summary>
-        /// Remove and destroy any inactive pooled objects.
+        /// Destroy and cleanup any inactive instances for
+        /// <see cref="DefaultPoolHandler"/>s created by the <see cref="PoolManager"/>.
         /// </summary>
+        /// <remarks>
+        /// <see cref="IPoolHandler"/>s created manually and added using
+        /// <see cref="AddPoolHandler"/> will NOT be affected.
+        /// This is meant to be called when loading a new level, to ensure pooled instances to not stay around forever.
+        /// </remarks>
         public void ClearInactiveObjects() {
             foreach (IPoolHandler pool in _autoPools) {
                 pool.Release();
                 pool.Retain();
+            }
+        }
+
+        private void InitializeSpawnedInstance(Spawnable instance, in SpawnParams spawnParams) {
+            instance.transform.Initialize(spawnParams);
+            instance.WasSpawned();
+
+            if (instance.TryGetComponent(out IPersistedInstance obj)) {
+                obj.SetupDynamicInstance(spawnParams.PersistedInstanceID);
             }
         }
     }

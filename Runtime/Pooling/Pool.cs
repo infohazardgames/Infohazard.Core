@@ -75,7 +75,7 @@ namespace Infohazard.Core {
         /// <summary>
         /// Return an object to the pool, destroying it if over max count.
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="item">The object to release.</param>
         public void Release(T item) {
             ReleaseAction?.Invoke(item);
             if (MaxCount > 0 && _stack.Count >= MaxCount) {
