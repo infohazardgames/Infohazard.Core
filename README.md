@@ -30,6 +30,8 @@
     - [Unique Names](#unique-names)
     - [Utility](#utility)
     - [Miscellaneous](#miscellaneous)
+  - [Integrations](#integrations)
+    - [Addressables](#addressables)
 
 ## Introduction
 
@@ -212,3 +214,13 @@ You can inherit from this script in managers or other scripts that need to exist
 Similar to Singleton, but for ScriptableObjects. You specify a path in your subclass where the instance should live (this must be under a Resources folder) and the editor will automatically handle loading and even creating this asset for you when needed.
 #### TriggerVolume
 A script that makes it easy to add events to a trigger collider. Provides both UnityEvents (assignable in the inspector) and normal C# events for when an object enters or leaves the trigger, and when all objects have left the trigger.
+
+## Integrations
+Infohazard.Core directly supports integration with the following assets and packages:
+
+### Addressables
+Infohazard.Core has an extension package to support spawning Addressable prefabs through the spawn/pooling system. This extension can be very helpful when working with Addressables, even if you don't want to actually pool them.
+
+If you downloaded Infohazard.Core from the Unity Asset Store, you can find the Addressables integration package at `Assets/Plugins/Infohazard/Infohazard.Core/Integrations/Infohazard.Core.Addressables.unitypackage`. Simply open that package in Unity to extract the files into your project.
+
+If you are using Infohazard.Core as a package, you can install the Addressables integration package from [Github](https://github.com/infohazardgames/Infohazard.Core.Addressables).
