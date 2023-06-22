@@ -221,6 +221,8 @@ Infohazard.Core directly supports integration with the following assets and pack
 ### Addressables
 Infohazard.Core has an extension package to support spawning Addressable prefabs through the spawn/pooling system. This extension can be very helpful when working with Addressables, even if you don't want to actually pool them.
 
-If you downloaded Infohazard.Core from the Unity Asset Store, you can find the Addressables integration package at `Assets/Plugins/Infohazard/Infohazard.Core/Integrations/Infohazard.Core.Addressables.unitypackage`. Simply open that package in Unity to extract the files into your project.
+Regardless of how you install the Addressables integration, you will need to install [UniTask](https://github.com/Cysharp/UniTask), either via the Package Manager or importing the .unitypackage.
+
+If you downloaded Infohazard.Core from the Unity Asset Store, you can find the Addressables integration package at `Assets/Plugins/Infohazard/Infohazard.Core/Integrations/Infohazard.Core.Addressables.unitypackage`. Double click that package in Unity to extract the files into your project.
 
 If you are using Infohazard.Core as a package, you can install the Addressables integration package from [Github](https://github.com/infohazardgames/Infohazard.Core.Addressables).

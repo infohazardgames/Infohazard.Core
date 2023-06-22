@@ -21,4 +21,6 @@ MonoBehaviour:
   - {fileID: 5897886265953266890, guid: 6b033b4c9e4a3f0478f43a6a74998585, type: 3}
   - {fileID: 102900000, guid: 4e5e8c72e03d2054b989f1e364859195, type: 3}
   - {fileID: 102900000, guid: dd2835ee952552148a1aeadb53459d8d, type: 3}
+  - {fileID: 102900000, guid: 5827bd2afc3568645b7c518f4db0ff7a, type: 3}
   _package: {fileID: 0}
+  _lastExportPath: PackageOutput
