@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -78,9 +77,24 @@ namespace Infohazard.Core.Editor {
             ValidatedObjectField(position, property, objType, label, style, validator);
         }
 
+        /// <summary>
+        /// Draw a button which, when pressed, will show a dropdown of all types that can be assigned to the given
+        /// property. When the user clicks one of the options, they will be prompted to save a new asset of that type.
+        /// If they do, it will be assigned to the given property.
+        /// </summary>
+        /// <remarks>
+        /// By using a custom save action, you can, for example, add the created asset to another asset rather than
+        /// saving to the project directly. If a custom save action is used, the file browser will not be shown.
+        /// </remarks>
+        /// <param name="property">The property that will be assigned.</param>
+        /// <param name="type">Type of required object.</param>
+        /// <param name="buttonRect">Rect in which to show the button.</param>
+        /// <param name="interfaces">Interfaces that the object must implement.</param>
+        /// <param name="defaultSavePath">Default path to save the asset.</param>
+        /// <param name="saveAction">Action to take to save the asset. Can be null for regular asset save.</param>
         public static void CreateNewInstanceDropDown(SerializedProperty property, Type type, Rect buttonRect, 
                                                      IReadOnlyList<Type> interfaces, string defaultSavePath,
-                                                     Action<Object, string> saveAction) {
+                                                     Action<Object, string> saveAction = null) {
             GenericMenu menu = new GenericMenu();
 
             foreach (Type t in TypeUtility.AllTypes) {
@@ -115,6 +129,14 @@ namespace Infohazard.Core.Editor {
             return true;
         }
 
+        /// <summary>
+        /// Draw a dropdown for selecting an asset to assign to a property.
+        /// </summary>
+        /// <param name="property">The property that will be assigned.</param>
+        /// <param name="type">Type of required object.</param>
+        /// <param name="buttonRect">Rect in which to show the button.</param>
+        /// <param name="content">Content to show in the button.</param>
+        /// <param name="interfaces">Interfaces that the object must implement.</param>
         public static void AssetDropdown(SerializedProperty property, Type type, Rect buttonRect, GUIContent content,
                                          IReadOnlyList<Type> interfaces = null) {
             

@@ -443,6 +443,18 @@ namespace Infohazard.Core.Editor {
             return component;
         }
 
+        /// <summary>
+        /// Prompts the user to browse for a path to save a new asset at. When the user confirms, a new asset will be
+        /// created and assigned to the given property.
+        /// </summary>
+        /// <remarks>
+        /// By using a custom save action, you can, for example, add the created object to another asset rather than
+        /// saving to the project directly. If a custom save action is used, the file browser will not be shown.
+        /// </remarks>
+        /// <param name="property">The property that will be assigned.</param>
+        /// <param name="type">Type of object to create.</param>
+        /// <param name="defaultSavePath">Default path to save the asset.</param>
+        /// <param name="saveAction">Action to take to save the asset. Can be null for regular asset save.</param>
         public static void CreateAndSaveNewAssetAndAssignToProperty(SerializedProperty property, Type type, 
                                                                     string defaultSavePath, 
                                                                     Action<Object, string> saveAction) {
