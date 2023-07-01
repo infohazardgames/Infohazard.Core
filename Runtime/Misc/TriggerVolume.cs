@@ -57,7 +57,7 @@ namespace Infohazard.Core {
         /// <summary>
         /// All objects currently inside the trigger volume.
         /// </summary>
-        public HashSet<GameObject> Occupants => _objects;
+        public ICollection<GameObject> Occupants => _objects.Keys;
 
         /// <summary>
         /// List of colliders to enable/disable along with this component.
@@ -100,7 +100,7 @@ namespace Infohazard.Core {
             public UnityEvent OnAllExit => _onAllExit;
         }
 
-        private HashSet<GameObject> _objects = new HashSet<GameObject>();
+        private Dictionary<GameObject, TriggerOccupant> _objects = new Dictionary<GameObject, TriggerOccupant>();
         private List<GameObject> _objectsToRemove = new List<GameObject>();
         
         private void Update() {
@@ -128,47 +128,97 @@ namespace Infohazard.Core {
         }
 
         private void CheckForDeactivatedObjects() {
-            _objects.RemoveWhere(obj => !obj);
             _objectsToRemove.Clear();
 
-            foreach (GameObject obj in _objects) {
-                if (!obj.activeInHierarchy) _objectsToRemove.Add(obj);
+            foreach (KeyValuePair<GameObject, TriggerOccupant> pair in _objects) {
+                GameObject obj = pair.Key;
+                TriggerOccupant occupant = pair.Value;
+
+                if (!obj) {
+                    _objectsToRemove.Add(obj);
+                } else if (!obj.activeInHierarchy) {
+                    _objectsToRemove.Add(obj);
+                } else {
+                    occupant.Colliders?.RemoveAll(c => !c.enabled);
+                    occupant.Collider2Ds?.RemoveAll(c => !c.enabled);
+                    
+                    if (occupant.Colliders?.Count > 0 || occupant.Collider2Ds?.Count > 0) continue;
+
+                    _objectsToRemove.Add(obj);
+                }
             }
 
             foreach (GameObject obj in _objectsToRemove) {
-                HandleExit(obj);
+                HandleExit(obj, null, null);
             }
         }
 
-        private void HandleEnter(GameObject other) {
+        private void HandleEnter(GameObject other, Collider col, Collider2D col2D) {
             if (!enabled) return;
             if (!other.CompareTagMask(_tagFilter)) return;
-            if (!_objects.Add(other.gameObject)) return;
-            
-            _events.OnTriggerEnter?.Invoke();
-            TriggerEntered?.Invoke(other);
+
+            bool wasContained = _objects.TryGetValue(other, out TriggerOccupant occupant);
+            if (!wasContained) {
+                occupant = new TriggerOccupant();
+                _objects[other] = occupant;
+            }
+
+            if (col) {
+                occupant.Colliders ??= new List<Collider>();
+                occupant.Colliders.Add(col);
+            }
+
+            if (col2D) {
+                occupant.Collider2Ds ??= new List<Collider2D>();
+                occupant.Collider2Ds.Add(col2D);
+            }
+
+            if (!wasContained) {
+                _events.OnTriggerEnter?.Invoke();
+                TriggerEntered?.Invoke(other);
+            }
         }
 
-        private void HandleExit(GameObject other) {
-            if (!enabled) return;
-            if (!other.CompareTagMask(_tagFilter)) return;
-            if (!_objects.Remove(other)) return;
-            
+        private void HandleExit(GameObject other, Collider col, Collider2D col2D) {
+            if (!enabled || !_objects.TryGetValue(other, out TriggerOccupant occupant)) return;
+
+            if (other) {
+                if (col != null && occupant.Colliders != null) {
+                    occupant.Colliders.Remove(col);
+                }
+
+                if (col2D != null && occupant.Collider2Ds != null) {
+                    occupant.Collider2Ds.Remove(col2D);
+                }
+
+                if (occupant.Colliders?.Count > 0 || occupant.Collider2Ds?.Count > 0) {
+                    return;
+                }
+            }
+
+            _objects.Remove(other);
+
             _events.OnTriggerExit?.Invoke();
-            TriggerExited?.Invoke(other.gameObject);
+            TriggerExited?.Invoke(other);
+            
             if (_objects.Count == 0) {
                 _events.OnAllExit?.Invoke();
-                AllExited?.Invoke(other.gameObject);
+                AllExited?.Invoke(other);
             }
         }
 
-        private void OnTriggerEnter(Collider other) => HandleEnter(other.gameObject);
+        private void OnTriggerEnter(Collider other) => HandleEnter(other.gameObject, other, null);
 
-        private void OnTriggerExit(Collider other) => HandleExit(other.gameObject);
+        private void OnTriggerExit(Collider other) => HandleExit(other.gameObject, other, null);
 
-        private void OnTriggerEnter2D(Collider2D other) => HandleEnter(other.gameObject);
+        private void OnTriggerEnter2D(Collider2D other) => HandleEnter(other.gameObject, null, other);
 
-        private void OnTriggerExit2D(Collider2D other) => HandleExit(other.gameObject);
+        private void OnTriggerExit2D(Collider2D other) => HandleExit(other.gameObject, null, other);
+        
+        private class TriggerOccupant {
+            public List<Collider> Colliders;
+            public List<Collider2D> Collider2Ds;
+        }
     }
 
 }
