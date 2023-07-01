@@ -141,12 +141,12 @@ namespace Infohazard.Core {
         /// </summary>
         /// <param name="instance"></param>
         public void DespawnInstance(Spawnable instance) {
-            if (instance.IsSpawned) {
-                instance.WasDespawned();
-            }
-            
             if (instance.TryGetComponent(out IPersistedInstance obj)) {
                 obj.RegisterDestroyed();
+            }
+            
+            if (instance.IsSpawned) {
+                instance.WasDespawned();
             }
 
             if (instance.PoolHandler != null) {
