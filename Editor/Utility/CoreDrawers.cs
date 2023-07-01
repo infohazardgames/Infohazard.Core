@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -13,6 +14,7 @@ namespace Infohazard.Core.Editor {
     /// Contains extensions to EditorGUI for drawing custom properties.
     /// </summary>
     public static class CoreDrawers {
+        private const string AssetDropdownUsesPathsPref = "Infohazard.Core.CoreDrawers.AssetDropdownUsesPaths";
 
         private static Type _typeOfObjectFieldValidator;
         private static MethodInfo _objectFieldMethod;
@@ -74,6 +76,99 @@ namespace Infohazard.Core.Editor {
             }
             
             ValidatedObjectField(position, property, objType, label, style, validator);
+        }
+
+        public static void CreateNewInstanceDropDown(SerializedProperty property, Type type, Rect buttonRect, 
+                                                     IReadOnlyList<Type> interfaces, string defaultSavePath,
+                                                     Action<Object, string> saveAction) {
+            GenericMenu menu = new GenericMenu();
+
+            foreach (Type t in TypeUtility.AllTypes) {
+                if (IsClassValidForNewButton(type, t, interfaces)) {
+                    
+                    menu.AddItem(new GUIContent(t.FullName), false, () => {
+                        CoreEditorUtility.CreateAndSaveNewAssetAndAssignToProperty(
+                            property, t, defaultSavePath, saveAction);
+                    });
+                }
+            }
+            
+            menu.DropDown(buttonRect);
+        }
+
+        private static bool IsClassValidForNewButton(Type fieldType, Type testType, IReadOnlyList<Type> interfaces) {
+            if (!(testType is { IsClass: true, IsAbstract: false, IsInterface: false, IsGenericType: false }) ||
+                !fieldType.IsAssignableFrom(testType)) {
+                return false;
+            }
+
+            if (typeof(GameObject).IsAssignableFrom(testType) || typeof(Component).IsAssignableFrom(testType)) {
+                return false;
+            }
+
+            if (interfaces == null) return true;
+            
+            foreach (Type interfaceType in interfaces) {
+                if (!interfaceType.IsAssignableFrom(testType)) return false;
+            }
+            
+            return true;
+        }
+
+        public static void AssetDropdown(SerializedProperty property, Type type, Rect buttonRect, GUIContent content,
+                                         IReadOnlyList<Type> interfaces = null) {
+            
+            if (!EditorGUI.DropdownButton(buttonRect, content, FocusType.Passive)) return;
+
+            ShowAssetDropdown(property, type, buttonRect, interfaces);
+        }
+
+        private static void ShowAssetDropdown(SerializedProperty property, Type type, Rect buttonRect, 
+                                              IReadOnlyList<Type> interfaces = null) {
+            void SetValue(Object value) {
+                property.serializedObject.Update();
+                property.objectReferenceValue = value;
+                property.serializedObject.ApplyModifiedProperties();
+            }
+
+            bool usePaths = EditorPrefs.GetBool(AssetDropdownUsesPathsPref, false);
+            
+            GenericMenu menu = new GenericMenu();
+            menu.AddItem(new GUIContent("Show Paths"), usePaths, () => {
+                EditorPrefs.SetBool(AssetDropdownUsesPathsPref, !usePaths);
+            });
+            menu.AddSeparator(string.Empty);
+            menu.AddItem(new GUIContent(ObjectToString(null)), false, () => SetValue(null));
+            
+            Func<Object, Object> validator =
+                interfaces != null ? ObjectValidators.MustImplement(interfaces) : null;
+
+            IEnumerable<Object> assets = CoreEditorUtility.GetAssetsOfType(type.Name);
+
+            List<(Object obj, string path)> options = new List<(Object obj, string path)>();
+            foreach (Object obj in assets) {
+                Object validated = validator != null ? validator(obj) : obj;
+                if (!validated || !type.IsInstanceOfType(validated)) continue;
+
+                string path = CoreEditorUtility.GetPathRelativeToAssetsFolder(AssetDatabase.GetAssetPath(obj));
+                options.Add((validated, path));
+            }
+
+            if (usePaths) {
+                options.Sort((i1, i2) => string.CompareOrdinal(i1.obj.name, i2.obj.name));
+            } else {
+                options.Sort((i1, i2) => string.CompareOrdinal(i1.path, i2.path));
+            }
+
+            foreach ((Object obj, string path) in options) {
+                menu.AddItem(new GUIContent(usePaths ? path : obj.name), false, () => SetValue(obj));
+            }
+                
+            menu.DropDown(buttonRect);
+        }
+
+        private static string ObjectToString(Object obj) {
+            return obj ? obj.name : "<none>";
         }
     }
 }

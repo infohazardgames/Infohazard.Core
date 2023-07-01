@@ -296,7 +296,7 @@ namespace Infohazard.Core.Editor {
         /// <remarks>
         /// Only assets whose root object is the given type are included.
         /// </remarks>
-        /// <param name="type">The type name of assets to find.</param>
+        /// <param name="type">The type name of assets to find. Use the class name only, without namespace.</param>
         /// <returns>A sequence of all the found assets.</returns>
         public static IEnumerable<Object> GetAssetsOfType(string type) {
             string[] guids = AssetDatabase.FindAssets($"t:{type}");
@@ -441,6 +441,94 @@ namespace Infohazard.Core.Editor {
             Undo.RegisterCreatedObjectUndo(inst, $"Create {name}");
             Undo.RegisterCreatedObjectUndo(component, $"Create {name}");
             return component;
+        }
+
+        public static void CreateAndSaveNewAssetAndAssignToProperty(SerializedProperty property, Type type, 
+                                                                    string defaultSavePath, 
+                                                                    Action<Object, string> saveAction) {
+            string path = $"New{type.Name}.asset";
+
+            // If there is already a value, set the default name of the new object to reflect this.
+            Object currentValue = property.objectReferenceValue;
+            if (currentValue) path = Path.GetFileNameWithoutExtension(currentValue.name) + "_Copy.asset";
+            
+            // If we have a custom save action, no need to do any filesystem stuff.
+            if (saveAction == null) {
+                string folder = defaultSavePath;
+                bool empty = string.IsNullOrEmpty(folder);
+
+                // Save in the same path as current value if it is not null.
+                string currentPath = currentValue != null ? AssetDatabase.GetAssetPath(currentValue) : null;
+                if (!string.IsNullOrEmpty(currentPath)) {
+                    // Remove the "Assets" folder from the path.
+                    folder = GetPathRelativeToAssetsFolder(Path.GetDirectoryName(currentPath));
+                } else if (!empty) {
+                    // If user added a '/' character at the beginning of the path, remove it.
+                    if (folder[0] == '/') {
+                        folder = folder.Substring(1);
+                    }
+                } else {
+                    // Get the directory of the object containing the property as a default path.
+                    string assetPath = AssetDatabase.GetAssetPath(property.serializedObject.targetObject);
+                    folder ??= string.Empty;
+                    if (!string.IsNullOrEmpty(assetPath)) {
+                        assetPath = Path.GetDirectoryName(assetPath);
+                        assetPath = GetPathRelativeToAssetsFolder(assetPath);
+                        folder = Path.Combine(assetPath, folder);
+                    }
+                }
+                
+                // Add back the "Assets" path.
+                string folderWithAssets = Path.Combine("Assets", folder).Replace('\\', '/');
+                
+                // Add the project path to get a full path.
+                string fullFolder = Path.Combine(Application.dataPath, folder);
+                if (!Directory.Exists(fullFolder)) Directory.CreateDirectory(fullFolder);
+                
+                // Prompt the user to select a save location.
+                path = EditorUtility.SaveFilePanelInProject("Save New Asset", path,
+                                                            "asset", "Save new asset to a location.", folderWithAssets);
+                if (string.IsNullOrEmpty(path)) return;
+            }
+
+            // If there is a current value, copy it, otherwise create a new instance.
+            Object newAsset = null;
+            if (currentValue != null && currentValue.GetType() == type) {
+                newAsset = Object.Instantiate(currentValue);
+            } else if (typeof(ScriptableObject).IsAssignableFrom(type)) {
+                newAsset = ScriptableObject.CreateInstance(type);
+            } else {
+                newAsset = (Object)type.GetConstructor(Array.Empty<Type>())!.Invoke(Array.Empty<object>());
+            }
+            
+            // Save the asset.
+            if (newAsset == null) return;
+            newAsset.name = Path.GetFileNameWithoutExtension(path);
+
+            if (saveAction != null) {
+                saveAction(newAsset, path);
+            } else {
+                Save(newAsset, path);
+            }
+            
+            // Update the serialized property value.
+            property.serializedObject.Update();
+            property.objectReferenceValue = newAsset;
+            property.serializedObject.ApplyModifiedProperties();
+        }
+
+        private static void Save(Object asset, string path) {
+            // Ensure the directory exists as an asset (has a meta file).
+            string dir = Path.GetDirectoryName(CoreEditorUtility.GetPathRelativeToAssetsFolder(path));
+            string fullPath = string.IsNullOrEmpty(dir) ? Application.dataPath : Path.Combine(Application.dataPath, dir);
+            if (!Directory.Exists(fullPath)) {
+                Directory.CreateDirectory(fullPath);
+                AssetDatabase.Refresh();
+            }
+
+            // Save the asset to disk.
+            string assetPath = path.Replace('\\', '/');
+            AssetDatabase.CreateAsset(asset, assetPath);
         }
     }
 }

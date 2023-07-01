@@ -2,7 +2,9 @@
 // Copyright (c) 2022-present Vincent Miller (Infohazard Games).
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Infohazard.Core;
 using UnityEditor;
@@ -40,27 +42,35 @@ namespace Infohazard.Core.Editor {
             // Height always includes base property height.
             float height = EditorGUI.GetPropertyHeight(property, label);
 
-            // If the property references a valid object and is expanded, include that object's properties.
-            if (value != null && (property.isExpanded || attr.AlwaysExpanded)) {
-                // Space for the name text field.
+            // If multiple values, display a label but don't expand.
+            if (property.hasMultipleDifferentValues) {
                 height += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+                return height;
+            }
 
-                SerializedObject so = GetSerializedObject(value);
+            // If the value is null, property isn't expanded, do not expand.
+            if (value == null || (!property.isExpanded && !attr.AlwaysExpanded)) {
+                return height;
+            }
+            
+            // Space for the name text field.
+            height += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
+
+            SerializedObject so = GetSerializedObject(value);
                 
-                // Loop through all properties of the cached serialized object.
-                // We pass true to the root SerializedProperty to enter its child list,
-                // then pass false to keep going without recursing further.
-                // The extra height of expanded child properties will be handled by the inner GetPropertyHeight call.
-                var iter = so.GetIterator();
-                bool first = true;
-                while (iter.NextVisible(first)) {
-                    if (iter.name == "m_Script") continue;
-                    first = false;
+            // Loop through all properties of the cached serialized object.
+            // We pass true to the root SerializedProperty to enter its child list,
+            // then pass false to keep going without recursing further.
+            // The extra height of expanded child properties will be handled by the inner GetPropertyHeight call.
+            var iter = so.GetIterator();
+            bool first = true;
+            while (iter.NextVisible(first)) {
+                if (iter.name == "m_Script") continue;
+                first = false;
                     
-                    // Get the height of the child property, and all of its descendents if it is expanded.
-                    height += EditorGUIUtility.standardVerticalSpacing +
-                              EditorGUI.GetPropertyHeight(iter, new GUIContent(iter.displayName), iter.isExpanded);
-                }
+                // Get the height of the child property, and all of its descendents if it is expanded.
+                height += EditorGUIUtility.standardVerticalSpacing +
+                          EditorGUI.GetPropertyHeight(iter, new GUIContent(iter.displayName), iter.isExpanded);
             }
 
             return height;
@@ -80,16 +90,17 @@ namespace Infohazard.Core.Editor {
             propertyRect.height = EditorGUI.GetPropertyHeight(property, label);
 
             // Draw the new button if desired, and reduce size of the main property.
+            Type type = this.GetFieldType();
             if (attr.ShowNewButton) {
-                Type type = this.GetFieldType();
-
-                if (attr.ShowChildTypes) {
+                
+                if (attr.ShowChildTypes || attr.RequiredInterfaces?.Count > 0) {
                     Rect newButtonRect = propertyRect;
                     propertyRect.xMax -= 70;
                     newButtonRect.xMin = propertyRect.xMax + EditorGUIUtility.standardVerticalSpacing;
 
                     if (EditorGUI.DropdownButton(newButtonRect, new GUIContent("New"), FocusType.Passive)) {
-                        CreateNewContextMenu(property, type, newButtonRect);
+                        CoreDrawers.CreateNewInstanceDropDown(
+                            property, type, newButtonRect, attr.RequiredInterfaces, attr.SavePath, SaveAction);
                     }
                 } else if (type is { IsClass: true, IsAbstract: false, IsInterface: false, IsGenericType: false } &&
                            typeof(Object).IsAssignableFrom(type) &&
@@ -101,13 +112,42 @@ namespace Infohazard.Core.Editor {
                     newButtonRect.xMin = propertyRect.xMax + EditorGUIUtility.standardVerticalSpacing;
 
                     if (GUI.Button(newButtonRect, "New")) {
-                        CreateNew(property, type);
+                        CoreEditorUtility.CreateAndSaveNewAssetAndAssignToProperty(
+                            property, type, attr.SavePath, SaveAction);
                     }
                 }
             }
 
+            Rect propertyRectWithoutLabel = EditorGUI.PrefixLabel(propertyRect, labelCopy);
+            
+            // Draw dropdown button.
+            Rect dropdownRect = propertyRectWithoutLabel;
+            dropdownRect.width = dropdownRect.height;
+            propertyRectWithoutLabel.xMin = dropdownRect.xMax + EditorGUIUtility.standardVerticalSpacing;
+            CoreDrawers.AssetDropdown(property, type, dropdownRect, GUIContent.none, attr.RequiredInterfaces);
+
             // Draw the main property.
-            EditorGUI.PropertyField(propertyRect, property, labelCopy);
+            if (attr.RequiredInterfaces?.Count > 0) {
+                CoreDrawers.ObjectFieldWithInterfaces(propertyRectWithoutLabel, property, this.GetFieldType(),
+                                                      GUIContent.none,EditorStyles.objectField,
+                                                      attr.RequiredInterfaces);
+            } else {
+                EditorGUI.PropertyField(propertyRectWithoutLabel, property, GUIContent.none);
+            }
+
+            // Avoid messing up multiple values.
+            if (property.hasMultipleDifferentValues) {
+                // Add indent to child properties.
+                EditorGUI.indentLevel = 1;
+                
+                // Rect to keep track of where we are drawing next child.
+                Rect propsRect = position;
+                propsRect.yMin = propertyRect.yMax + EditorGUIUtility.standardVerticalSpacing;
+                
+                EditorGUI.LabelField(propsRect, "Not expanded due to multiple values.");
+
+                return;
+            }
 
             // Draw foldout when property value is not null and property is not always expanded.
             Object value = property.objectReferenceValue;
@@ -126,11 +166,20 @@ namespace Infohazard.Core.Editor {
                 // Get cached serialized object.
                 SerializedObject so = GetSerializedObject(value);
                 so.Update();
+                
+                // Determine if root asset, which makes editing name more complicated.
+                string assetPath = AssetDatabase.GetAssetPath(value);
+                bool isRootAsset = !string.IsNullOrEmpty(assetPath) &&
+                                   AssetDatabase.LoadAssetAtPath<Object>(assetPath) == value;
 
                 // Draw referenced object name as a text field.
                 SerializedProperty nameProp = so.FindProperty("m_Name");
                 propsRect.height = EditorGUI.GetPropertyHeight(nameProp, GUIContent.none);
+                EditorGUI.BeginChangeCheck();
                 EditorGUI.PropertyField(propsRect, nameProp);
+                if (EditorGUI.EndChangeCheck() && isRootAsset) {
+                    AssetDatabase.RenameAsset(assetPath, nameProp.stringValue);
+                }
 
                 // Move to next property.
                 propsRect.yMin = propsRect.yMax + EditorGUIUtility.standardVerticalSpacing;
@@ -168,111 +217,6 @@ namespace Infohazard.Core.Editor {
             }
 
             EditorGUI.indentLevel = indent;
-        }
-
-        private void CreateNewContextMenu(SerializedProperty property, Type type, Rect buttonRect) {
-            GenericMenu menu = new GenericMenu();
-
-            foreach (Type t in TypeUtility.AllTypes) {
-                if (t is { IsClass: true, IsAbstract: false, IsInterface: false, IsGenericType: false } &&
-                    type.IsAssignableFrom(t)) {
-                    
-                    menu.AddItem(new GUIContent(t.FullName), false, () => {
-                        CreateNew(property, t);
-                    });
-                }
-            }
-            
-            menu.DropDown(buttonRect);
-        }
-
-        private void CreateNew(SerializedProperty property, Type type) {
-            ExpandableAttribute attr = Attribute;
-
-            string path = $"New{type.Name}.asset";
-
-            // If there is already a value, set the default name of the new object to reflect this.
-            Object currentValue = property.objectReferenceValue;
-            if (currentValue) path = Path.GetFileNameWithoutExtension(currentValue.name) + "_Copy.asset";
-            
-            // If we have a custom save action, no need to do any filesystem stuff.
-            if (SaveAction == null) {
-                string folder = attr.SavePath;
-                bool empty = string.IsNullOrEmpty(folder);
-
-                // Save in the same path as current value if it is not null.
-                string currentPath = currentValue != null ? AssetDatabase.GetAssetPath(currentValue) : null;
-                if (!string.IsNullOrEmpty(currentPath)) {
-                    // Remove the "Assets" folder from the path.
-                    folder = CoreEditorUtility.GetPathRelativeToAssetsFolder(Path.GetDirectoryName(currentPath));
-                } else if (!empty) {
-                    // If user added a '/' character at the beginning of the path, remove it.
-                    if (folder[0] == '/') {
-                        folder = folder.Substring(1);
-                    }
-                } else {
-                    // Get the directory of the object containing the property as a default path.
-                    string assetPath = AssetDatabase.GetAssetPath(property.serializedObject.targetObject);
-                    folder ??= string.Empty;
-                    if (!string.IsNullOrEmpty(assetPath)) {
-                        assetPath = Path.GetDirectoryName(assetPath);
-                        assetPath = CoreEditorUtility.GetPathRelativeToAssetsFolder(assetPath);
-                        folder = Path.Combine(assetPath, folder);
-                    }
-                }
-                
-                // Add back the "Assets" path.
-                string folderWithAssets = Path.Combine("Assets", folder).Replace('\\', '/');
-                
-                // Add the project path to get a full path.
-                string fullFolder = Path.Combine(Application.dataPath, folder);
-                if (!Directory.Exists(fullFolder)) Directory.CreateDirectory(fullFolder);
-                
-                // Prompt the user to select a save location.
-                path = EditorUtility.SaveFilePanelInProject("Save New Asset", path,
-                                                            "asset", "Save new asset to a location.", folderWithAssets);
-                if (string.IsNullOrEmpty(path)) return;
-            }
-
-            // If there is a current value, copy it, otherwise create a new instance.
-            Object newAsset = null;
-            if (currentValue != null && currentValue.GetType() == type) {
-                newAsset = Object.Instantiate(currentValue);
-            } else if (typeof(ScriptableObject).IsAssignableFrom(type)) {
-                newAsset = ScriptableObject.CreateInstance(type);
-            } else {
-                newAsset = (Object)type.GetConstructor(Array.Empty<Type>())!.Invoke(Array.Empty<object>());
-            }
-            
-            // Save the asset.
-            if (newAsset == null) return;
-            newAsset.name = Path.GetFileNameWithoutExtension(path);
-            Save(newAsset, path);
-
-            // Update the serialized property value.
-            property.serializedObject.Update();
-            property.objectReferenceValue = newAsset;
-            property.serializedObject.ApplyModifiedProperties();
-        }
-
-        private static void Save(Object asset, string path) {
-            // If we have a SaveAction, all we need to do is invoke it.
-            if (SaveAction != null) {
-                SaveAction(asset, path);
-                return;
-            }
-
-            // Ensure the directory exists as an asset (has a meta file).
-            string dir = Path.GetDirectoryName(CoreEditorUtility.GetPathRelativeToAssetsFolder(path));
-            string fullPath = string.IsNullOrEmpty(dir) ? Application.dataPath : Path.Combine(Application.dataPath, dir);
-            if (!Directory.Exists(fullPath)) {
-                Directory.CreateDirectory(fullPath);
-                AssetDatabase.Refresh();
-            }
-
-            // Save the asset to disk.
-            string assetPath = path.Replace('\\', '/');
-            AssetDatabase.CreateAsset(asset, assetPath);
         }
     }
 }

@@ -8,6 +8,7 @@ namespace Infohazard.Core {
     /// <summary>
     /// Attribute that draws an object reference as a dropdown that searches through the project.
     /// </summary>
+    [Obsolete("Use ExpandableAttribute instead.")]
     [AttributeUsage(AttributeTargets.Field)]
     public class AssetDropdownAttribute : PropertyAttribute { }
 }

@@ -1,12 +1,16 @@
 // This file is part of the Infohazard.Core package.
 // Copyright (c) 2022-present Vincent Miller (Infohazard Games).
 
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Infohazard.Core;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Infohazard.Core.Editor {
+    [Obsolete]
     [CustomPropertyDrawer(typeof(AssetDropdownAttribute))]
     public class AssetDropdownDrawer : PropertyDrawer {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
@@ -26,15 +30,8 @@ namespace Infohazard.Core.Editor {
             dropdownRect.width = (dropdownRect.width - EditorGUIUtility.standardVerticalSpacing) / 2;
 
             // Use a lazy dropdown so we only have to find all valid assets when the dropdown is tapped.
-            CoreEditorUtility.DoLazyDropdown(dropdownRect,
-                new GUIContent(ObjectToString(property.objectReferenceValue)),
-                () => CoreEditorUtility.GetAssetsOfType(this.GetFieldType().FullName).Prepend(null).ToArray(),
-                ObjectToString,
-                t => {
-                    property.serializedObject.Update();
-                    property.objectReferenceValue = t;
-                    property.serializedObject.ApplyModifiedProperties();
-                });
+            CoreDrawers.AssetDropdown(property, this.GetFieldType(), dropdownRect,
+                                      new GUIContent(ObjectToString(property.objectReferenceValue)));
 
             // Draw normal drag/drop interface.
             Rect normalRect = dropdownRect;

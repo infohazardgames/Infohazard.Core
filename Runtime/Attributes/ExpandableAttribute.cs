@@ -1,6 +1,7 @@
 // This file is part of the Infohazard.Core package.
 // Copyright (c) 2022-present Vincent Miller (Infohazard Games).
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -44,6 +45,11 @@ namespace Infohazard.Core {
         /// Whether to show a dropdown of all types extending the type of the variable.
         /// </summary>
         public bool ShowChildTypes { get; }
+        
+        /// <summary>
+        /// Interfaces that must be implemented by assigned objects.
+        /// </summary>
+        public IReadOnlyList<Type> RequiredInterfaces { get; }
 
         /// <summary>
         /// Construct a new ExpandableAttribute.
@@ -52,11 +58,14 @@ namespace Infohazard.Core {
         /// <param name="savePath">Whether to show a "New" button to create new instances.</param>
         /// <param name="showNewButton">The default path to save newly created ScriptableObjects at.</param>
         /// <param name="showChildTypes">Whether to show a dropdown of all types extending the type of the variable.</param>
-        public ExpandableAttribute(bool alwaysExpanded = false, string savePath = null, bool showNewButton = true, bool showChildTypes = false) {
+        /// <param name="requiredInterfaces">Interfaces that must be implemented by assigned objects.</param>
+        public ExpandableAttribute(bool alwaysExpanded = false, string savePath = null, bool showNewButton = true,
+                                   bool showChildTypes = false, params Type[] requiredInterfaces) {
             AlwaysExpanded = alwaysExpanded;
             SavePath = savePath;
             ShowNewButton = showNewButton;
             ShowChildTypes = showChildTypes;
+            RequiredInterfaces = requiredInterfaces;
         }
     }
 }
