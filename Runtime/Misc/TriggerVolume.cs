@@ -191,7 +191,8 @@ namespace Infohazard.Core {
                     occupant.Collider2Ds.Remove(col2D);
                 }
 
-                if (occupant.Colliders?.Count > 0 || occupant.Collider2Ds?.Count > 0) {
+                if (other.gameObject.activeInHierarchy &&
+                    (occupant.Colliders?.Count > 0 || occupant.Collider2Ds?.Count > 0)) {
                     return;
                 }
             }
