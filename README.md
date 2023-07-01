@@ -135,18 +135,17 @@ This demo, located at `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Scenes/De
 The package provides several PropertyAttributes that you can use in your scripts to customize how serialized fields are drawn in the inspector. To use any of these attributes, simply add [AttributeName] in front of a serialized field in a script. You can also check out the drawers for these attributes in the Editor/Attributes directory.
 
 #### AssetDropdown
-
-The [AssetDropdown] attribute is used to show a dropdown menu on a field whose type is a UnityEngine.Object reference. It will find all assets in your project that match this type and display them as options in the dropdown. The standard drag/drop interface still works as well.
-
+The [AssetDropdown] attribute is used to show a dropdown menu on a field whose type is a UnityEngine.Object reference. It will find all assets in your project that match this type and display them as options in the dropdown. The standard drag/drop interface still works as well. This functionality is also available the [Expandable] attribute.
 #### ConditionalDraw
-
 The [ConditionalDraw] attribute is used to conditionally hide a serialized field in the inspector depending on some other condition. The supplied condition should be the name of another serialized field in the same script. You can also optionally pass in a value to compare that condition field with, and whether they must be equal or unequal to display the field.
 #### DrawSingleChildProperty
 The [DrawSingleChildProperty] attribute is used to render a hierarchy of fields as just a single value. Say you have a struct called Data with a string field called _name. Adding [DrawSingleChildProperty(“_name”)] to a field of type Data would cause just the _name field to be drawn in the inspector.
 #### EditNameOnlyAttribute
 The [EditNameOnly] attribute displays a Unity Object reference field as a text entry, which is used to control the name of the referenced object. If the reference is set to null, the standard drag-drop box is used.
 #### ExpandableAttribute
-The [Expandable] attribute is used to optionally draw the child properties of a Unity Object reference field, such that the referenced object can be edited without changing the inspector context. If the type of the field is a ScriptableObject, new instances can also be created from the inspector.
+The [Expandable] attribute is used to optionally draw the child properties of a Unity Object reference field, such that the referenced object can be edited without changing the inspector context. If the type of the field is not a GameObject or Component and is not abstract, new instances can also be created from the inspector. If the type specified is abstract, has child classes, or a required interface is specified, then the type of object to be created can be chosen from a dropdown. Additionally, a dropdown is provided to select assets from the project, similar to [AssetDropdown].
+#### MustImplementAttribute
+The [MustImplement] attribute is used on a Unity Object reference field to restrict values to implement one or more interfaces. While Unity does not support serializing references to interfaces directly, you can use this attribute on a field of type Object to allow both ScriptableObjects and MonoBehaviours that implement your interface. This functionality is also provided in the [Expandable] attribute.
 #### TypeSelectAttribute
 The [TypeSelect] attribute is used on a string field to show a dropdown where any valid C# type can be selected. The selected type is saved in the string as its full class name. This attribute is useful with the TypeUtility class to find the selected type.
 ### Data Structures

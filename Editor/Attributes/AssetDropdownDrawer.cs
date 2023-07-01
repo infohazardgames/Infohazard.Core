@@ -10,7 +10,6 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Infohazard.Core.Editor {
-    [Obsolete]
     [CustomPropertyDrawer(typeof(AssetDropdownAttribute))]
     public class AssetDropdownDrawer : PropertyDrawer {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
