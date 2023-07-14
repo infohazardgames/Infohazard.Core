@@ -17,10 +17,7 @@ namespace Infohazard.Core.Editor {
 
         private static Type _typeOfObjectFieldValidator;
         private static MethodInfo _objectFieldMethod;
-        
-        private static Dictionary<IReadOnlyList<Type>, IObjectReferenceFieldAssignmentValidator> _interfaceValidators =
-            new Dictionary<IReadOnlyList<Type>, IObjectReferenceFieldAssignmentValidator>();
-        
+
         /// <summary>
         /// Draw an object field with a custom validator applied.
         /// </summary>
@@ -69,40 +66,29 @@ namespace Infohazard.Core.Editor {
         public static void ObjectFieldWithInterfaces(Rect position, SerializedProperty property, Type objType,
                                                      GUIContent label, GUIStyle style, IReadOnlyList<Type> interfaces) {
             
-            if (!_interfaceValidators.TryGetValue(interfaces, out IObjectReferenceFieldAssignmentValidator validator)) {
-                validator = new ObjectReferenceFieldAssignmentValidator(ObjectValidators.MustImplement(interfaces));
-                _interfaceValidators[interfaces] = validator;
-            }
+            IObjectReferenceFieldAssignmentValidator validator =
+                new ObjectReferenceFieldAssignmentValidator(ObjectValidators.MustImplement(interfaces));
             
             ValidatedObjectField(position, property, objType, label, style, validator);
         }
 
         /// <summary>
         /// Draw a button which, when pressed, will show a dropdown of all types that can be assigned to the given
-        /// property. When the user clicks one of the options, they will be prompted to save a new asset of that type.
-        /// If they do, it will be assigned to the given property.
+        /// property. When the user clicks one of the options, their supplied callback will be triggered.
         /// </summary>
-        /// <remarks>
-        /// By using a custom save action, you can, for example, add the created asset to another asset rather than
-        /// saving to the project directly. If a custom save action is used, the file browser will not be shown.
-        /// </remarks>
-        /// <param name="property">The property that will be assigned.</param>
-        /// <param name="type">Type of required object.</param>
+        /// <param name="requiredType">Type of required object.</param>
         /// <param name="buttonRect">Rect in which to show the button.</param>
         /// <param name="interfaces">Interfaces that the object must implement.</param>
-        /// <param name="defaultSavePath">Default path to save the asset.</param>
-        /// <param name="saveAction">Action to take to save the asset. Can be null for regular asset save.</param>
-        public static void CreateNewInstanceDropDown(SerializedProperty property, Type type, Rect buttonRect, 
-                                                     IReadOnlyList<Type> interfaces, string defaultSavePath,
-                                                     Action<Object, string> saveAction = null) {
+        /// <param name="createAction">Action to invoke when the user chooses a type.</param>
+        public static void CreateNewInstanceDropDown(Type requiredType, Rect buttonRect, IReadOnlyList<Type> interfaces,
+                                                     Action<Type> createAction) {
             GenericMenu menu = new GenericMenu();
 
             foreach (Type t in TypeUtility.AllTypes) {
-                if (IsClassValidForNewButton(type, t, interfaces)) {
+                if (IsClassValidForNewButton(requiredType, t, interfaces)) {
                     
                     menu.AddItem(new GUIContent(t.FullName), false, () => {
-                        CoreEditorUtility.CreateAndSaveNewAssetAndAssignToProperty(
-                            property, t, defaultSavePath, saveAction);
+                        createAction(t);
                     });
                 }
             }

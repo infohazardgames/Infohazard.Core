@@ -444,25 +444,23 @@ namespace Infohazard.Core.Editor {
         }
 
         /// <summary>
-        /// Prompts the user to browse for a path to save a new asset at. When the user confirms, a new asset will be
-        /// created and assigned to the given property.
+        /// Prompts the user to browse for a path to save a new asset at.
+        /// Upon confirmation, a new asset is created and saved.
         /// </summary>
         /// <remarks>
         /// By using a custom save action, you can, for example, add the created object to another asset rather than
         /// saving to the project directly. If a custom save action is used, the file browser will not be shown.
         /// </remarks>
-        /// <param name="property">The property that will be assigned.</param>
+        /// <param name="name">The default filename of the created object.</param>
         /// <param name="type">Type of object to create.</param>
         /// <param name="defaultSavePath">Default path to save the asset.</param>
+        /// <param name="parentObject">The object containing the created object (can be null).</param>
         /// <param name="saveAction">Action to take to save the asset. Can be null for regular asset save.</param>
-        public static void CreateAndSaveNewAssetAndAssignToProperty(SerializedProperty property, Type type, 
-                                                                    string defaultSavePath, 
-                                                                    Action<Object, string> saveAction) {
-            string path = $"New{type.Name}.asset";
-
-            // If there is already a value, set the default name of the new object to reflect this.
-            Object currentValue = property.objectReferenceValue;
-            if (currentValue) path = Path.GetFileNameWithoutExtension(currentValue.name) + "_Copy.asset";
+        /// <param name="copyObject">Copy this object to create the new asset (can be null).</param>
+        public static Object CreateAndSaveNewAsset(string name, Type type, string defaultSavePath,
+                                                   Object copyObject = null, Object parentObject = null,
+                                                   Action<Object, string> saveAction = null) {
+            string path = $"{name}.asset";
             
             // If we have a custom save action, no need to do any filesystem stuff.
             if (saveAction == null) {
@@ -470,7 +468,7 @@ namespace Infohazard.Core.Editor {
                 bool empty = string.IsNullOrEmpty(folder);
 
                 // Save in the same path as current value if it is not null.
-                string currentPath = currentValue != null ? AssetDatabase.GetAssetPath(currentValue) : null;
+                string currentPath = copyObject != null ? AssetDatabase.GetAssetPath(copyObject) : null;
                 if (!string.IsNullOrEmpty(currentPath)) {
                     // Remove the "Assets" folder from the path.
                     folder = GetPathRelativeToAssetsFolder(Path.GetDirectoryName(currentPath));
@@ -481,7 +479,7 @@ namespace Infohazard.Core.Editor {
                     }
                 } else {
                     // Get the directory of the object containing the property as a default path.
-                    string assetPath = AssetDatabase.GetAssetPath(property.serializedObject.targetObject);
+                    string assetPath = AssetDatabase.GetAssetPath(parentObject);
                     folder ??= string.Empty;
                     if (!string.IsNullOrEmpty(assetPath)) {
                         assetPath = Path.GetDirectoryName(assetPath);
@@ -500,13 +498,13 @@ namespace Infohazard.Core.Editor {
                 // Prompt the user to select a save location.
                 path = EditorUtility.SaveFilePanelInProject("Save New Asset", path,
                                                             "asset", "Save new asset to a location.", folderWithAssets);
-                if (string.IsNullOrEmpty(path)) return;
+                if (string.IsNullOrEmpty(path)) return null;
             }
 
             // If there is a current value, copy it, otherwise create a new instance.
             Object newAsset = null;
-            if (currentValue != null && currentValue.GetType() == type) {
-                newAsset = Object.Instantiate(currentValue);
+            if (copyObject != null && copyObject.GetType() == type) {
+                newAsset = Object.Instantiate(copyObject);
             } else if (typeof(ScriptableObject).IsAssignableFrom(type)) {
                 newAsset = ScriptableObject.CreateInstance(type);
             } else {
@@ -514,7 +512,7 @@ namespace Infohazard.Core.Editor {
             }
             
             // Save the asset.
-            if (newAsset == null) return;
+            if (newAsset == null) return null;
             newAsset.name = Path.GetFileNameWithoutExtension(path);
 
             if (saveAction != null) {
@@ -522,11 +520,8 @@ namespace Infohazard.Core.Editor {
             } else {
                 Save(newAsset, path);
             }
-            
-            // Update the serialized property value.
-            property.serializedObject.Update();
-            property.objectReferenceValue = newAsset;
-            property.serializedObject.ApplyModifiedProperties();
+
+            return newAsset;
         }
 
         private static void Save(Object asset, string path) {
