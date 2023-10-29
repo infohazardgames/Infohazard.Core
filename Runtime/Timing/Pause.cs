@@ -19,6 +19,19 @@ namespace Infohazard.Core {
         private static float _timeScale;
 
         /// <summary>
+        /// Get or set the non-paused timescale. Only affects current Time.timeScale if not paused.
+        /// </summary>
+        public static float TimeScale {
+            get => _timeScale;
+            set {
+                _timeScale = value;
+                if (!_paused) {
+                    Time.timeScale = value;
+                }
+            }
+        }
+
+        /// <summary>
         /// Invoked when the game pauses.
         /// </summary>
         public static event Action GamePaused;
