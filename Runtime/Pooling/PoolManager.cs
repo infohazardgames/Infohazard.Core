@@ -24,7 +24,7 @@ namespace Infohazard.Core {
         private readonly Dictionary<object, IPoolHandler> _poolsByKey = new Dictionary<object, IPoolHandler>();
 
         private static PoolManager _instance = null;
-        
+
         /// <summary>
         /// The singleton PoolManager instance.
         /// </summary>
@@ -108,7 +108,7 @@ namespace Infohazard.Core {
         public bool HasPoolHandler(object key) {
             return _poolsByKey.ContainsKey(key);
         }
-        
+
         /// <summary>
         /// Get the <see cref="IPoolHandler"/> for the given key, if one is registered (return false otherwise).
         /// </summary>
@@ -132,7 +132,7 @@ namespace Infohazard.Core {
                 Debug.LogError($"A pool handler is already registered for key {key}.");
                 return;
             }
-            
+
             _poolsByKey.Add(key, handler);
         }
 
@@ -141,10 +141,15 @@ namespace Infohazard.Core {
         /// </summary>
         /// <param name="instance"></param>
         public void DespawnInstance(Spawnable instance) {
+            if (instance.IsDespawned) {
+                Debug.LogError($"Trying to despawn an already despawned object: {instance}.");
+                return;
+            }
+
             if (instance.TryGetComponent(out IPersistedInstance obj)) {
                 obj.RegisterDestroyed();
             }
-            
+
             if (instance.IsSpawned) {
                 instance.WasDespawned();
             }

@@ -26,12 +26,17 @@ namespace Infohazard.Core {
         /// Whether this object should be pooled.
         /// </summary>
         public bool Pooled => _pooled;
-        
+
         /// <summary>
         /// Whether or not this object is an active, spawned instance.
         /// </summary>
         public bool IsSpawned { get; private set; }
-        
+
+        /// <summary>
+        /// Whether or not this object is currently an inactive instance.
+        /// </summary>
+        public bool IsDespawned { get; private set; }
+
         /// <summary>
         /// <see cref="IPoolHandler"/> which was used to spawn the object.
         /// </summary>
@@ -41,12 +46,12 @@ namespace Infohazard.Core {
         /// Invoked when the Spawnable is spawned.
         /// </summary>
         public event Action<Spawnable> Spawned;
-        
+
         /// <summary>
         /// Invoke when the Spawnable is despawned.
         /// </summary>
         public event Action<Spawnable> Despawned;
-        
+
         /// <summary>
         /// Invoked when the Spawnable is destroyed (not just despawned).
         /// </summary>
@@ -67,8 +72,9 @@ namespace Infohazard.Core {
                 _rigidbody.velocity = Vector3.zero;
                 _rigidbody.angularVelocity = Vector3.zero;
             }
-            
+
             IsSpawned = true;
+            IsDespawned = false;
             Spawned?.Invoke(this);
             BroadcastMessage("OnSpawned", SendMessageOptions.DontRequireReceiver);
         }
@@ -76,6 +82,7 @@ namespace Infohazard.Core {
         internal void WasDespawned() {
             CancelInvoke();
             IsSpawned = false;
+            IsDespawned = true;
             Despawned?.Invoke(this);
             BroadcastMessage("OnDespawned", SendMessageOptions.DontRequireReceiver);
         }
@@ -178,7 +185,7 @@ namespace Infohazard.Core {
                 return instance;
             }
         }
-        
+
         /// <summary>
         /// Despawn an instance, optionally after some time has passed,
         /// using the pooling system if the prefab has a Spawnable script.
@@ -196,7 +203,7 @@ namespace Infohazard.Core {
                 else Destroy(instance);
             }
         }
-        
+
         /// <summary>
         /// Spawn a new instance with the given properties,
         /// using the pooling system if the prefab has a Spawnable script.
