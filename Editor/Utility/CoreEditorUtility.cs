@@ -18,7 +18,7 @@ namespace Infohazard.Core.Editor {
     public static class CoreEditorUtility {
         private const string ResourceFolder = "Resources/";
         private const string AssetsFolder = "Assets";
-        
+
         /// <summary>
         /// Folder where all generated files used by the Infohazard libraries should live.
         /// </summary>
@@ -26,6 +26,7 @@ namespace Infohazard.Core.Editor {
         /// Call <see cref="EnsureDataFolderExists"/> to make sure this folder exists before using it.
         /// </remarks>
         public const string DataFolder = "Assets/Infohazard.Core.Data/";
+
         private const string DataAsmdefContent = @"{
     ""name"": ""Infohazard.Core.Data"",
     ""rootNamespace"": ""Infohazard.Core"",
@@ -43,7 +44,11 @@ namespace Infohazard.Core.Editor {
     ""noEngineReferences"": false
 }
 ";
+
         private const string DataAsmdefFile = "Infohazard.Core.Data.asmdef";
+
+        private static MethodInfo _setProfilerWindowRecordingMethod;
+        private static object[] _setProfilerWindowRecordingParams;
 
         /// <summary>
         /// Get the value of a SerializedProperty of any type.
@@ -69,7 +74,7 @@ namespace Infohazard.Core.Editor {
                 case SerializedPropertyType.ObjectReference:
                     return property.objectReferenceValue;
                 case SerializedPropertyType.LayerMask:
-                    return (LayerMask)property.intValue;
+                    return (LayerMask) property.intValue;
                 case SerializedPropertyType.Enum:
                     return property.enumValueIndex;
                 case SerializedPropertyType.Vector2:
@@ -83,7 +88,7 @@ namespace Infohazard.Core.Editor {
                 case SerializedPropertyType.ArraySize:
                     return property.arraySize;
                 case SerializedPropertyType.Character:
-                    return (char)property.intValue;
+                    return (char) property.intValue;
                 case SerializedPropertyType.AnimationCurve:
                     return property.animationCurveValue;
                 case SerializedPropertyType.Bounds:
@@ -147,14 +152,16 @@ namespace Infohazard.Core.Editor {
                     var tempTarget = reflectionTarget.GetType();
                     while (fieldInfo == null && tempTarget != null) {
                         fieldInfo = tempTarget.GetField(path, BindingFlags.NonPublic |
-                                                                        BindingFlags.Instance |
-                                                                        BindingFlags.Public);
+                                                              BindingFlags.Instance |
+                                                              BindingFlags.Public);
                         tempTarget = tempTarget.BaseType;
                     }
+
                     reflectionTarget = fieldInfo.GetValue(reflectionTarget);
                 }
             }
-            return (T)reflectionTarget;
+
+            return (T) reflectionTarget;
         }
 
         /// <summary>
@@ -178,15 +185,18 @@ namespace Infohazard.Core.Editor {
                 if (defines.Contains(symbol)) {
                     return;
                 }
+
                 defines.Add(symbol);
             } else {
                 if (!defines.Contains(symbol)) {
                     return;
                 }
+
                 while (defines.Contains(symbol)) {
                     defines.Remove(symbol);
                 }
             }
+
             string definesString = string.Join(";", defines.ToArray());
             PlayerSettings.SetScriptingDefineSymbolsForGroup(group, definesString);
         }
@@ -261,15 +271,16 @@ namespace Infohazard.Core.Editor {
         /// <param name="stringifier">Function that converts options to strings for display.</param>
         /// <param name="setter">Function that sets the value when an option is chosen.</param>
         /// <typeparam name="T">Type of the options before they are converted to strings.</typeparam>
-        public static void DoLazyDropdown<T>(Rect position, GUIContent content, Func<T[]> optionsFunc, Func<T, string> stringifier, Action<T> setter) {
+        public static void DoLazyDropdown<T>(Rect position, GUIContent content, Func<T[]> optionsFunc,
+                                             Func<T, string> stringifier, Action<T> setter) {
             if (!EditorGUI.DropdownButton(position, content, FocusType.Passive)) return;
-            
+
             GenericMenu menu = new GenericMenu();
             T[] options = optionsFunc();
             foreach (T option in options) {
                 menu.AddItem(new GUIContent(stringifier(option)), false, () => setter(option));
             }
-                
+
             menu.DropDown(position);
         }
 
@@ -290,6 +301,7 @@ namespace Infohazard.Core.Editor {
                 if (asset) yield return asset;
             }
         }
+
         /// <summary>
         /// Find all the assets of the given type in the project.
         /// </summary>
@@ -307,7 +319,7 @@ namespace Infohazard.Core.Editor {
                 if (asset) yield return asset;
             }
         }
-        
+
         private const string PPtrText = "PPtr<$";
 
         /// <summary>
@@ -353,12 +365,13 @@ namespace Infohazard.Core.Editor {
             if (!Directory.Exists(DataFolder)) {
                 Directory.CreateDirectory(DataFolder);
             }
+
             string fullAsmRefPath = Path.Combine(DataFolder, DataAsmdefFile);
             if (!File.Exists(fullAsmRefPath)) {
                 File.WriteAllText(fullAsmRefPath, DataAsmdefContent);
             }
         }
-        
+
         /// <summary>
         /// Launch an external process using the given command and arguments, and wait for it to complete.
         /// </summary>
@@ -378,16 +391,18 @@ namespace Infohazard.Core.Editor {
                 if (!success && showMessages) {
                     EditorUtility.DisplayDialog("Process returned failure", process.StandardError.ReadToEnd(), "OK");
                 }
+
                 process.Close();
                 return success;
             } else {
                 if (showMessages) {
                     EditorUtility.DisplayDialog("Process failed ot start", processInfo.ToString(), "OK");
                 }
+
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Instantiate the given prefab in the scene, as a child of the selected GameObject if there is one.
         /// </summary>
@@ -404,7 +419,7 @@ namespace Infohazard.Core.Editor {
             if (!string.IsNullOrEmpty(name)) {
                 inst.name = name;
             }
-            
+
             Undo.RegisterCreatedObjectUndo(inst, $"Create {inst.name}");
             return inst;
         }
@@ -419,7 +434,7 @@ namespace Infohazard.Core.Editor {
             if (Selection.activeGameObject) {
                 inst.transform.SetParentAndReset(Selection.activeGameObject.transform);
             }
-            
+
             Undo.RegisterCreatedObjectUndo(inst, $"Create {name}");
             return inst;
         }
@@ -461,7 +476,7 @@ namespace Infohazard.Core.Editor {
                                                    Object copyObject = null, Object parentObject = null,
                                                    Action<Object, string> saveAction = null) {
             string path = $"{name}.asset";
-            
+
             // If we have a custom save action, no need to do any filesystem stuff.
             if (saveAction == null) {
                 string folder = defaultSavePath;
@@ -487,14 +502,14 @@ namespace Infohazard.Core.Editor {
                         folder = Path.Combine(assetPath, folder);
                     }
                 }
-                
+
                 // Add back the "Assets" path.
                 string folderWithAssets = Path.Combine("Assets", folder).Replace('\\', '/');
-                
+
                 // Add the project path to get a full path.
                 string fullFolder = Path.Combine(Application.dataPath, folder);
                 if (!Directory.Exists(fullFolder)) Directory.CreateDirectory(fullFolder);
-                
+
                 // Prompt the user to select a save location.
                 path = EditorUtility.SaveFilePanelInProject("Save New Asset", path,
                                                             "asset", "Save new asset to a location.", folderWithAssets);
@@ -508,9 +523,9 @@ namespace Infohazard.Core.Editor {
             } else if (typeof(ScriptableObject).IsAssignableFrom(type)) {
                 newAsset = ScriptableObject.CreateInstance(type);
             } else {
-                newAsset = (Object)type.GetConstructor(Array.Empty<Type>())!.Invoke(Array.Empty<object>());
+                newAsset = (Object) type.GetConstructor(Array.Empty<Type>())!.Invoke(Array.Empty<object>());
             }
-            
+
             // Save the asset.
             if (newAsset == null) return null;
             newAsset.name = Path.GetFileNameWithoutExtension(path);
@@ -527,7 +542,9 @@ namespace Infohazard.Core.Editor {
         private static void Save(Object asset, string path) {
             // Ensure the directory exists as an asset (has a meta file).
             string dir = Path.GetDirectoryName(CoreEditorUtility.GetPathRelativeToAssetsFolder(path));
-            string fullPath = string.IsNullOrEmpty(dir) ? Application.dataPath : Path.Combine(Application.dataPath, dir);
+            string fullPath = string.IsNullOrEmpty(dir)
+                ? Application.dataPath
+                : Path.Combine(Application.dataPath, dir);
             if (!Directory.Exists(fullPath)) {
                 Directory.CreateDirectory(fullPath);
                 AssetDatabase.Refresh();
@@ -536,6 +553,18 @@ namespace Infohazard.Core.Editor {
             // Save the asset to disk.
             string assetPath = path.Replace('\\', '/');
             AssetDatabase.CreateAsset(asset, assetPath);
+        }
+
+        public static void SetProfilerWindowRecording(bool value) {
+            if (_setProfilerWindowRecordingMethod == null) {
+                _setProfilerWindowRecordingMethod = typeof(ProfilerWindow)
+                    .GetMethod("SetRecordingEnabled", BindingFlags.NonPublic | BindingFlags.Instance)!;
+                _setProfilerWindowRecordingParams = new object[1];
+            }
+
+            _setProfilerWindowRecordingParams[0] = value;
+            ProfilerWindow profilerWindow = EditorWindow.GetWindow<ProfilerWindow>();
+            _setProfilerWindowRecordingMethod.Invoke(profilerWindow, _setProfilerWindowRecordingParams);
         }
     }
 }
