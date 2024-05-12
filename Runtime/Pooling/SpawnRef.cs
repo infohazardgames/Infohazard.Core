@@ -12,7 +12,7 @@ namespace Infohazard.Core {
     /// </summary>
     [Serializable]
     public abstract class SpawnRefBase { }
-    
+
     /// <summary>
     /// Used as a serializable utility for referencing a prefab, managing its <see cref="DefaultPoolHandler"/>,
     /// and retaining/releasing that pool handler as necessary.
@@ -24,23 +24,23 @@ namespace Infohazard.Core {
         /// (Serialized) The prefab to be spawned.
         /// </summary>
         [SerializeField] private T _prefab;
-        
+
         private IPoolHandler _handler;
 
         private bool _hasCheckedSpawnable;
         private GameObject _gameObject;
         private Spawnable _spawnable;
-        
+
         /// <summary>
         /// Whether there is a valid prefab is attached.
         /// </summary>
-        public bool Valid => _prefab != null;
+        public bool IsValid => _prefab != null;
 
         /// <summary>
         /// The prefab to be spawned.
         /// </summary>
         public T Prefab => _prefab;
-        
+
         /// <summary>
         /// Default constructor (needed for Unity serialization).
         /// </summary>
@@ -67,7 +67,7 @@ namespace Infohazard.Core {
             }
 
             if (_spawnable == null) return;
-            
+
             if (_handler == null) {
                 if (!PoolManager.Instance.TryGetPoolHandler(_spawnable, out _handler)) {
                     _handler = new DefaultPoolHandler(_spawnable, PoolManager.Instance.PoolTransform);
@@ -85,7 +85,7 @@ namespace Infohazard.Core {
             if (_hasCheckedSpawnable && _spawnable == null) {
                 return;
             }
-            
+
             if (_handler == null) {
                 Debug.LogError($"Trying to release non-loaded {GetType().Name}.");
                 return;
@@ -100,11 +100,11 @@ namespace Infohazard.Core {
         /// <param name="spawnParams">Additional spawn info.</param>
         /// <returns>The spawned object.</returns>
         public T Spawn(in SpawnParams spawnParams = default) {
-            
+
             if (_hasCheckedSpawnable && _spawnable == null && _gameObject != null) {
                 return Spawnable.Spawn(_gameObject, spawnParams).GetComponent<T>();
             }
-            
+
             if (_handler == null) {
                 Debug.LogError($"Trying to spawn non-loaded {GetType().Name}.");
                 return null;
@@ -120,7 +120,7 @@ namespace Infohazard.Core {
         /// <param name="spawnable">The <see cref="Spawnable"/> script for <see cref="obj"/>.</param>
         /// <param name="gameObject">The GameObject for <see cref="obj"/>.</param>
         protected abstract void GetSpawnableAndGameObject(T obj, out Spawnable spawnable, out GameObject gameObject);
-        
+
         /// <summary>
         /// This is used to refer to the names of private fields in this class from a custom Editor.
         /// </summary>
@@ -144,14 +144,14 @@ namespace Infohazard.Core {
         /// </summary>
         /// <param name="prefab">The prefab to be spawned.</param>
         public SpawnRef(GameObject prefab) : base(prefab) { }
-        
+
         ///<inheritdoc/>
         protected override void GetSpawnableAndGameObject(GameObject obj, out Spawnable spawnable, out GameObject gameObject) {
             gameObject = Prefab;
             Prefab.TryGetComponent(out spawnable);
         }
     }
-    
+
     /// <summary>
     /// <see cref="SpawnRef"/> for spawning a GameObject via one of its components.
     /// </summary>
@@ -167,7 +167,7 @@ namespace Infohazard.Core {
         /// </summary>
         /// <param name="prefab">The prefab to be spawned.</param>
         public SpawnRef(T prefab) : base(prefab) { }
-        
+
         ///<inheritdoc/>
         protected override void GetSpawnableAndGameObject(T obj, out Spawnable spawnable, out GameObject gameObject) {
             gameObject = Prefab.gameObject;

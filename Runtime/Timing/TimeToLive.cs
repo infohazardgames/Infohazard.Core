@@ -46,13 +46,13 @@ namespace Infohazard.Core {
             _initialTimeToLive = _timeToLive;
             MigrateSpawnOnDeath();
 
-            if (_spawnObjectOnDeath.Valid) {
+            if (_spawnObjectOnDeath.IsValid) {
                 _spawnObjectOnDeath.Retain();
             }
         }
 
         protected virtual void OnDestroy() {
-            if (_spawnObjectOnDeath.Valid) {
+            if (_spawnObjectOnDeath.IsValid) {
                 _spawnObjectOnDeath.Release();
             }
         }
@@ -77,7 +77,7 @@ namespace Infohazard.Core {
 
         protected virtual void DestroySelf() {
             _destroyed = true;
-            if (_spawnObjectOnDeath.Valid) {
+            if (_spawnObjectOnDeath.IsValid) {
                 _spawnObjectOnDeath.Spawn(new SpawnParams {
                     Position = transform.position,
                     Rotation = transform.rotation,
@@ -89,7 +89,7 @@ namespace Infohazard.Core {
         }
 
         private void MigrateSpawnOnDeath() {
-            if (_spawnOnDeath != null && !_spawnObjectOnDeath.Valid) {
+            if (_spawnOnDeath != null && !_spawnObjectOnDeath.IsValid) {
 #if UNITY_EDITOR
                 UnityEditor.Undo.RecordObject(this, "Migrate Spawn On Death");
 #endif
