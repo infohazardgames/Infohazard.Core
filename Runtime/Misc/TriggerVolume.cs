@@ -23,17 +23,17 @@ namespace Infohazard.Core {
         /// (Serialized) Mask of tags that can activate the trigger.
         /// </summary>
         [SerializeField] private TagMask _tagFilter = TagMask.PlayerMask;
-        
+
         /// <summary>
         /// Invoked when an object matching the tag filter enters the trigger.
         /// </summary>
         public event Action<GameObject> TriggerEntered;
-        
+
         /// <summary>
         /// Invoked when an object matching the tag filter exits the trigger.
         /// </summary>
         public event Action<GameObject> TriggerExited;
-        
+
         /// <summary>
         /// Invoked when the last object matching the tag filter exits the trigger.
         /// </summary>
@@ -73,27 +73,27 @@ namespace Infohazard.Core {
             /// (Serialized) Invoked when an object matching the tag filter enters the trigger.
             /// </summary>
             [SerializeField] private UnityEvent _onTriggerEnter;
-            
+
             /// <summary>
             /// (Serialized) Invoked when an object matching the tag filter exits the trigger.
             /// </summary>
             [SerializeField] private UnityEvent _onTriggerExit;
-            
+
             /// <summary>
             /// (Serialized) Invoked when the last object matching the tag filter exits the trigger.
             /// </summary>
             [SerializeField] private UnityEvent _onAllExit;
-            
+
             /// <summary>
             /// Invoked when an object matching the tag filter enters the trigger.
             /// </summary>
             public UnityEvent OnTriggerEnter => _onTriggerEnter;
-            
+
             /// <summary>
             /// Invoked when an object matching the tag filter exits the trigger.
             /// </summary>
             public UnityEvent OnTriggerExit => _onTriggerExit;
-            
+
             /// <summary>
             ///  Invoked when the last object matching the tag filter exits the trigger.
             /// </summary>
@@ -102,7 +102,7 @@ namespace Infohazard.Core {
 
         private Dictionary<GameObject, TriggerOccupant> _objects = new Dictionary<GameObject, TriggerOccupant>();
         private List<GameObject> _objectsToRemove = new List<GameObject>();
-        
+
         private void Update() {
             CheckForDeactivatedObjects();
         }
@@ -125,6 +125,12 @@ namespace Infohazard.Core {
                     col.enabled = false;
                 }
             }
+
+            _objectsToRemove.Clear();
+            _objectsToRemove.AddRange(_objects.Keys);
+            foreach (GameObject obj in _objectsToRemove) {
+                HandleExit(obj, null, null);
+            }
         }
 
         private void CheckForDeactivatedObjects() {
@@ -141,7 +147,7 @@ namespace Infohazard.Core {
                 } else {
                     occupant.Colliders?.RemoveAll(c => !c.enabled);
                     occupant.Collider2Ds?.RemoveAll(c => !c.enabled);
-                    
+
                     if (occupant.Colliders?.Count > 0 || occupant.Collider2Ds?.Count > 0) continue;
 
                     _objectsToRemove.Add(obj);
@@ -154,7 +160,6 @@ namespace Infohazard.Core {
         }
 
         private void HandleEnter(GameObject other, Collider col, Collider2D col2D) {
-            if (!enabled) return;
             if (!other.CompareTagMask(_tagFilter)) return;
 
             bool wasContained = _objects.TryGetValue(other, out TriggerOccupant occupant);
@@ -180,7 +185,7 @@ namespace Infohazard.Core {
         }
 
         private void HandleExit(GameObject other, Collider col, Collider2D col2D) {
-            if (!enabled || !_objects.TryGetValue(other, out TriggerOccupant occupant)) return;
+            if (!_objects.TryGetValue(other, out TriggerOccupant occupant)) return;
 
             if (other) {
                 if (col != null && occupant.Colliders != null) {
@@ -191,7 +196,7 @@ namespace Infohazard.Core {
                     occupant.Collider2Ds.Remove(col2D);
                 }
 
-                if (other.gameObject.activeInHierarchy &&
+                if (other.gameObject.activeInHierarchy && enabled &&
                     (occupant.Colliders?.Count > 0 || occupant.Collider2Ds?.Count > 0)) {
                     return;
                 }
@@ -201,21 +206,29 @@ namespace Infohazard.Core {
 
             _events.OnTriggerExit?.Invoke();
             TriggerExited?.Invoke(other);
-            
+
             if (_objects.Count == 0) {
                 _events.OnAllExit?.Invoke();
                 AllExited?.Invoke(other);
             }
         }
 
-        private void OnTriggerEnter(Collider other) => HandleEnter(other.gameObject, other, null);
+        private void OnTriggerEnter(Collider other) {
+            if (enabled) HandleEnter(other.gameObject, other, null);
+        }
 
-        private void OnTriggerExit(Collider other) => HandleExit(other.gameObject, other, null);
+        private void OnTriggerExit(Collider other) {
+            if (enabled) HandleExit(other.gameObject, other, null);
+        }
 
-        private void OnTriggerEnter2D(Collider2D other) => HandleEnter(other.gameObject, null, other);
+        private void OnTriggerEnter2D(Collider2D other) {
+            if (enabled) HandleEnter(other.gameObject, null, other);
+        }
 
-        private void OnTriggerExit2D(Collider2D other) => HandleExit(other.gameObject, null, other);
-        
+        private void OnTriggerExit2D(Collider2D other) {
+            if (enabled)  HandleExit(other.gameObject, null, other);
+        }
+
         private class TriggerOccupant {
             public List<Collider> Colliders;
             public List<Collider2D> Collider2Ds;
