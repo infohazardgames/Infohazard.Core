@@ -29,7 +29,7 @@ namespace Infohazard.Core {
                 if (selectionDelegate(item, out T2 value)) yield return value;
             }
         }
-        
+
         /// <summary>
         /// Perform select/map and where/filter operations on a sequence with a single function,
         /// and returns the result of the select operation for the first passing element.
@@ -46,6 +46,24 @@ namespace Infohazard.Core {
             }
 
             return default;
+        }
+
+        /// <summary>
+        /// IndexOf operation for an IReadOnlyList, which is not included in .NET.
+        /// </summary>
+        /// <remarks>
+        /// This cannot take into account custom equality comparers.
+        /// </remarks>
+        /// <param name="list">List to search.</param>
+        /// <param name="item">Item to search for.</param>
+        /// <typeparam name="T">Type of items in the list.</typeparam>
+        /// <returns>The index of the item, or -1 if not found.</returns>
+        public static int IndexOf<T>(this IReadOnlyList<T> list, in T item) {
+            for (int i = 0; i < list.Count; i++) {
+                if (EqualityComparer<T>.Default.Equals(list[i], item)) return i;
+            }
+
+            return -1;
         }
     }
 }
