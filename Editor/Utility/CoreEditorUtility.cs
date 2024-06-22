@@ -290,10 +290,17 @@ namespace Infohazard.Core.Editor {
         /// <remarks>
         /// Only assets whose root object is the given type are included.
         /// </remarks>
+        /// <param name="folder">The folder to search in, or null for the entire project.</param>
         /// <typeparam name="T">The type of asset to find.</typeparam>
         /// <returns>A sequence of all the found assets.</returns>
-        public static IEnumerable<T> GetAssetsOfType<T>() where T : Object {
-            string[] guids = AssetDatabase.FindAssets($"t:{typeof(T)}");
+        public static IEnumerable<T> GetAssetsOfType<T>(string folder = null) where T : Object {
+            string[] guids;
+            if (string.IsNullOrEmpty(folder)) {
+                guids = AssetDatabase.FindAssets($"t:{typeof(T)}");
+            } else {
+                guids = AssetDatabase.FindAssets($"t:{typeof(T)}", new[] { folder });
+            }
+
             for (int i = 0; i < guids.Length; i++) {
                 string guid = guids[i];
                 string path = AssetDatabase.GUIDToAssetPath(guid);
