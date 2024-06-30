@@ -232,10 +232,11 @@ namespace Infohazard.Core.Editor {
         private void CreateAndAssignNewAssetOfType(SerializedProperty property, Type type) {
             ExpandableAttribute attr = (ExpandableAttribute) attribute;
 
+            Action<Object, string> saveAction = SaveAction;
             EditorApplication.delayCall += () => {
                 Object newAsset = CoreEditorUtility.CreateAndSaveNewAsset(
                     GetNewObjectName(property, type), type, attr.SavePath, property.objectReferenceValue,
-                    property.serializedObject.targetObject, SaveAction);
+                    property.serializedObject.targetObject, saveAction);
                 if (!newAsset) return;
 
                 property.serializedObject.Update();
