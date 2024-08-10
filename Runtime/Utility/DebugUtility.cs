@@ -44,7 +44,8 @@ namespace Infohazard.Core {
         /// <param name="depthTest">Whether to depth dest the drawn circle.</param>
         /// <param name="pointCount">How many points the circle will consist of.</param>
         public static void DrawDebugCircle(Vector3 point, Vector3 normal, float radius,
-                                           Color color, float duration = 0.0f, bool depthTest = true, int pointCount = 32) {
+                                           Color color, float duration = 0.0f, bool depthTest = true,
+                                           int pointCount = 32) {
 
             Vector3 up = normal.GetPerpendicularVector();
             Vector3 right = Vector3.Cross(normal, up);
@@ -62,6 +63,25 @@ namespace Infohazard.Core {
                 Debug.DrawLine(last, cur, color, duration, depthTest);
                 last = cur;
             }
+        }
+
+        /// <summary>
+        /// Draw the given sphere in the scene view.
+        /// </summary>
+        /// <param name="center">Center of the sphere.</param>
+        /// <param name="radius">Radius of the sphere.</param>
+        /// <param name="color">Color to use.</param>
+        /// <param name="duration">Time, in seconds, to draw the sphere for.</param>
+        /// <param name="depthTest">Whether to depth dest the drawn sphere.</param>
+        /// <param name="pointCount">How many points each circle will consist of.</param>
+        public static void DrawDebugSphere(Vector3 center, float radius,
+                                           Color color, float duration = 0.0f,
+                                           bool depthTest = true,
+                                           int pointCount = 32) {
+
+            DrawDebugCircle(center, Vector3.up, radius, color, duration, depthTest, pointCount);
+            DrawDebugCircle(center, Vector3.right, radius, color, duration, depthTest, pointCount);
+            DrawDebugCircle(center, Vector3.forward, radius, color, duration, depthTest, pointCount);
         }
 
         /// <summary>
