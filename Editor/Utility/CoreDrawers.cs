@@ -178,5 +178,46 @@ namespace Infohazard.Core.Editor {
         private static string ObjectToString(Object obj) {
             return obj ? obj.name : "<none>";
         }
+        
+        private static bool TryGetHelpBoxAttribute(SerializedProperty prop, out HelpBoxAttribute attr, out FieldInfo field) {
+            field = prop.FindFieldInfo();
+            if (field == null) {
+                attr = null;
+                return false;
+            }
+
+            attr = field.GetCustomAttribute<HelpBoxAttribute>();
+            return attr != null;
+        }
+        
+        
+        public static void DrawPropertyWithHelpBoxSupport(SerializedProperty property, GUIContent label = null) {
+            if (!TryGetHelpBoxAttribute(property, out HelpBoxAttribute attr, out FieldInfo field)) {
+                EditorGUILayout.PropertyField(property, label);
+                return;
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            
+            EditorGUILayout.PropertyField(property, label);
+
+            const string helpBoxPref = "Infohazard.Core.CoreDrawers.HelpBoxExpanded";
+            string propertyKey = field.DeclaringType!.FullName + "." + field.Name;
+            string curValue = EditorPrefs.GetString(helpBoxPref, null);
+            
+            if (GUILayout.Button("?", EditorStyles.miniButton, GUILayout.Width(20))) {
+                if (curValue == propertyKey) {
+                    EditorPrefs.DeleteKey(helpBoxPref);
+                } else {
+                    EditorPrefs.SetString(helpBoxPref, propertyKey);
+                }
+            }
+            
+            EditorGUILayout.EndHorizontal();
+
+            if (curValue != propertyKey) return;
+            
+            EditorGUILayout.HelpBox(attr.Text, MessageType.Info);
+        }
     }
 }

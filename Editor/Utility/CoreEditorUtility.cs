@@ -163,6 +163,48 @@ namespace Infohazard.Core.Editor {
 
             return (T) reflectionTarget;
         }
+        
+        /// <summary>
+        /// Find the FieldInfo of a given property using Reflection and reading the field directly.
+        /// If the property is an array element, return null.
+        /// </summary>
+        /// <param name="prop">The property to read</param>
+        /// <returns>The FieldInfo of the property.</returns>
+        public static FieldInfo FindFieldInfo(this SerializedProperty prop) {
+            string[] separatedPaths = prop.propertyPath.Split('.');
+
+            Type reflectionTarget = prop.serializedObject.targetObject.GetType();
+
+            for (int i = 0; i < separatedPaths.Length; i++) {
+                string path = separatedPaths[i];
+                if (path == "Array" && i < separatedPaths.Length - 1 && separatedPaths[i + 1].StartsWith("data[")) {
+                    continue;
+                } else if (path.StartsWith("data[")) {
+                    int len = "data[".Length;
+                    int index = int.Parse(path.Substring(len, path.LastIndexOf("]", StringComparison.Ordinal) - len));
+                    if (reflectionTarget.IsArray) {
+                        reflectionTarget = reflectionTarget.GetElementType()!;
+                    } else if (typeof(IList).IsAssignableFrom(reflectionTarget)) {
+                        reflectionTarget = reflectionTarget.GetGenericArguments()[0];
+                    }
+                } else {
+                    FieldInfo fieldInfo = null;
+                    Type tempTarget = reflectionTarget;
+                    while (fieldInfo == null && tempTarget != null) {
+                        fieldInfo = tempTarget.GetField(path, BindingFlags.NonPublic |
+                                                              BindingFlags.Instance |
+                                                              BindingFlags.Public);
+                        tempTarget = tempTarget.BaseType;
+                    }
+
+                    if (i == separatedPaths.Length - 1) {
+                        return fieldInfo;
+                    }
+                }
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Get the Unity PlayerSettings list of #define symbols for the given build target.
@@ -462,6 +504,7 @@ namespace Infohazard.Core.Editor {
             T component = inst.AddComponent<T>();
             Undo.RegisterCreatedObjectUndo(inst, $"Create {name}");
             Undo.RegisterCreatedObjectUndo(component, $"Create {name}");
+            Selection.activeGameObject = inst;
             return component;
         }
 
