@@ -129,8 +129,12 @@ namespace Infohazard.Core.Editor {
                     }
                 }
             }
+            
+            Object value = property.objectReferenceValue;
+            bool showExpander = value != null && !attr.AlwaysExpanded;
 
-            Rect propertyRectWithoutLabel = EditorGUI.PrefixLabel(propertyRect, labelCopy);
+            Rect propertyRectWithoutLabel =
+                EditorGUI.PrefixLabel(propertyRect, showExpander ? new GUIContent(" ") : labelCopy);
             
             // Draw dropdown button.
             Rect dropdownRect = propertyRectWithoutLabel;
@@ -161,9 +165,9 @@ namespace Infohazard.Core.Editor {
             }
 
             // Draw foldout when property value is not null and property is not always expanded.
-            Object value = property.objectReferenceValue;
-            if (value != null && !attr.AlwaysExpanded)
-                property.isExpanded = EditorGUI.Foldout(propertyRect, property.isExpanded, GUIContent.none);
+            if (showExpander) {
+                property.isExpanded = EditorGUI.Foldout(propertyRect, property.isExpanded, labelCopy);
+            }
 
             // If the property is expanded, draw child properties.
             if (value != null && (attr.AlwaysExpanded || property.isExpanded)) {
