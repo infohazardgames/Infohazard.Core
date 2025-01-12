@@ -31,14 +31,14 @@ namespace Infohazard.Core.Editor {
             if (_serializedObject?.targetObject != value) {
                 _serializedObject = new SerializedObject(value);
             }
-            
+
             return _serializedObject;
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
             ExpandableAttribute attr = Attribute;
             Object value = property.objectReferenceValue;
-            
+
             // Height always includes base property height.
             float height = EditorGUI.GetPropertyHeight(property, label);
 
@@ -52,12 +52,12 @@ namespace Infohazard.Core.Editor {
             if (value == null || (!property.isExpanded && !attr.AlwaysExpanded)) {
                 return height;
             }
-            
+
             // Space for the name text field.
             height += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
 
             SerializedObject so = GetSerializedObject(value);
-                
+
             // Loop through all properties of the cached serialized object.
             // We pass true to the root SerializedProperty to enter its child list,
             // then pass false to keep going without recursing further.
@@ -67,7 +67,7 @@ namespace Infohazard.Core.Editor {
             while (iter.NextVisible(first)) {
                 if (iter.name == "m_Script") continue;
                 first = false;
-                    
+
                 // Get the height of the child property, and all of its descendents if it is expanded.
                 height += EditorGUIUtility.standardVerticalSpacing +
                           EditorGUI.GetPropertyHeight(iter, new GUIContent(iter.displayName), iter.isExpanded);
@@ -80,7 +80,7 @@ namespace Infohazard.Core.Editor {
             if (property.objectReferenceValue) {
                 return $"{property.objectReferenceValue.name}_Copy";
             }
-            
+
             NewObjectNameAttribute nameAttribute = fieldInfo.GetCustomAttribute<NewObjectNameAttribute>();
             if (nameAttribute != null) {
                 return nameAttribute.GetNewObjectName(property.serializedObject.targetObject, fieldInfo, createdType);
@@ -91,7 +91,7 @@ namespace Infohazard.Core.Editor {
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) {
             ExpandableAttribute attr = Attribute;
-            
+
             // Apply indent then reset indent level.
             position = EditorGUI.IndentedRect(position);
             using var indentScope = new EditorGUI.IndentLevelScope(-EditorGUI.indentLevel);
@@ -104,7 +104,7 @@ namespace Infohazard.Core.Editor {
             // Draw the new button if desired, and reduce size of the main property.
             Type type = this.GetFieldType();
             if (attr.ShowNewButton) {
-                
+
                 if (attr.ShowChildTypes || attr.RequiredInterfaces?.Count > 0) {
                     Rect newButtonRect = propertyRect;
                     propertyRect.xMax -= 70;
@@ -119,7 +119,7 @@ namespace Infohazard.Core.Editor {
                            typeof(Object).IsAssignableFrom(type) &&
                            !typeof(Component).IsAssignableFrom(type) &&
                            !typeof(GameObject).IsAssignableFrom(type)) {
-                    
+
                     Rect newButtonRect = propertyRect;
                     propertyRect.xMax -= 70;
                     newButtonRect.xMin = propertyRect.xMax + EditorGUIUtility.standardVerticalSpacing;
@@ -129,13 +129,21 @@ namespace Infohazard.Core.Editor {
                     }
                 }
             }
-            
+
             Object value = property.objectReferenceValue;
             bool showExpander = value != null && !attr.AlwaysExpanded;
 
             Rect propertyRectWithoutLabel =
                 EditorGUI.PrefixLabel(propertyRect, showExpander ? new GUIContent(" ") : labelCopy);
-            
+
+            // Draw foldout when property value is not null and property is not always expanded.
+            if (showExpander) {
+                Rect expanderRect = propertyRect;
+                expanderRect.xMax = Mathf.Min(expanderRect.xMax,
+                                              propertyRectWithoutLabel.xMin - EditorGUIUtility.standardVerticalSpacing);
+                property.isExpanded = EditorGUI.Foldout(propertyRect, property.isExpanded, labelCopy);
+            }
+
             // Draw dropdown button.
             Rect dropdownRect = propertyRectWithoutLabel;
             dropdownRect.width = dropdownRect.height;
@@ -157,16 +165,11 @@ namespace Infohazard.Core.Editor {
                     // Rect to keep track of where we are drawing next child.
                     Rect propsRect = position;
                     propsRect.yMin = propertyRect.yMax + EditorGUIUtility.standardVerticalSpacing;
-                
+
                     EditorGUI.LabelField(propsRect, "Not expanded due to multiple values.");
                 }
 
                 return;
-            }
-
-            // Draw foldout when property value is not null and property is not always expanded.
-            if (showExpander) {
-                property.isExpanded = EditorGUI.Foldout(propertyRect, property.isExpanded, labelCopy);
             }
 
             // If the property is expanded, draw child properties.

@@ -27,7 +27,7 @@ namespace Infohazard.Core.Editor {
 
         private bool ShouldDraw(SerializedProperty property) {
             var attr = (ConditionalDrawAttribute)attribute;
-            
+
             // Find condition property.
             // Its path relative to the SerializedObject is the same as the main property path,
             // with just the final part replaced.
