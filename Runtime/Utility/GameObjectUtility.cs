@@ -1,11 +1,13 @@
 ﻿// This file is part of the Infohazard.Core package.
 // Copyright (c) 2022-present Vincent Miller (Infohazard Games).
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Infohazard.Core {
     /// <summary>
@@ -28,8 +30,10 @@ namespace Infohazard.Core {
         /// <param name="point2">The second point of the capsule in world space.</param>
         /// <param name="worldRadius">The radius of the capsule in world space.</param>
         /// <param name="worldHeight">The height of the capsule in world space.</param>
-        public static void GetCapsuleInfo(float radius, float height, Vector3 center, int direction, Transform transform,
-            out Vector3 point1, out Vector3 point2, out float worldRadius, out float worldHeight) {
+        public static void GetCapsuleInfo(float radius, float height, Vector3 center, int direction,
+                                          Transform transform,
+                                          out Vector3 point1, out Vector3 point2, out float worldRadius,
+                                          out float worldHeight) {
             Vector3 capsuleCenter = transform.TransformPoint(center);
             Vector3 capsuleUp;
             float scaleY;
@@ -71,10 +75,9 @@ namespace Infohazard.Core {
         /// <param name="point2">The second point of the capsule in world space.</param>
         /// <param name="worldRadius">The radius of the capsule in world space.</param>
         /// <param name="worldHeight">The height of the capsule in world space.</param>
-        public static void GetCapsuleInfo(this CharacterController capsule, out Vector3 point1, out Vector3 point2, 
+        public static void GetCapsuleInfo(this CharacterController capsule, out Vector3 point1, out Vector3 point2,
                                           out float worldRadius, out float worldHeight) {
-            
-            GetCapsuleInfo(capsule.radius, capsule.height, capsule.center, 1, capsule.transform, 
+            GetCapsuleInfo(capsule.radius, capsule.height, capsule.center, 1, capsule.transform,
                            out point1, out point2, out worldRadius, out worldHeight);
         }
 
@@ -92,9 +95,67 @@ namespace Infohazard.Core {
         /// <param name="worldHeight">The height of the capsule in world space.</param>
         public static void GetCapsuleInfo(this CapsuleCollider capsule, out Vector3 point1, out Vector3 point2,
                                           out float worldRadius, out float worldHeight) {
-            
             GetCapsuleInfo(capsule.radius, capsule.height, capsule.center, capsule.direction, capsule.transform,
                            out point1, out point2, out worldRadius, out worldHeight);
+        }
+
+        /// <summary>
+        /// Perform a physics cast depending on the type of collider, using its parameters.
+        /// Only BoxCollider, SphereCollider, and CapsuleCollider are supported.
+        /// For simplicity, the scale of the transform is assumed to be uniform.
+        /// </summary>
+        /// <param name="collider">The BoxCollider, SphereCollider, or CapsuleCollider to cast from.</param>
+        /// <param name="padding">A padding to reduce the collider's extents. Given in world units.</param>
+        /// <param name="direction">Direction to cast in.</param>
+        /// <param name="hit">The hit information.</param>
+        /// <param name="maxDistance">The maximum distance to cast. Default is infinity.</param>
+        /// <param name="layerMask">The layer mask to cast against. Default is default raycast layers.</param>
+        /// <param name="triggerInteraction">Whether to include triggers. Default is use global settings.</param>
+        /// <returns>Whether the cast hit something.</returns>
+        public static bool ColliderCast(
+            this Collider collider,
+            float padding,
+            Vector3 direction,
+            out RaycastHit hit,
+            float maxDistance = float.PositiveInfinity,
+            int layerMask = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction triggerInteraction = QueryTriggerInteraction.UseGlobal) {
+
+            float scale = collider.transform.lossyScale.x;
+            switch (collider) {
+                case BoxCollider box:
+                    return Physics.BoxCast(
+                        box.transform.TransformPoint(box.center),
+                        box.size * scale * 0.5f - Vector3.one * padding,
+                        direction,
+                        out hit,
+                        box.transform.rotation,
+                        maxDistance,
+                        layerMask,
+                        triggerInteraction);
+                case SphereCollider sphere:
+                    return Physics.SphereCast(
+                        sphere.transform.TransformPoint(sphere.center),
+                        sphere.radius * scale - padding,
+                        direction,
+                        out hit,
+                        maxDistance,
+                        layerMask,
+                        triggerInteraction);
+                case CapsuleCollider capsule:
+                    GetCapsuleInfo(capsule, out Vector3 point1, out Vector3 point2, out _, out _);
+                    return Physics.CapsuleCast(
+                        point1,
+                        point2,
+                        capsule.radius * scale - padding,
+                        direction,
+                        out hit,
+                        maxDistance,
+                        layerMask,
+                        triggerInteraction);
+                default:
+                    throw new ArgumentException($"Collider of type {collider.GetType()} is not supported.");
+            }
         }
 
         /// <summary>
@@ -119,10 +180,9 @@ namespace Infohazard.Core {
         /// <param name="scale">The scale (if null, do not set).</param>
         /// <param name="inWorldSpace">Whether the given position, rotation, and scale should be considered global.</param>
         /// <param name="scene">An optional scene to move the object to.</param>
-        public static void Initialize(this Transform transform, Transform parent, 
+        public static void Initialize(this Transform transform, Transform parent,
                                       Vector3? position = null, Quaternion? rotation = null, Vector3? scale = null,
                                       bool inWorldSpace = false, in Scene? scene = null) {
-
             if (inWorldSpace) {
                 transform.SetParent(null, false);
                 transform.Initialize(position, rotation, scale);
@@ -154,7 +214,8 @@ namespace Infohazard.Core {
         /// <param name="position">The position (if null, do not set).</param>
         /// <param name="rotation">The rotation (if null, do not set).</param>
         /// <param name="scale">The scale (if null, do not set).</param>
-        public static void Initialize(this Transform transform, Vector3? position = null, Quaternion? rotation = null, Vector3? scale = null) {
+        public static void Initialize(this Transform transform, Vector3? position = null, Quaternion? rotation = null,
+                                      Vector3? scale = null) {
             if (position != null) transform.localPosition = position.Value;
             if (rotation != null) transform.localRotation = rotation.Value;
             if (scale != null) transform.localScale = scale.Value;
@@ -179,7 +240,7 @@ namespace Infohazard.Core {
                 Object.DestroyImmediate(transform.GetChild(i).gameObject);
             }
         }
-        
+
         /// <summary>
         /// Despawn all of the child GameObjects of a Transform.
         /// </summary>
@@ -206,7 +267,8 @@ namespace Infohazard.Core {
         /// <summary>
         /// Like GetComponentInChildren, but more convenient if using in conditionals and also using the component value.
         /// </summary>
-        public static bool TryGetComponentInChildren<T>(this GameObject obj, out T result, bool includeInactive = false) {
+        public static bool
+            TryGetComponentInChildren<T>(this GameObject obj, out T result, bool includeInactive = false) {
             T cmp = obj.GetComponentInChildren<T>(includeInactive);
             result = cmp;
             return cmp != null;
@@ -227,7 +289,7 @@ namespace Infohazard.Core {
         }
 
         private static StringBuilder _transformPathBuilder = new StringBuilder();
-        
+
         /// <summary>
         /// Get the path from one transform to another (object names separated by slashes).
         /// </summary>
@@ -241,7 +303,7 @@ namespace Infohazard.Core {
         /// <returns>The path relative transform path separated by slashes.</returns>
         public static string GetRelativeTransformPath(this Transform from, Transform to) {
             _transformPathBuilder.Clear();
-            
+
             Transform current = to;
             bool first = true;
 
@@ -249,6 +311,7 @@ namespace Infohazard.Core {
                 if (current) {
                     _transformPathBuilder.Insert(0, first ? current.name : $"{current.name}/");
                 }
+
                 current = current.parent;
                 first = false;
             }
