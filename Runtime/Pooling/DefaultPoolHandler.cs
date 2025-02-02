@@ -15,12 +15,12 @@ namespace Infohazard.Core {
         /// The loaded prefab to be spawned by the handler.
         /// </summary>
         public Spawnable Prefab { get; protected set; }
-        
+
         /// <summary>
         /// The pool that will spawn the prefab.
         /// </summary>
         protected Pool<Spawnable> Pool { get; }
-        
+
         /// <summary>
         /// The transform that inactive instances in the pool are parented to.
         /// </summary>
@@ -98,9 +98,10 @@ namespace Infohazard.Core {
         /// </remarks>
         /// <param name="obj">The object to be destroyed.</param>
         protected virtual void Destroy(Spawnable obj) {
+            if (!obj) return; // This can be called during scene cleanup when objects might already be destroyed.
             Object.Destroy(obj.gameObject);
         }
-        
+
         /// <summary>
         /// Spawn an object from the pool, using an inactive instance from the pool if possible
         /// (otherwise, a new instance is created via <see cref="Instantiate"/>).
@@ -125,7 +126,7 @@ namespace Infohazard.Core {
                 Destroy(instance);
             }
         }
-        
+
         /// <summary>
         /// Add an additional user to the pool, ensuring pooled instances will remain available.
         /// </summary>
