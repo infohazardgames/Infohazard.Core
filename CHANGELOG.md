@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * Renamed SpawnRef.Valid to SpawnRef.IsValid.
+* Minimum Unity version changed to 2022.3.
 
 ### Fixed
 * TriggerVolume now registers exit events if all of an occupant's colliders are disabled.
