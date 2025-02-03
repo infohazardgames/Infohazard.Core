@@ -17,21 +17,20 @@ namespace Infohazard.Core {
     /// </remarks>
     [Serializable]
     public struct ComponentID {
-        /// <summary>
-        /// (Serialized) Path from this GameObject to the GameObject that holds the referenced component.
-        /// </summary>
-        [SerializeField] private string _path;
-        
-        /// <summary>
-        /// (Serialized) Type name of the referenced component.
-        /// </summary>
-        [TypeSelect(typeof(Component))] [SerializeField] private string _type;
+        [SerializeField]
+        [Tooltip("Path from this GameObject to the GameObject that holds the referenced component.")]
+        private string _path;
+
+        [TypeSelect(typeof(Component))]
+        [SerializeField]
+        [Tooltip("Type name of the referenced component.")]
+        private string _type;
 
         /// <summary>
         /// Path from this GameObject to the GameObject that holds the referenced component.
         /// </summary>
         public string Path => _path;
-        
+
         /// <summary>
         /// Type name of the referenced component.
         /// </summary>
@@ -69,13 +68,13 @@ namespace Infohazard.Core {
                 Debug.LogError($"Type {Type} of ComponentID with path {Path} is not assignable to given type {typeof(T)}.");
                 return null;
             }
-            
+
             Transform child = root.GetTransformAtRelativePath(Path);
             if (!child) return null;
             if (!child.TryGetComponent(type, out Component childComponent)) return null;
             return (T) childComponent;
         }
-        
+
         /// <inheritdoc cref="System.IEquatable{T}.Equals(T)"/>
         public bool Equals(ComponentID other) {
             return _path == other._path && _type == other._type;

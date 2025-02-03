@@ -20,14 +20,11 @@ namespace Infohazard.Core {
     public class PooledParticleEffect : MonoBehaviour {
         private Spawnable _spawnable = null;
         private ParticleSystem _particles = null;
-        
-        /// <summary>
-        /// (Serialized) Whether to despawn the Spawnable when the ParticleSystem finishes.
-        /// </summary>
-        /// <remarks>
-        /// To work, the ParticleSystem must have its Stop Action set to Callback.
-        /// </remarks>
-        [SerializeField] private bool _despawnOnDone = true;
+
+        [SerializeField]
+        [Tooltip("Whether to despawn the Spawnable when the ParticleSystem finishes. " +
+                 "To work, the ParticleSystem must have its Stop Action set to Callback.")]
+        private bool _despawnOnDone = true;
 
         private void Awake() {
             _spawnable = GetComponentInParent<Spawnable>();

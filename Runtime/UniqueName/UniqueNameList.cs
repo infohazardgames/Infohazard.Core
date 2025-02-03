@@ -16,10 +16,10 @@ namespace Infohazard.Core {
     /// </remarks>
     [CreateAssetMenu(menuName = "Infohazard/Unique Name List")]
     public class UniqueNameList : ScriptableObject {
-        /// <summary>
-        /// (Serialized) All unique name assets in this list.
-        /// </summary>
-        [SerializeField, EditNameOnly] private UniqueNameListEntry[] _entries;
+        [SerializeField]
+        [EditNameOnly]
+        [Tooltip("All unique name assets in this list.")]
+        private UniqueNameListEntry[] _entries;
 
         /// <summary>
         /// All unique name assets in this list.

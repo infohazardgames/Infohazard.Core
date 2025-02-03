@@ -2,7 +2,6 @@
 // Copyright (c) 2022-present Vincent Miller (Infohazard Games).
 
 using System;
-
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,10 +16,9 @@ namespace Infohazard.Core {
     /// When it is despawned, it will broadcast the <c>OnDespawned</c> method.
     /// </remarks>
     public class Spawnable : MonoBehaviour {
-        /// <summary>
-        /// (Serialized) Whether this object should be pooled.
-        /// </summary>
-        [SerializeField] private bool _pooled = true;
+        [SerializeField]
+        [Tooltip("Whether this object should be pooled.")]
+        private bool _pooled = true;
 
         /// <summary>
         /// Whether this object should be pooled.
@@ -106,8 +104,8 @@ namespace Infohazard.Core {
         /// <param name="scene">The scene to spawn in.</param>
         /// <returns>The spawned instance.</returns>
         public static Spawnable Spawn(Spawnable prefab, Vector3? position = null, Quaternion? rotation = null,
-            Transform parent = null, bool inWorldSpace = false, ulong persistedInstanceID = 0, Scene? scene = null) {
-
+                                      Transform parent = null, bool inWorldSpace = false, ulong persistedInstanceID = 0,
+                                      Scene? scene = null) {
             return PoolManager.Instance.SpawnPrefab(prefab, new SpawnParams {
                 Position = position,
                 Rotation = rotation,
@@ -125,7 +123,6 @@ namespace Infohazard.Core {
         /// <param name="spawnParams">Spawn properties.</param>
         /// <returns>The spawned instance.</returns>
         public static Spawnable Spawn(Spawnable prefab, in SpawnParams spawnParams = default) {
-
             return PoolManager.Instance.SpawnPrefab(prefab, spawnParams);
         }
 
@@ -155,7 +152,8 @@ namespace Infohazard.Core {
         /// <param name="scene">The scene to spawn in.</param>
         /// <returns>The spawned instance.</returns>
         public static GameObject Spawn(GameObject prefab, Vector3? position = null, Quaternion? rotation = null,
-                                       Transform parent = null, bool inWorldSpace = false, ulong persistedInstanceID = 0, Scene? scene = null) {
+                                       Transform parent = null, bool inWorldSpace = false,
+                                       ulong persistedInstanceID = 0, Scene? scene = null) {
             return Spawn(prefab, new SpawnParams {
                 Position = position,
                 Rotation = rotation,
@@ -182,6 +180,7 @@ namespace Infohazard.Core {
                 if (instance.TryGetComponent(out IPersistedInstance obj)) {
                     obj.SetupDynamicInstance(spawnParams.PersistedInstanceID);
                 }
+
                 return instance;
             }
         }
@@ -199,6 +198,7 @@ namespace Infohazard.Core {
                 if (instance.TryGetComponent(out IPersistedInstance obj)) {
                     obj.RegisterDestroyed();
                 }
+
                 if (inSeconds > 0.0f) Destroy(instance, inSeconds);
                 else Destroy(instance);
             }
@@ -216,9 +216,12 @@ namespace Infohazard.Core {
         /// <param name="persistedInstanceID">Existing persisted instance ID to assign.</param>
         /// <param name="scene">The scene to spawn in.</param>
         /// <returns>The spawned instance.</returns>
-        public static T Spawn<T>(T prefab, Vector3? position = null, Quaternion? rotation = null, Transform parent = null,
-                                 bool inWorldSpace = false, ulong persistedInstanceID = 0, Scene? scene = null) where T : Component {
-            return Spawn(prefab.gameObject, position, rotation, parent, inWorldSpace, persistedInstanceID, scene).GetComponent<T>();
+        public static T Spawn<T>(T prefab, Vector3? position = null, Quaternion? rotation = null,
+                                 Transform parent = null,
+                                 bool inWorldSpace = false, ulong persistedInstanceID = 0, Scene? scene = null)
+            where T : Component {
+            return Spawn(prefab.gameObject, position, rotation, parent, inWorldSpace, persistedInstanceID, scene)
+                .GetComponent<T>();
         }
 
         /// <summary>

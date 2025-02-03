@@ -18,10 +18,9 @@ namespace Infohazard.Core {
     /// but you will get a log error if they are active at the same time.
     /// </remarks>
     public class UniqueNamedObject : MonoBehaviour {
-        /// <summary>
-        /// (Serialized) Unique name asset for the object.
-        /// </summary>
-        [SerializeField] private UniqueNameListEntry _uniqueName;
+        [SerializeField]
+        [Tooltip("Unique name asset for the object.")]
+        private UniqueNameListEntry _uniqueName;
 
         /// <summary>
         /// Unique name asset for the object.
@@ -45,7 +44,7 @@ namespace Infohazard.Core {
         /// Invoked when a new UniqueNamedObject is added to the dictionary.
         /// </summary>
         public static event Action<UniqueNamedObject> ObjectAdded;
-        
+
         /// <summary>
         /// Invoked when a UniqueNamedObject is removed from the dictionary.
         /// </summary>
@@ -62,7 +61,7 @@ namespace Infohazard.Core {
             result = obj ? obj.gameObject : null;
             return value;
         }
-        
+
         /// <summary>
         /// Try to get a GameObject with the given unique name asset, and return whether it was found.
         /// </summary>
@@ -71,7 +70,7 @@ namespace Infohazard.Core {
         /// <returns>Whether the object was found.</returns>
         public static bool TryGetObject(UniqueNameListEntry entry, out GameObject result) {
             if (entry != null) return TryGetObject(entry.name, out result);
-            
+
             result = null;
             return false;
         }

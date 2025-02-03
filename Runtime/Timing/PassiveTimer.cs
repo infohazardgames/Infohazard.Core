@@ -23,21 +23,18 @@ namespace Infohazard.Core {
     /// </remarks>
     [Serializable]
     public struct PassiveTimer {
-        /// <summary>
-        /// (Serialized) Initial interval to set the timer for in seconds.
-        /// </summary>
-        [SerializeField] private float _initialInterval;
-        
-        /// <summary>
-        /// (Serialized) The repeat interval for the timer in seconds.
-        /// </summary>
-        [SerializeField] private float _interval;
-        
-        /// <summary>
-        /// (Serialized) What value for time that the timer uses (scaled, unscaled, or realtime).
-        /// </summary>
-        [SerializeField] private TimeMode _mode;
-        
+        [SerializeField]
+        [Tooltip("Initial interval to set the timer for in seconds.")]
+        private float _initialInterval;
+
+        [SerializeField]
+        [Tooltip("The repeat interval for the timer in seconds.")]
+        private float _interval;
+
+        [SerializeField]
+        [Tooltip("What value for time that the timer uses (scaled, unscaled, or realtime).")]
+        private TimeMode _mode;
+
         /// <summary>
         /// Initial interval to set the timer for in seconds.
         /// </summary>
@@ -49,9 +46,9 @@ namespace Infohazard.Core {
             get => _initialInterval;
             set => _initialInterval = value;
         }
-        
+
         /// <summary>
-        /// (Serialized) The repeat interval for the in seconds.
+        /// The repeat interval for the in seconds.
         /// </summary>
         /// <remarks>
         /// This interval begins when <see cref="StartInterval"/> or <see cref="TryConsume"/> is used.
@@ -73,12 +70,12 @@ namespace Infohazard.Core {
         /// Whether the timer is in the expired state, meaning the current interval has elapsed.
         /// </summary>
         public bool IsIntervalEnded => CurrentTime - IntervalStartTime >= _interval;
-        
+
         /// <summary>
         /// The start time for the current interval.
         /// </summary>
         public float IntervalStartTime { get; set; }
-        
+
         /// <summary>
         /// The time at which the current interval will end (or has ended).
         /// </summary>
@@ -88,12 +85,12 @@ namespace Infohazard.Core {
         /// Time that has passed since the current interval ended (or, if not ended, a negative value).
         /// </summary>
         public float TimeSinceIntervalEnded => CurrentTime - IntervalEndTime;
-        
+
         /// <summary>
         /// Whether the timer is initialized.
         /// </summary>
         public bool IsInitialized { get; private set; }
-        
+
         /// <summary>
         /// Whether an interval has started yet.
         /// </summary>
@@ -103,7 +100,7 @@ namespace Infohazard.Core {
         /// The time in seconds until the current interval ends.
         /// </summary>
         public float TimeUntilIntervalEnd => Mathf.Max(IntervalEndTime - CurrentTime, 0);
-        
+
         /// <summary>
         /// A ratio going from one at interval start to zero at interval end.
         /// </summary>
@@ -113,7 +110,7 @@ namespace Infohazard.Core {
         /// The time in seconds since the current interval started.
         /// </summary>
         public float TimeSinceIntervalStart => Mathf.Max(CurrentTime - IntervalStartTime, 0);
-        
+
         /// <summary>
         /// A ratio going from zero at interval start to one at interval end.
         /// </summary>
@@ -129,7 +126,8 @@ namespace Infohazard.Core {
         public bool DidIntervalEndThisFrame {
             get {
                 if (_mode == TimeMode.Realtime) return false;
-                return HasIntervalStarted && IsIntervalEnded && CurrentTime - DeltaTime <= IntervalStartTime + _interval;
+                return HasIntervalStarted && IsIntervalEnded &&
+                       CurrentTime - DeltaTime <= IntervalStartTime + _interval;
             }
         }
 
@@ -165,7 +163,7 @@ namespace Infohazard.Core {
         public float DeltaTime {
             get {
                 if (_isPaused) return 0;
-                
+
                 return _mode switch {
                     TimeMode.Scaled => Time.deltaTime,
                     TimeMode.Unscaled => Time.unscaledDeltaTime,
@@ -173,11 +171,12 @@ namespace Infohazard.Core {
                 };
             }
         }
-        
+
         /// <summary>
         /// The time that the PassiveTimer has spent in a paused state.
         /// </summary>
         public float PausedTime { get; private set; }
+
         private bool _isPaused;
         private float _pauseStartTime;
 
@@ -201,7 +200,7 @@ namespace Infohazard.Core {
                 }
             }
         }
-        
+
         /// <summary>
         /// Construct a PassiveTimer with the given interval, which will be both the initial and repeat interval.
         /// </summary>
@@ -218,11 +217,12 @@ namespace Infohazard.Core {
         /// <param name="interval">The repeat interval.</param>
         /// <param name="mode">Time mode to use.</param>
         /// <param name="initialize">Whether to initialize the timer and start counting immediately.</param>
-        public PassiveTimer(float initialInterval, float interval, TimeMode mode = TimeMode.Scaled, bool initialize = true) {
+        public PassiveTimer(float initialInterval, float interval, TimeMode mode = TimeMode.Scaled,
+                            bool initialize = true) {
             _initialInterval = initialInterval;
             _interval = interval;
             _mode = mode;
-            
+
             IsInitialized = false;
             HasIntervalStarted = false;
             IntervalStartTime = 0;
@@ -287,12 +287,12 @@ namespace Infohazard.Core {
             /// Use Unity scaled time (Time.time).
             /// </summary>
             Scaled,
-        
+
             /// <summary>
             /// Use Unity unscaled time (Time.unscaledTime).
             /// </summary>
             Unscaled,
-        
+
             /// <summary>
             /// Use Unity realtime (Time.realtimeSinceStartup).
             /// </summary>

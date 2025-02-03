@@ -13,23 +13,21 @@ namespace Infohazard.Core {
     /// Compatible with the pooling system.
     /// </remarks>
     public class TimeToLive : MonoBehaviour {
-        /// <summary>
-        /// (Serialized) How much time remains before the GameObject is destroyed.
-        /// </summary>
-        [Tooltip("How much time remains before the GameObject is destroyed.")] [SerializeField]
+        [SerializeField]
+        [Tooltip("How much time remains before the GameObject is destroyed.")]
         private float _timeToLive = 5;
 
-        /// <summary>
-        /// (Serialized) How long the object will remain after its time to live has passed.
-        /// </summary>
-        [SerializeField] private float _linger = 0;
+        [SerializeField]
+        [Tooltip("How long the object will remain after its time to live has passed.")]
+        private float _linger = 0;
 
-        [SerializeField, HideInInspector] private GameObject _spawnOnDeath;
+        // Included for backwards compatibility.
+        [SerializeField, HideInInspector]
+        private GameObject _spawnOnDeath;
 
-        /// <summary>
-        /// (Serialized) Optional object that will be spawned when the time to live has passed (but before the linger).
-        /// </summary>
-        [SerializeField] private SpawnRef _spawnObjectOnDeath;
+        [SerializeField]
+        [Tooltip("Optional object that will be spawned when the time to live has passed (but before the linger).")]
+        private SpawnRef _spawnObjectOnDeath;
 
         private float _initialTimeToLive;
         private bool _destroyed;
@@ -93,10 +91,10 @@ namespace Infohazard.Core {
 #if UNITY_EDITOR
                 UnityEditor.Undo.RecordObject(this, "Migrate Spawn On Death");
 #endif
-                
+
                 _spawnObjectOnDeath = new SpawnRef(_spawnOnDeath);
                 _spawnOnDeath = null;
-                
+
 #if UNITY_EDITOR
                 UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(this);
 #endif

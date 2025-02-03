@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -19,10 +18,32 @@ namespace Infohazard.Core {
     /// Also provides a tag filter, allowing you to control which types of object can activate it.
     /// </remarks>
     public class TriggerVolume : MonoBehaviour {
+        [SerializeField]
+        [Tooltip("Mask of tags that can activate the trigger.")]
+        private TagMask _tagFilter = TagMask.PlayerMask;
+
+        [SerializeField]
+        [Tooltip("List of colliders to enable/disable along with this component.")]
+        private Collider[] _controlledColliders;
+
+        [SerializeField]
+        [Tooltip("UnityEvents that enable you to assign functionality in the editor.")]
+        private TriggerEvents _events = default;
+
         /// <summary>
-        /// (Serialized) Mask of tags that can activate the trigger.
+        /// UnityEvents that enable you to assign functionality in the editor.
         /// </summary>
-        [SerializeField] private TagMask _tagFilter = TagMask.PlayerMask;
+        public TriggerEvents Events => _events;
+
+        /// <summary>
+        /// All objects currently inside the trigger volume.
+        /// </summary>
+        public IEnumerable<GameObject> Occupants => _objects.Keys;
+
+        /// <summary>
+        /// List of colliders to enable/disable along with this component.
+        /// </summary>
+        public IReadOnlyList<Collider> ControlledColliders => _controlledColliders;
 
         /// <summary>
         /// Invoked when an object matching the tag filter enters the trigger.
@@ -39,69 +60,8 @@ namespace Infohazard.Core {
         /// </summary>
         public event Action<GameObject> AllExited;
 
-        /// <summary>
-        /// (Serialized) List of colliders to enable/disable along with this component.
-        /// </summary>
-        [SerializeField] private Collider[] _controlledColliders;
-
-        /// <summary>
-        /// (Serialized) UnityEvents that enable you to assign functionality in the editor.
-        /// </summary>
-        [SerializeField] private TriggerEvents _events = default;
-
-        /// <summary>
-        /// UnityEvents that enable you to assign functionality in the editor.
-        /// </summary>
-        public TriggerEvents Events => _events;
-
-        /// <summary>
-        /// All objects currently inside the trigger volume.
-        /// </summary>
-        public ICollection<GameObject> Occupants => _objects.Keys;
-
-        /// <summary>
-        /// List of colliders to enable/disable along with this component.
-        /// </summary>
-        public Collider[] ControlledColliders => _controlledColliders;
-
-        /// <summary>
-        /// Class that stores the UnityEvents used by a TriggerVolume.
-        /// </summary>
-        [Serializable]
-        public class TriggerEvents {
-            /// <summary>
-            /// (Serialized) Invoked when an object matching the tag filter enters the trigger.
-            /// </summary>
-            [SerializeField] private UnityEvent _onTriggerEnter;
-
-            /// <summary>
-            /// (Serialized) Invoked when an object matching the tag filter exits the trigger.
-            /// </summary>
-            [SerializeField] private UnityEvent _onTriggerExit;
-
-            /// <summary>
-            /// (Serialized) Invoked when the last object matching the tag filter exits the trigger.
-            /// </summary>
-            [SerializeField] private UnityEvent _onAllExit;
-
-            /// <summary>
-            /// Invoked when an object matching the tag filter enters the trigger.
-            /// </summary>
-            public UnityEvent OnTriggerEnter => _onTriggerEnter;
-
-            /// <summary>
-            /// Invoked when an object matching the tag filter exits the trigger.
-            /// </summary>
-            public UnityEvent OnTriggerExit => _onTriggerExit;
-
-            /// <summary>
-            ///  Invoked when the last object matching the tag filter exits the trigger.
-            /// </summary>
-            public UnityEvent OnAllExit => _onAllExit;
-        }
-
-        private Dictionary<GameObject, TriggerOccupant> _objects = new Dictionary<GameObject, TriggerOccupant>();
-        private List<GameObject> _objectsToRemove = new List<GameObject>();
+        private readonly Dictionary<GameObject, TriggerOccupant> _objects = new();
+        private readonly List<GameObject> _objectsToRemove = new();
 
         private void Update() {
             CheckForDeactivatedObjects();
@@ -226,13 +186,45 @@ namespace Infohazard.Core {
         }
 
         private void OnTriggerExit2D(Collider2D other) {
-            if (enabled)  HandleExit(other.gameObject, null, other);
+            if (enabled) HandleExit(other.gameObject, null, other);
         }
 
         private class TriggerOccupant {
             public List<Collider> Colliders;
             public List<Collider2D> Collider2Ds;
         }
-    }
 
+        /// <summary>
+        /// Class that stores the UnityEvents used by a TriggerVolume.
+        /// </summary>
+        [Serializable]
+        public class TriggerEvents {
+            [SerializeField]
+            [Tooltip("Invoked when an object matching the tag filter enters the trigger.")]
+            private UnityEvent _onTriggerEnter;
+
+            [SerializeField]
+            [Tooltip("Invoked when an object matching the tag filter exits the trigger.")]
+            private UnityEvent _onTriggerExit;
+
+            [SerializeField]
+            [Tooltip("Invoked when the last object matching the tag filter exits the trigger.")]
+            private UnityEvent _onAllExit;
+
+            /// <summary>
+            /// Invoked when an object matching the tag filter enters the trigger.
+            /// </summary>
+            public UnityEvent OnTriggerEnter => _onTriggerEnter;
+
+            /// <summary>
+            /// Invoked when an object matching the tag filter exits the trigger.
+            /// </summary>
+            public UnityEvent OnTriggerExit => _onTriggerExit;
+
+            /// <summary>
+            ///  Invoked when the last object matching the tag filter exits the trigger.
+            /// </summary>
+            public UnityEvent OnAllExit => _onAllExit;
+        }
+    }
 }

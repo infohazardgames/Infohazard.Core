@@ -132,25 +132,27 @@ This demo, located at `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Scenes/De
 
 ### Attributes
 
-The package provides several PropertyAttributes that you can use in your scripts to customize how serialized fields are drawn in the inspector. To use any of these attributes, simply add [AttributeName] in front of a serialized field in a script. You can also check out the drawers for these attributes in the Editor/Attributes directory.
+The package provides several PropertyAttributes that you can use in your scripts to customize how serialized fields are drawn in the inspector. To use any of these attributes, simply add `[AttributeName]` in front of a serialized field in a script. You can also check out the drawers for these attributes in the Editor/Attributes directory.
 
 #### AssetDropdown
-The [AssetDropdown] attribute is used to show a dropdown menu on a field whose type is a UnityEngine.Object reference. It will find all assets in your project that match this type and display them as options in the dropdown. The standard drag/drop interface still works as well. This functionality is also available the [Expandable] attribute.
+The `[AssetDropdown]` attribute is used to show a dropdown menu on a field whose type is a UnityEngine.Object reference. It will find all assets in your project that match this type and display them as options in the dropdown. The standard drag/drop interface still works as well. This functionality is also available the `[Expandable]` attribute.
 #### ConditionalDraw
-The [ConditionalDraw] attribute is used to conditionally hide a serialized field in the inspector depending on some other condition. The supplied condition should be the name of another serialized field in the same script. You can also optionally pass in a value to compare that condition field with, and whether they must be equal or unequal to display the field.
+The `[ConditionalDraw]` attribute is used to conditionally hide a serialized field in the inspector depending on some other condition. The supplied condition should be the name of another serialized field in the same script. You can also optionally pass in a value to compare that condition field with, and whether they must be equal or unequal to display the field.
 #### DrawSingleChildProperty
-The [DrawSingleChildProperty] attribute is used to render a hierarchy of fields as just a single value. Say you have a struct called Data with a string field called _name. Adding [DrawSingleChildProperty(“_name”)] to a field of type Data would cause just the _name field to be drawn in the inspector.
+The `[DrawSingleChildProperty]` attribute is used to render a hierarchy of fields as just a single value. Say you have a struct called Data with a string field called _name. Adding `[DrawSingleChildProperty(“_name”)]` to a field of type Data would cause just the _name field to be drawn in the inspector.
 #### EditNameOnlyAttribute
-The [EditNameOnly] attribute displays a Unity Object reference field as a text entry, which is used to control the name of the referenced object. If the reference is set to null, the standard drag-drop box is used.
+The `[EditNameOnly]` attribute displays a Unity Object reference field as a text entry, which is used to control the name of the referenced object. If the reference is set to null, the standard drag-drop box is used.
 #### ExpandableAttribute
-The [Expandable] attribute is used to optionally draw the child properties of a Unity Object reference field, such that the referenced object can be edited without changing the inspector context. If the type of the field is not a GameObject or Component and is not abstract, new instances can also be created from the inspector. If the type specified is abstract, has child classes, or a required interface is specified, then the type of object to be created can be chosen from a dropdown. Additionally, a dropdown is provided to select assets from the project, similar to [AssetDropdown].
+The `[Expandable]` attribute is used to optionally draw the child properties of a Unity Object reference field, such that the referenced object can be edited without changing the inspector context. If the type of the field is not a GameObject or Component and is not abstract, new instances can also be created from the inspector. If the type specified is abstract, has child classes, or a required interface is specified, then the type of object to be created can be chosen from a dropdown. Additionally, a dropdown is provided to select assets from the project, similar to `[AssetDropdown]`.
 #### MustImplementAttribute
-The [MustImplement] attribute is used on a Unity Object reference field to restrict values to implement one or more interfaces. While Unity does not support serializing references to interfaces directly, you can use this attribute on a field of type Object to allow both ScriptableObjects and MonoBehaviours that implement your interface. This functionality is also provided in the [Expandable] attribute.
+The `[MustImplement]` attribute is used on a Unity Object reference field to restrict values to implement one or more interfaces. While Unity does not support serializing references to interfaces directly, you can use this attribute on a field of type Object to allow both ScriptableObjects and MonoBehaviours that implement your interface. This functionality is also provided in the `[Expandable]` attribute.
 #### TypeSelectAttribute
-The [TypeSelect] attribute is used on a string field to show a dropdown where any valid C# type can be selected. The selected type is saved in the string as its full class name. This attribute is useful with the TypeUtility class to find the selected type.
+The `[TypeSelect]` attribute is used on a string field to show a dropdown where any valid C# type can be selected. The selected type is saved in the string as its full class name. This attribute is useful with the TypeUtility class to find the selected type.
+#### HelpBox
+The `[HelpBox]` attribute is used to add additional information on a serialized field for the user. It will add a clickable ? button that toggles a help box containing the given text. Note that unlike other attributes, `[HelpBox]` requires the use of a custom editor. This is to enable support for additional custom drawers (since Unity only allows one custom drawer on each serialized field). To support help boxes, draw the SerializedProperty in your custom editor using `CoreDrawers.DrawPropertyWithHelpBoxSupport(property);`. You can safely use this on all properties regardless of whether they actually contain a help box.
 ### Data Structures
 #### ListQueue
-The ListQueue<T> class is an implementation of a queue data structure similar to C#’s Queue class. The main difference is that a ListQueue implements the IList interface and allows you to access any element of the queue whenever you want, while still maintaining O(1) performance for normal Enqueue and Dequeue operations (as long as there is capacity available).
+The `ListQueue<T>` class is an implementation of a queue data structure similar to C#’s Queue class. The main difference is that a ListQueue implements the IList interface and allows you to access any element of the queue whenever you want, while still maintaining O(1) performance for normal Enqueue and Dequeue operations (as long as there is capacity available).
 ### Pooling
 The library provides a simple object pooling system under the Pooling directory. Object pooling means that instead of instantiating and destroying GameObjects as needed, we deactivate them and reactivate them to avoid constantly allocating and deallocating memory.
 #### Spawnable
@@ -213,6 +215,8 @@ You can inherit from this script in managers or other scripts that need to exist
 Similar to Singleton, but for ScriptableObjects. You specify a path in your subclass where the instance should live (this must be under a Resources folder) and the editor will automatically handle loading and even creating this asset for you when needed.
 #### TriggerVolume
 A script that makes it easy to add events to a trigger collider. Provides both UnityEvents (assignable in the inspector) and normal C# events for when an object enters or leaves the trigger, and when all objects have left the trigger.
+#### SimpleStateMachine
+A basic code-only state machine implementation. Handles states and transitions with callbacks and transition conditions, as well as manual direct transitions. Each state has a key which can be any type you desire (typically an enum you create).
 
 ## Integrations
 Infohazard.Core directly supports integration with the following assets and packages:
@@ -224,4 +228,4 @@ Regardless of how you install the Addressables integration, you will need to ins
 
 If you downloaded Infohazard.Core from the Unity Asset Store, you can find the Addressables integration package at `Assets/Plugins/Infohazard/Infohazard.Core/Integrations/Infohazard.Core.Addressables.unitypackage`. Double click that package in Unity to extract the files into your project.
 
-If you are using Infohazard.Core as a package, you can install the Addressables integration package from [Github](https://github.com/infohazardgames/Infohazard.Core.Addressables).
+If you are using Infohazard.Core as a package or submodule, you can install the Addressables integration package from [Github](https://github.com/infohazardgames/Infohazard.Core.Addressables).

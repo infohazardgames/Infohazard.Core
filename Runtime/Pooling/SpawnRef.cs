@@ -20,10 +20,9 @@ namespace Infohazard.Core {
     /// <typeparam name="T">The type of object to be referenced.</typeparam>
     [Serializable]
     public abstract class SpawnRefBase<T> : SpawnRefBase where T : Object {
-        /// <summary>
-        /// (Serialized) The prefab to be spawned.
-        /// </summary>
-        [SerializeField] private T _prefab;
+        [SerializeField]
+        [Tooltip("The prefab to spawn.")]
+        private T _prefab;
 
         private IPoolHandler _handler;
 
@@ -100,7 +99,6 @@ namespace Infohazard.Core {
         /// <param name="spawnParams">Additional spawn info.</param>
         /// <returns>The spawned object.</returns>
         public T Spawn(in SpawnParams spawnParams = default) {
-
             if (_hasCheckedSpawnable && _spawnable == null && _gameObject != null) {
                 return Spawnable.Spawn(_gameObject, spawnParams).GetComponent<T>();
             }
@@ -146,7 +144,8 @@ namespace Infohazard.Core {
         public SpawnRef(GameObject prefab) : base(prefab) { }
 
         ///<inheritdoc/>
-        protected override void GetSpawnableAndGameObject(GameObject obj, out Spawnable spawnable, out GameObject gameObject) {
+        protected override void GetSpawnableAndGameObject(GameObject obj, out Spawnable spawnable,
+                                                          out GameObject gameObject) {
             gameObject = Prefab;
             Prefab.TryGetComponent(out spawnable);
         }
