@@ -38,7 +38,7 @@ namespace Infohazard.Core {
         /// <summary>
         /// All objects currently inside the trigger volume.
         /// </summary>
-        public IEnumerable<GameObject> Occupants => _objects.Keys;
+        public IReadOnlyCollection<GameObject> Occupants => _objects.Keys;
 
         /// <summary>
         /// List of colliders to enable/disable along with this component.
