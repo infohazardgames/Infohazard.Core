@@ -1,13 +1,12 @@
 {
   "name": "com.infohazard.core",
   "displayName": "Infohazard.Core",
-  "version": "1.4.0-preview.1",
-  "unity": "2020.3",
+  "version": "1.4.0",
+  "unity": "2022.3",
   "description": "A collection of useful functionality for Unity, which is used by my other packages.",
   "keywords": [],
   "repository": {
     "url": "https://github.com/infohazardgames/Infohazard.Core.git",
-    "type": "git",
-    "revision": "11efee739f095a2ac750592acf6f8bf15a8161eb"
+    "type": "git"
   }
 }

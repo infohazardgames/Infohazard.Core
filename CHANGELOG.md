@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.0-preview.1] - 2025-2-1
+## [1.4.0] - 2025-2-11
 
 ### Added
 * Added attribute to require a referenced object to implement an interface.
@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * Renamed SpawnRef.Valid to SpawnRef.IsValid.
 * Minimum Unity version changed to 2022.3.
+* Use correct linear velocity property for Rigidbody depending on Unity version, so you won't see deprecated API warnings.
 
 ### Fixed
 * TriggerVolume now registers exit events if all of an occupant's colliders are disabled.
