@@ -356,5 +356,49 @@ namespace Infohazard.Core {
                 SetLayerRecursively(obj.transform.GetChild(i).gameObject, layer);
             }
         }
+
+        /// <summary>
+        /// Utility method to accommodate Unity 6 velocity name change.
+        /// </summary>
+        public static void SetLinearVelocity(this Rigidbody rb, Vector3 velocity) {
+#if UNITY_6000_0_OR_NEWER
+            rb.linearVelocity = velocity;
+#else
+            rb.velocity = velocity;
+#endif
+        }
+
+        /// <summary>
+        /// Utility method to accommodate Unity 6 velocity name change.
+        /// </summary>
+        public static Vector3 GetLinearVelocity(this Rigidbody rb) {
+#if UNITY_6000_0_OR_NEWER
+            return rb.linearVelocity;
+#else
+            return rb.velocity;
+#endif
+        }
+
+        /// <summary>
+        /// Utility method to accommodate Unity 6 velocity name change.
+        /// </summary>
+        public static void AddLinearVelocity(this Rigidbody rb, Vector3 velocity) {
+#if UNITY_6000_0_OR_NEWER
+            rb.linearVelocity += velocity;
+#else
+            rb.velocity += velocity;
+#endif
+        }
+
+        /// <summary>
+        /// Utility method to accommodate Unity 6 velocity name change.
+        /// </summary>
+        public static void MoveTowardsLinearVelocity(this Rigidbody rb, Vector3 targetVelocity, float maxDeltaV) {
+#if UNITY_6000_0_OR_NEWER
+            rb.linearVelocity = Vector3.MoveTowards(rb.linearVelocity, targetVelocity, maxDeltaV);
+#else
+            rb.velocity = Vector3.MoveTowards(rb.velocity, targetVelocity, maxDeltaV);
+#endif
+        }
     }
 }
