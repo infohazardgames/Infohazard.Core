@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
@@ -292,6 +293,7 @@ namespace Infohazard.Core {
 
         /// <summary>
         /// Get the path from one transform to another (object names separated by slashes).
+        /// Names are URL encoded in case they contain slashes.
         /// </summary>
         /// <remarks>
         /// The parameter <see cref="to"/> must be a direct descendent of <see cref="from"/>, or an error is logged.
@@ -309,7 +311,8 @@ namespace Infohazard.Core {
 
             while (current && current != from) {
                 if (current) {
-                    _transformPathBuilder.Insert(0, first ? current.name : $"{current.name}/");
+                    string name = UnityWebRequest.EscapeURL(current.name);
+                    _transformPathBuilder.Insert(0, first ? name : $"{name}/");
                 }
 
                 current = current.parent;
@@ -326,6 +329,7 @@ namespace Infohazard.Core {
 
         /// <summary>
         /// Parses a slash-separated Transform path from a parent object to find a child.
+        /// The name is expected to be URL encoded.
         /// </summary>
         /// <remarks>
         /// This can be used to turn a path created by <see cref="GetRelativeTransformPath"/> back to an object reference.
@@ -338,8 +342,18 @@ namespace Infohazard.Core {
             Transform current = from;
 
             foreach (string part in parts) {
-                current = from.Find(part);
-                if (current == null) return null;
+                string name = UnityWebRequest.UnEscapeURL(part);
+
+                bool found = false;
+                for (int i = 0; i < current.childCount; i++) {
+                    Transform t = current.GetChild(i);
+                    if (t.name != name) continue;
+                    current = t;
+                    found = true;
+                    break;
+                }
+
+                if (!found) return null;
             }
 
             return current;
