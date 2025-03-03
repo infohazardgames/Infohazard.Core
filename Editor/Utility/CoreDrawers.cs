@@ -30,7 +30,7 @@ namespace Infohazard.Core.Editor {
         public static void ValidatedObjectField(Rect position, SerializedProperty property, Type objType,
                                                 GUIContent label, GUIStyle style,
                                                 IObjectReferenceFieldAssignmentValidator validator) {
-            
+
             _typeOfObjectFieldValidator ??=
                 typeof(EditorGUI).GetNestedType("ObjectFieldValidator", BindingFlags.Default | BindingFlags.NonPublic);
             _objectFieldMethod ??= typeof(EditorGUI).GetMethod(nameof(EditorGUI.ObjectField),
@@ -42,15 +42,15 @@ namespace Infohazard.Core.Editor {
                                                                    typeof(GUIContent), typeof(GUIStyle),
                                                                    _typeOfObjectFieldValidator,
                                                                }, Array.Empty<ParameterModifier>())!;
-            
+
             Delegate validateDelegate = Delegate.CreateDelegate(_typeOfObjectFieldValidator, validator,
                                                                 typeof(IObjectReferenceFieldAssignmentValidator)
                                                                     .GetMethod(
                                                                         nameof(IObjectReferenceFieldAssignmentValidator
                                                                                    .ValidateObjectFieldAssignment))!);
-            
+
             object[] args = { position, property, objType, label, style, validateDelegate };
-            
+
             _objectFieldMethod.Invoke(null, args);
         }
 
@@ -65,10 +65,10 @@ namespace Infohazard.Core.Editor {
         /// <param name="interfaces">Interfaces that must be implemented.</param>
         public static void ObjectFieldWithInterfaces(Rect position, SerializedProperty property, Type objType,
                                                      GUIContent label, GUIStyle style, IReadOnlyList<Type> interfaces) {
-            
+
             IObjectReferenceFieldAssignmentValidator validator =
                 new ObjectReferenceFieldAssignmentValidator(ObjectValidators.MustImplement(interfaces));
-            
+
             ValidatedObjectField(position, property, objType, label, style, validator);
         }
 
@@ -86,13 +86,13 @@ namespace Infohazard.Core.Editor {
 
             foreach (Type t in TypeUtility.AllTypes) {
                 if (IsClassValidForNewButton(requiredType, t, interfaces)) {
-                    
+
                     menu.AddItem(new GUIContent(t.FullName), false, () => {
                         createAction(t);
                     });
                 }
             }
-            
+
             menu.DropDown(buttonRect);
         }
 
@@ -107,11 +107,11 @@ namespace Infohazard.Core.Editor {
             }
 
             if (interfaces == null) return true;
-            
+
             foreach (Type interfaceType in interfaces) {
                 if (!interfaceType.IsAssignableFrom(testType)) return false;
             }
-            
+
             return true;
         }
 
@@ -125,13 +125,13 @@ namespace Infohazard.Core.Editor {
         /// <param name="interfaces">Interfaces that the object must implement.</param>
         public static void AssetDropdown(SerializedProperty property, Type type, Rect buttonRect, GUIContent content,
                                          IReadOnlyList<Type> interfaces = null) {
-            
+
             if (!EditorGUI.DropdownButton(buttonRect, content, FocusType.Passive)) return;
 
             ShowAssetDropdown(property, type, buttonRect, interfaces);
         }
 
-        private static void ShowAssetDropdown(SerializedProperty property, Type type, Rect buttonRect, 
+        private static void ShowAssetDropdown(SerializedProperty property, Type type, Rect buttonRect,
                                               IReadOnlyList<Type> interfaces = null) {
             void SetValue(Object value) {
                 property.serializedObject.Update();
@@ -140,14 +140,14 @@ namespace Infohazard.Core.Editor {
             }
 
             bool usePaths = EditorPrefs.GetBool(AssetDropdownUsesPathsPref, false);
-            
+
             GenericMenu menu = new GenericMenu();
             menu.AddItem(new GUIContent("Show Paths"), usePaths, () => {
                 EditorPrefs.SetBool(AssetDropdownUsesPathsPref, !usePaths);
             });
             menu.AddSeparator(string.Empty);
             menu.AddItem(new GUIContent(ObjectToString(null)), false, () => SetValue(null));
-            
+
             Func<Object, Object> validator =
                 interfaces != null ? ObjectValidators.MustImplement(interfaces) : null;
 
@@ -171,14 +171,14 @@ namespace Infohazard.Core.Editor {
             foreach ((Object obj, string path) in options) {
                 menu.AddItem(new GUIContent(usePaths ? path : obj.name), false, () => SetValue(obj));
             }
-                
+
             menu.DropDown(buttonRect);
         }
 
         private static string ObjectToString(Object obj) {
             return obj ? obj.name : "<none>";
         }
-        
+
         private static bool TryGetHelpBoxAttribute(SerializedProperty prop, out HelpBoxAttribute attr, out FieldInfo field) {
             field = prop.FindFieldInfo();
             if (field == null) {
@@ -189,22 +189,26 @@ namespace Infohazard.Core.Editor {
             attr = field.GetCustomAttribute<HelpBoxAttribute>();
             return attr != null;
         }
-        
-        
+
+
         public static void DrawPropertyWithHelpBoxSupport(SerializedProperty property, GUIContent label = null) {
+            if (property == null) {
+                throw new ArgumentNullException(nameof(property));
+            }
+
             if (!TryGetHelpBoxAttribute(property, out HelpBoxAttribute attr, out FieldInfo field)) {
                 EditorGUILayout.PropertyField(property, label);
                 return;
             }
 
             EditorGUILayout.BeginHorizontal();
-            
+
             EditorGUILayout.PropertyField(property, label);
 
             const string helpBoxPref = "Infohazard.Core.CoreDrawers.HelpBoxExpanded";
             string propertyKey = field.DeclaringType!.FullName + "." + field.Name;
             string curValue = EditorPrefs.GetString(helpBoxPref, null);
-            
+
             if (GUILayout.Button("?", EditorStyles.miniButton, GUILayout.Width(20))) {
                 if (curValue == propertyKey) {
                     EditorPrefs.DeleteKey(helpBoxPref);
@@ -212,11 +216,11 @@ namespace Infohazard.Core.Editor {
                     EditorPrefs.SetString(helpBoxPref, propertyKey);
                 }
             }
-            
+
             EditorGUILayout.EndHorizontal();
 
             if (curValue != propertyKey) return;
-            
+
             EditorGUILayout.HelpBox(attr.Text, MessageType.Info);
         }
     }

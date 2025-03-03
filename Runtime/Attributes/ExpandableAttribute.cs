@@ -24,7 +24,7 @@ namespace Infohazard.Core {
         /// If false, will show the expander.
         /// </remarks>
         public bool AlwaysExpanded { get; }
-        
+
         /// <summary>
         /// Whether to show a "New" button to create new instances.
         /// </summary>
@@ -32,7 +32,7 @@ namespace Infohazard.Core {
         /// This only works if the type of the field is a ScriptableObject.
         /// </remarks>
         public bool ShowNewButton { get; }
-        
+
         /// <summary>
         /// The default path to save newly created ScriptableObjects at.
         /// </summary>
@@ -40,16 +40,22 @@ namespace Infohazard.Core {
         /// If unset, this will use the same path as the containing object if it is an asset.
         /// </remarks>
         public string SavePath { get; }
-        
+
         /// <summary>
         /// Whether to show a dropdown of all types extending the type of the variable.
         /// </summary>
         public bool ShowChildTypes { get; }
-        
+
         /// <summary>
         /// Interfaces that must be implemented by assigned objects.
         /// </summary>
         public IReadOnlyList<Type> RequiredInterfaces { get; }
+
+        /// <summary>
+        /// If true, don't show the child properties even if the property is expanded.
+        /// You can use this to implement your own inspector logic for the child properties.
+        /// </summary>
+        public bool OnlyShowMainLine { get; set; }
 
         /// <summary>
         /// Construct a new ExpandableAttribute.

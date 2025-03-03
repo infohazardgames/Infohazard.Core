@@ -43,13 +43,13 @@ namespace Infohazard.Core.Editor {
             float height = EditorGUI.GetPropertyHeight(property, label);
 
             // If multiple values, display a label but don't expand.
-            if (property.hasMultipleDifferentValues) {
+            if (property.hasMultipleDifferentValues && !attr.OnlyShowMainLine) {
                 height += EditorGUIUtility.standardVerticalSpacing + EditorGUIUtility.singleLineHeight;
                 return height;
             }
 
             // If the value is null, property isn't expanded, do not expand.
-            if (value == null || (!property.isExpanded && !attr.AlwaysExpanded)) {
+            if (value == null || (!property.isExpanded && !attr.AlwaysExpanded) || attr.OnlyShowMainLine) {
                 return height;
             }
 
@@ -62,7 +62,7 @@ namespace Infohazard.Core.Editor {
             // We pass true to the root SerializedProperty to enter its child list,
             // then pass false to keep going without recursing further.
             // The extra height of expanded child properties will be handled by the inner GetPropertyHeight call.
-            var iter = so.GetIterator();
+            SerializedProperty iter = so.GetIterator();
             bool first = true;
             while (iter.NextVisible(first)) {
                 if (iter.name == "m_Script") continue;
@@ -98,7 +98,7 @@ namespace Infohazard.Core.Editor {
 
             // Get height of the first line (the main property).
             Rect propertyRect = position;
-            GUIContent labelCopy = new GUIContent(label);
+            GUIContent labelCopy = new(label);
             propertyRect.height = EditorGUI.GetPropertyHeight(property, label);
 
             // Draw the new button if desired, and reduce size of the main property.
@@ -133,15 +133,17 @@ namespace Infohazard.Core.Editor {
             Object value = property.objectReferenceValue;
             bool showExpander = value != null && !attr.AlwaysExpanded;
 
+            GUIContent propertyLabel = EditorGUI.BeginProperty(propertyRect, labelCopy, property);
+
             Rect propertyRectWithoutLabel =
-                EditorGUI.PrefixLabel(propertyRect, showExpander ? new GUIContent(" ") : labelCopy);
+                EditorGUI.PrefixLabel(propertyRect, showExpander ? new GUIContent(" ") : propertyLabel);
 
             // Draw foldout when property value is not null and property is not always expanded.
             if (showExpander) {
                 Rect expanderRect = propertyRect;
                 expanderRect.xMax = Mathf.Min(expanderRect.xMax,
                                               propertyRectWithoutLabel.xMin - EditorGUIUtility.standardVerticalSpacing);
-                property.isExpanded = EditorGUI.Foldout(propertyRect, property.isExpanded, labelCopy);
+                property.isExpanded = EditorGUI.Foldout(propertyRect, property.isExpanded, propertyLabel);
             }
 
             // Draw dropdown button.
@@ -153,14 +155,16 @@ namespace Infohazard.Core.Editor {
             // Draw the main property.
             if (attr.RequiredInterfaces?.Count > 0) {
                 CoreDrawers.ObjectFieldWithInterfaces(propertyRectWithoutLabel, property, this.GetFieldType(),
-                                                      GUIContent.none,EditorStyles.objectField,
+                                                      GUIContent.none, EditorStyles.objectField,
                                                       attr.RequiredInterfaces);
             } else {
                 EditorGUI.PropertyField(propertyRectWithoutLabel, property, GUIContent.none);
             }
 
+            EditorGUI.EndProperty();
+
             // Avoid messing up multiple values.
-            if (property.hasMultipleDifferentValues) {
+            if (property.hasMultipleDifferentValues && !attr.OnlyShowMainLine) {
                 using (new EditorGUI.IndentLevelScope(1)) {
                     // Rect to keep track of where we are drawing next child.
                     Rect propsRect = position;
@@ -173,7 +177,7 @@ namespace Infohazard.Core.Editor {
             }
 
             // If the property is expanded, draw child properties.
-            if (value != null && (attr.AlwaysExpanded || property.isExpanded)) {
+            if (value != null && (attr.AlwaysExpanded || property.isExpanded) && !attr.OnlyShowMainLine) {
                 // Add indent to child properties.
                 using (new EditorGUI.IndentLevelScope(1)) {
 

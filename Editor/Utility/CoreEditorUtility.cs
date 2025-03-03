@@ -9,6 +9,7 @@ using System.Reflection;
 using System;
 using System.Diagnostics;
 using System.IO;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace Infohazard.Core.Editor {
@@ -163,7 +164,7 @@ namespace Infohazard.Core.Editor {
 
             return (T) reflectionTarget;
         }
-        
+
         /// <summary>
         /// Find the FieldInfo of a given property using Reflection and reading the field directly.
         /// If the property is an array element, return null.
@@ -199,6 +200,8 @@ namespace Infohazard.Core.Editor {
 
                     if (i == separatedPaths.Length - 1) {
                         return fieldInfo;
+                    } else {
+                        reflectionTarget = fieldInfo!.FieldType;
                     }
                 }
             }
@@ -385,6 +388,161 @@ namespace Infohazard.Core.Editor {
             string type = property.type;
             if (!type.StartsWith(PPtrText)) return type;
             return property.type.Substring(PPtrText.Length, type.Length - PPtrText.Length - 1);
+        }
+
+        /// <summary>
+        /// Perform a recursive copy of the values from a SerializedObject to a struct-type SerializedProperty.
+        /// </summary>
+        /// <param name="destination">Destination property to update. Must by a serializable class or struct.</param>
+        /// <param name="source">Source object to read.</param>
+        public static void CopyFrom(this SerializedProperty destination, SerializedObject source) {
+            if (destination.propertyType != SerializedPropertyType.Generic || destination.isArray) {
+                Debug.LogError("SerializedProperty types do not match.");
+                return;
+            }
+
+            using SerializedProperty destIterator = destination.Copy();
+            using SerializedProperty next = destination.Copy();
+            next.Next(false);
+
+            bool enterChildren = true;
+            while (destIterator.Next(enterChildren) && destIterator != next)
+            {
+                enterChildren = false;
+                SerializedProperty srcChild = source.FindProperty(destIterator.name);
+
+                if (srcChild != null) {
+                    destIterator.CopyFrom(srcChild);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Perform a recursive copy of the values from one SerializedProperty to another.
+        /// For compound types, values in one of the properties but not the other are ignored.
+        /// </summary>
+        /// <param name="destination">Destination property to update.</param>
+        /// <param name="source">Source property to read.</param>
+        public static void CopyFrom(this SerializedProperty destination, SerializedProperty source)
+        {
+            if (source.propertyType != destination.propertyType)
+            {
+                Debug.LogError("SerializedProperty types do not match.");
+                return;
+            }
+
+            switch (source.propertyType)
+            {
+                case SerializedPropertyType.Integer:
+                    destination.intValue = source.intValue;
+                    break;
+                case SerializedPropertyType.Boolean:
+                    destination.boolValue = source.boolValue;
+                    break;
+                case SerializedPropertyType.Float:
+                    destination.floatValue = source.floatValue;
+                    break;
+                case SerializedPropertyType.String:
+                    destination.stringValue = source.stringValue;
+                    break;
+                case SerializedPropertyType.Color:
+                    destination.colorValue = source.colorValue;
+                    break;
+                case SerializedPropertyType.ObjectReference:
+                    destination.objectReferenceValue = source.objectReferenceValue;
+                    break;
+                case SerializedPropertyType.LayerMask:
+                    destination.intValue = source.intValue;
+                    break;
+                case SerializedPropertyType.Enum:
+                    destination.longValue = source.longValue;
+                    break;
+                case SerializedPropertyType.Vector2:
+                    destination.vector2Value = source.vector2Value;
+                    break;
+                case SerializedPropertyType.Vector3:
+                    destination.vector3Value = source.vector3Value;
+                    break;
+                case SerializedPropertyType.Vector4:
+                    destination.vector4Value = source.vector4Value;
+                    break;
+                case SerializedPropertyType.Rect:
+                    destination.rectValue = source.rectValue;
+                    break;
+                case SerializedPropertyType.ArraySize:
+                    destination.arraySize = source.arraySize;
+                    break;
+                case SerializedPropertyType.Character:
+                    destination.intValue = source.intValue;
+                    break;
+                case SerializedPropertyType.AnimationCurve:
+                    AnimationCurve copyCurve = new();
+                    copyCurve.CopyFrom(source.animationCurveValue);
+                    destination.animationCurveValue = copyCurve;
+                    break;
+                case SerializedPropertyType.Bounds:
+                    destination.boundsValue = source.boundsValue;
+                    break;
+                case SerializedPropertyType.Gradient:
+                    Gradient copyGradient = new();
+                    Gradient sourceGradient = source.gradientValue;
+                    copyGradient.SetKeys(sourceGradient.colorKeys, sourceGradient.alphaKeys);
+                    destination.gradientValue = copyGradient;
+                    break;
+                case SerializedPropertyType.Quaternion:
+                    destination.quaternionValue = source.quaternionValue;
+                    break;
+                case SerializedPropertyType.ExposedReference:
+                    destination.exposedReferenceValue = source.exposedReferenceValue;
+                    break;
+                case SerializedPropertyType.FixedBufferSize:
+                    // Fixed buffer size is read-only.
+                    break;
+                case SerializedPropertyType.Vector2Int:
+                    destination.vector2IntValue = source.vector2IntValue;
+                    break;
+                case SerializedPropertyType.Vector3Int:
+                    destination.vector3IntValue = source.vector3IntValue;
+                    break;
+                case SerializedPropertyType.RectInt:
+                    destination.rectIntValue = source.rectIntValue;
+                    break;
+                case SerializedPropertyType.BoundsInt:
+                    destination.boundsIntValue = source.boundsIntValue;
+                    break;
+                case SerializedPropertyType.ManagedReference:
+                    destination.managedReferenceValue = source.managedReferenceValue;
+                    break;
+                case SerializedPropertyType.Generic:
+                    if (source.isArray)
+                    {
+                        destination.arraySize = source.arraySize;
+                        for (int i = 0; i < source.arraySize; i++)
+                        {
+                            SerializedProperty sourceElement = source.GetArrayElementAtIndex(i);
+                            SerializedProperty destinationElement = destination.GetArrayElementAtIndex(i);
+                            sourceElement.CopyFrom(destinationElement);
+                        }
+                    }
+                    else
+                    {
+                        using SerializedProperty destIterator = destination.Copy();
+                        using SerializedProperty next = destination.Copy();
+                        next.Next(false);
+
+                        bool enterChildren = true;
+                        while (destIterator.Next(enterChildren) && destIterator != next)
+                        {
+                            enterChildren = false;
+                            SerializedProperty srcChild = source.FindPropertyRelative(destIterator.name);
+
+                            if (srcChild != null) {
+                                destIterator.CopyFrom(srcChild);
+                            }
+                        }
+                    }
+                    break;
+            }
         }
 
         /// <summary>

@@ -359,6 +359,41 @@ namespace Infohazard.Core {
             return current;
         }
 
+        public static bool IsPathUnique(this Transform from, Transform to) {
+            Transform current = to;
+
+            while (current && current != from) {
+                if (!IsNameUniqueInSiblings(current)) return false;
+
+                current = current.parent;
+            }
+
+            return true;
+        }
+
+        private static readonly List<GameObject> _rootGameObjects = new();
+        public static bool IsNameUniqueInSiblings(this Transform transform) {
+            if (transform.parent == null) {
+                _rootGameObjects.Clear();
+                transform.gameObject.scene.GetRootGameObjects(_rootGameObjects);
+                foreach (GameObject gameObject in _rootGameObjects) {
+                    if (gameObject.name == transform.name && !ReferenceEquals(gameObject, transform.gameObject)) {
+                        return false;
+                    }
+                }
+            } else {
+                Transform parent = transform.parent;
+                for (int i = 0; i < parent.childCount; i++) {
+                    Transform sibling = parent.GetChild(i);
+                    if (sibling.name == transform.name && !ReferenceEquals(sibling, transform)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Sets the layer of a GameObject and all of its children.
         /// </summary>
