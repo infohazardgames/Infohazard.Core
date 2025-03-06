@@ -329,7 +329,7 @@ namespace Infohazard.Core {
 
         /// <summary>
         /// Parses a slash-separated Transform path from a parent object to find a child.
-        /// The name is expected to be URL encoded.
+        /// The names are expected to be URL encoded.
         /// </summary>
         /// <remarks>
         /// This can be used to turn a path created by <see cref="GetRelativeTransformPath"/> back to an object reference.
@@ -359,6 +359,19 @@ namespace Infohazard.Core {
             return current;
         }
 
+        /// <summary>
+        /// Check whether the path from one transform to another
+        /// (the one returned by <see cref="GetRelativeTransformPath"/>) is unique.
+        /// If the path is not unique, using <see cref="GetTransformAtRelativePath"/> will not necessarily
+        /// return the correct transform.
+        /// </summary>
+        /// <remarks>
+        /// The names of the objects do not need to be globally unique. Rather, they must be unique
+        /// within all of their siblings according to <see cref="IsNameUniqueInSiblings"/>.
+        /// </remarks>
+        /// <param name="from">The transform to check the path from.</param>
+        /// <param name="to">The transform to check the path to.</param>
+        /// <returns>Whether the path is unique.</returns>
         public static bool IsPathUnique(this Transform from, Transform to) {
             Transform current = to;
 
@@ -372,6 +385,12 @@ namespace Infohazard.Core {
         }
 
         private static readonly List<GameObject> _rootGameObjects = new();
+
+        /// <summary>
+        /// Return whether the name of an object is unique within its siblings.
+        /// </summary>
+        /// <param name="transform">The object to check.</param>
+        /// <returns>Whether the name is unique.</returns>
         public static bool IsNameUniqueInSiblings(this Transform transform) {
             if (transform.parent == null) {
                 _rootGameObjects.Clear();
