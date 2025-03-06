@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2025-3-5
+
+### Added
+* Added methods to check if a GameObject's relative path is unique.
+* Added methods to recursively copy values in SerializedProperties.
+* Added option for an Expandable attribute to show only the main line and not the expansion.
+
+### Changed
+* GameObject path methods now URL-encode the path to avoid issues with the slash character.
+
+### Fixed
+* Fixed ExpandableAttribute property not showing as overridden in a prefab instance.
+* Fixed FindFieldInfo not actually working on nested fields.
+
 ## [1.4.0] - 2025-2-11
 
 ### Added
