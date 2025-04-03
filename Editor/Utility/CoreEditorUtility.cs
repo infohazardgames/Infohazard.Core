@@ -683,9 +683,9 @@ namespace Infohazard.Core.Editor {
         public static Object CreateAndSaveNewAsset(string name, Type type, string defaultSavePath,
                                                    Object copyObject = null, Object parentObject = null,
                                                    Action<Object, string> saveAction = null) {
-            string path = $"{name}.asset";
 
             // If we have a custom save action, no need to do any filesystem stuff.
+            string path;
             if (saveAction == null) {
                 string folder = defaultSavePath;
                 bool empty = string.IsNullOrEmpty(folder);
@@ -719,9 +719,11 @@ namespace Infohazard.Core.Editor {
                 if (!Directory.Exists(fullFolder)) Directory.CreateDirectory(fullFolder);
 
                 // Prompt the user to select a save location.
-                path = EditorUtility.SaveFilePanelInProject("Save New Asset", path,
+                path = EditorUtility.SaveFilePanelInProject("Save New Asset", name,
                                                             "asset", "Save new asset to a location.", folderWithAssets);
                 if (string.IsNullOrEmpty(path)) return null;
+            } else {
+                path = $"{name}.asset";
             }
 
             // If there is a current value, copy it, otherwise create a new instance.
@@ -749,7 +751,7 @@ namespace Infohazard.Core.Editor {
 
         private static void Save(Object asset, string path) {
             // Ensure the directory exists as an asset (has a meta file).
-            string dir = Path.GetDirectoryName(CoreEditorUtility.GetPathRelativeToAssetsFolder(path));
+            string dir = Path.GetDirectoryName(GetPathRelativeToAssetsFolder(path));
             string fullPath = string.IsNullOrEmpty(dir)
                 ? Application.dataPath
                 : Path.Combine(Application.dataPath, dir);
