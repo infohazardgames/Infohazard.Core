@@ -4,12 +4,31 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 
 namespace Infohazard.Core {
     /// <summary>
     /// Contains utilities for working with C# reflection types and getting a type by its name.
     /// </summary>
-    public class TypeUtility {
+    public static class TypeUtility {
+        private static readonly Dictionary<Type, string> BuiltInTypeNames = new() {
+            { typeof(bool), "bool" },
+            { typeof(byte), "byte" },
+            { typeof(sbyte), "sbyte" },
+            { typeof(char), "char" },
+            { typeof(decimal), "decimal" },
+            { typeof(double), "double" },
+            { typeof(float), "float" },
+            { typeof(int), "int" },
+            { typeof(uint), "uint" },
+            { typeof(long), "long" },
+            { typeof(ulong), "ulong" },
+            { typeof(object), "object" },
+            { typeof(short), "short" },
+            { typeof(ushort), "ushort" },
+            { typeof(string), "string" }
+        };
+
         private static Assembly[] _allAssemblies;
 
         /// <summary>
@@ -20,6 +39,7 @@ namespace Infohazard.Core {
                 if (_allAssemblies == null) {
                     _allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
                 }
+
                 return _allAssemblies;
             }
         }
@@ -64,6 +84,43 @@ namespace Infohazard.Core {
             }
 
             return null;
+        }
+
+        public static string GetDisplayName(this Type type, bool includeNamespace = false,
+                                            bool capitalizeFirst = false) {
+            if (type == null) return string.Empty;
+
+            if (!includeNamespace && BuiltInTypeNames.TryGetValue(type, out string builtInName)) {
+                if (capitalizeFirst)
+                    return char.ToUpper(builtInName[0]) + builtInName[1..];
+                else
+                    return builtInName;
+            }
+
+            string baseName = includeNamespace ? type.FullName : type.Name;
+            if (string.IsNullOrEmpty(baseName)) return string.Empty;
+
+            if (capitalizeFirst && char.IsLower(baseName[0]))
+                baseName = char.ToUpper(baseName[0]) + baseName[1..];
+
+            if (!type.IsGenericType) return baseName;
+
+            int indexOfBacktick = baseName.IndexOf('`');
+
+            StringBuilder sb = new();
+            sb.Append(baseName, 0, indexOfBacktick);
+
+            Type[] genericArguments = type.GetGenericArguments();
+            sb.Append("<");
+            for (int i = 0; i < genericArguments.Length; i++) {
+                sb.Append(genericArguments[i].GetDisplayName(includeNamespace));
+                if (i < genericArguments.Length - 1) {
+                    sb.Append(", ");
+                }
+            }
+
+            sb.Append(">");
+            return sb.ToString();
         }
     }
 }
