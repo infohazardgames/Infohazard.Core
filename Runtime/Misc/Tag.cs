@@ -19,37 +19,37 @@ namespace Infohazard.Core {
         /// The string <c>"Untagged"</c>.
         /// </summary>
         public const string Untagged = "Untagged";
-        
+
         /// <summary>
         /// The string <c>"Respawn"</c>.
         /// </summary>
         public const string Respawn = "Respawn";
-        
+
         /// <summary>
         /// The string <c>"Finish"</c>.
         /// </summary>
         public const string Finish = "Finish";
-        
+
         /// <summary>
         /// The string <c>"EditorOnly"</c>.
         /// </summary>
         public const string EditorOnly = "EditorOnly";
-        
+
         /// <summary>
         /// The string <c>"MainCamera"</c>.
         /// </summary>
         public const string MainCamera = "MainCamera";
-        
+
         /// <summary>
         /// The string <c>"Player"</c>.
         /// </summary>
         public const string Player = "Player";
-        
+
         /// <summary>
         /// The string <c>"GameController"</c>.
         /// </summary>
         public const string GameController = "GameController";
-        
+
         /// <summary>
         /// Array of default tags provided by Unity.
         /// </summary>
@@ -61,13 +61,13 @@ namespace Infohazard.Core {
         /// Set by the generated <c>GameTag</c> script.
         /// </summary>
         public static string[] GameOverrideTags = null;
-        
+
         /// <summary>
-        /// Array of all default and custom tags in the project. 
+        /// Array of all default and custom tags in the project.
         /// </summary>
         public static string[] Tags => GameOverrideTags ?? DefaultTags;
     }
-    
+
     /// <summary>
     /// Used to select tags in the inspector, including the ability to select multiple tags.
     /// </summary>
@@ -83,39 +83,39 @@ namespace Infohazard.Core {
         /// Mask value for the Untagged tag.
         /// </summary>
         public const long UntaggedMask = 1 << 0;
-        
+
         /// <summary>
         /// Mask value for the Respawn tag.
         /// </summary>
         public const long RespawnMask = 1 << 1;
-        
+
         /// <summary>
         /// Mask value for the Finish tag.
         /// </summary>
         public const long FinishMask = 1 << 2;
-        
+
         /// <summary>
         /// Mask value for the EditorOnly tag.
         /// </summary>
         public const long EditorOnlyMask = 1 << 3;
-        
+
         /// <summary>
         /// Mask value for the MainCamera tag.
         /// </summary>
         public const long MainCameraMask = 1 << 4;
-        
+
         /// <summary>
         /// Mask value for the Player tag.
         /// </summary>
         public const long PlayerMask = 1 << 5;
-        
+
         /// <summary>
         /// Mask value for the GameController tag.
         /// </summary>
         public const long GameControllerMask = 1 << 6;
 
         [SerializeField] private long _value;
-        
+
         /// <summary>
         /// The value of the mask as a 64-bit integer.
         /// </summary>
@@ -133,7 +133,7 @@ namespace Infohazard.Core {
         }
 
         #region Conversions
-        
+
         /// <summary>
         /// Convert a TagMask to a long.
         /// </summary>
@@ -169,7 +169,7 @@ namespace Infohazard.Core {
         public static TagMask operator &(TagMask lhs, long rhs) {
             return new TagMask(lhs._value & rhs);
         }
-        
+
         /// <summary>
         /// Apply bitwise AND operator to a long and a TagMask.
         /// </summary>
@@ -229,7 +229,7 @@ namespace Infohazard.Core {
         #endregion
 
         private static StringBuilder _toStringBuilder = new StringBuilder();
-        
+
         /// <inheritdoc/>
         public override string ToString() {
             bool first = true;
@@ -244,6 +244,17 @@ namespace Infohazard.Core {
             string result = _toStringBuilder.ToString();
             _toStringBuilder.Clear();
             return result;
+        }
+
+        public string[] ToStringArray() {
+            List<string> result = new();
+            for (int i = 0; i < Tag.Tags.Length; i++) {
+                if ((_value & (1 << i)) != 0) {
+                    result.Add(Tag.Tags[i]);
+                }
+            }
+
+            return result.ToArray();
         }
 
         /// <inheritdoc cref="System.IEquatable{T}.Equals(T)"/>
@@ -267,7 +278,7 @@ namespace Infohazard.Core {
         /// <param name="name">Tag name.</param>
         /// <returns>The index of the tag or -1 if it doesn't exist.</returns>
         public static int NameToTag(string name) => Array.IndexOf(Tag.Tags, name);
-        
+
         /// <summary>
         /// Gets the tag name at the given index in the <see cref="Tag.Tags"/> array.
         /// </summary>
@@ -325,7 +336,7 @@ namespace Infohazard.Core {
             int objTag = TagMask.NameToTag(obj.tag);
             return ((1 << objTag) & tag) != 0;
         }
-        
+
         /// <summary>
         /// Return true if Component's tag matches given any tag in given value.
         /// </summary>
@@ -337,6 +348,14 @@ namespace Infohazard.Core {
             return ((1 << objTag) & tag) != 0;
         }
 
+        public static bool CompareTagArray(this Component obj, string[] tags) {
+            for (int i = 0; i < tags.Length; i++) {
+                if (obj.CompareTag(tags[i])) return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Set the tag index of a GameObject.
         /// </summary>
@@ -345,7 +364,7 @@ namespace Infohazard.Core {
         public static void SetTagIndex(this GameObject obj, int tagIndex) {
             obj.tag = TagMask.TagToName(tagIndex);
         }
-        
+
         /// <summary>
         /// Get the tag index of a GameObject.
         /// </summary>
@@ -354,7 +373,7 @@ namespace Infohazard.Core {
         public static int GetTagIndex(this GameObject obj) {
             return TagMask.NameToTag(obj.tag);
         }
-        
+
         /// <summary>
         /// Get the tag index of a Component.
         /// </summary>
@@ -363,7 +382,7 @@ namespace Infohazard.Core {
         public static int GetTagIndex(this Component obj) {
             return TagMask.NameToTag(obj.tag);
         }
-        
+
         /// <summary>
         /// Get the tag mask of a GameObject.
         /// </summary>
@@ -372,7 +391,7 @@ namespace Infohazard.Core {
         public static long GetTagMask(this GameObject obj) {
             return TagMask.GetMask(obj.tag);
         }
-        
+
         /// <summary>
         /// Get the tag mask of a Component.
         /// </summary>

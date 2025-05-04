@@ -32,26 +32,29 @@ namespace Infohazard.Core {
         /// <param name="worldRadius">The radius of the capsule in world space.</param>
         /// <param name="worldHeight">The height of the capsule in world space.</param>
         public static void GetCapsuleInfo(float radius, float height, Vector3 center, int direction,
-                                          Transform transform,
+                                          Matrix4x4 transform,
                                           out Vector3 point1, out Vector3 point2, out float worldRadius,
                                           out float worldHeight) {
-            Vector3 capsuleCenter = transform.TransformPoint(center);
+            Vector3 capsuleCenter = transform.MultiplyPoint3x4(center);
             Vector3 capsuleUp;
             float scaleY;
             float scaleXZ;
 
+            Quaternion rotation = transform.rotation;
+            Vector3 scale = transform.lossyScale;
+
             if (direction == 0) {
-                capsuleUp = transform.right;
-                scaleY = transform.lossyScale.x;
-                scaleXZ = Mathf.Max(Mathf.Abs(transform.lossyScale.y), Mathf.Abs(transform.lossyScale.z));
+                capsuleUp = rotation * Vector3.right;
+                scaleY = scale.x;
+                scaleXZ = Mathf.Max(Mathf.Abs(scale.y), Mathf.Abs(scale.z));
             } else if (direction == 1) {
-                capsuleUp = transform.up;
-                scaleY = transform.lossyScale.y;
-                scaleXZ = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.z));
+                capsuleUp = rotation * Vector3.up;
+                scaleY = scale.y;
+                scaleXZ = Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
             } else {
-                capsuleUp = transform.forward;
-                scaleY = transform.lossyScale.z;
-                scaleXZ = Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.y));
+                capsuleUp = rotation * Vector3.forward;
+                scaleY = scale.z;
+                scaleXZ = Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.y));
             }
 
             worldRadius = scaleXZ * radius;
@@ -78,7 +81,7 @@ namespace Infohazard.Core {
         /// <param name="worldHeight">The height of the capsule in world space.</param>
         public static void GetCapsuleInfo(this CharacterController capsule, out Vector3 point1, out Vector3 point2,
                                           out float worldRadius, out float worldHeight) {
-            GetCapsuleInfo(capsule.radius, capsule.height, capsule.center, 1, capsule.transform,
+            GetCapsuleInfo(capsule.radius, capsule.height, capsule.center, 1, capsule.transform.localToWorldMatrix,
                            out point1, out point2, out worldRadius, out worldHeight);
         }
 
@@ -96,8 +99,9 @@ namespace Infohazard.Core {
         /// <param name="worldHeight">The height of the capsule in world space.</param>
         public static void GetCapsuleInfo(this CapsuleCollider capsule, out Vector3 point1, out Vector3 point2,
                                           out float worldRadius, out float worldHeight) {
-            GetCapsuleInfo(capsule.radius, capsule.height, capsule.center, capsule.direction, capsule.transform,
-                           out point1, out point2, out worldRadius, out worldHeight);
+            GetCapsuleInfo(capsule.radius, capsule.height, capsule.center, capsule.direction,
+                           capsule.transform.localToWorldMatrix, out point1, out point2, out worldRadius,
+                           out worldHeight);
         }
 
         /// <summary>
