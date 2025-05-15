@@ -99,7 +99,10 @@ namespace Infohazard.Core {
         /// <summary>
         /// The time in seconds until the current interval ends.
         /// </summary>
-        public float TimeUntilIntervalEnd => Mathf.Max(IntervalEndTime - CurrentTime, 0);
+        public float TimeUntilIntervalEnd {
+            get => Mathf.Max(IntervalEndTime - CurrentTime, 0);
+            set => IntervalStartTime = CurrentTime + value - _interval;
+        }
 
         /// <summary>
         /// A ratio going from one at interval start to zero at interval end.
@@ -109,7 +112,10 @@ namespace Infohazard.Core {
         /// <summary>
         /// The time in seconds since the current interval started.
         /// </summary>
-        public float TimeSinceIntervalStart => Mathf.Max(CurrentTime - IntervalStartTime, 0);
+        public float TimeSinceIntervalStart {
+            get => Mathf.Max(CurrentTime - IntervalStartTime, 0);
+            set => IntervalStartTime = CurrentTime - value;
+        }
 
         /// <summary>
         /// A ratio going from zero at interval start to one at interval end.
