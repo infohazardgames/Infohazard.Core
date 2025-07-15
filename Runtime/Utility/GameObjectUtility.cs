@@ -164,6 +164,65 @@ namespace Infohazard.Core {
         }
 
         /// <summary>
+        /// Perform a physics cast depending on the type of collider, using its parameters.
+        /// Only BoxCollider, SphereCollider, and CapsuleCollider are supported.
+        /// For simplicity, the scale of the transform is assumed to be uniform.
+        /// </summary>
+        /// <param name="collider">The BoxCollider, SphereCollider, or CapsuleCollider to cast from.</param>
+        /// <param name="padding">A padding to reduce the collider's extents. Given in world units.</param>
+        /// <param name="direction">Direction to cast in.</param>
+        /// <param name="hits">The hit information.</param>
+        /// <param name="maxDistance">The maximum distance to cast. Default is infinity.</param>
+        /// <param name="layerMask">The layer mask to cast against. Default is default raycast layers.</param>
+        /// <param name="triggerInteraction">Whether to include triggers. Default is use global settings.</param>
+        /// <returns>The number of valid hits.</returns>
+        public static int ColliderCastNonAlloc(
+            this Collider collider,
+            float padding,
+            Vector3 direction,
+            RaycastHit[] hits,
+            float maxDistance = float.PositiveInfinity,
+            int layerMask = Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction triggerInteraction = QueryTriggerInteraction.UseGlobal) {
+
+            float scale = collider.transform.lossyScale.x;
+            switch (collider) {
+                case BoxCollider box:
+                    return Physics.BoxCastNonAlloc(
+                        box.transform.TransformPoint(box.center),
+                        box.size * scale * 0.5f - Vector3.one * padding,
+                        direction,
+                        hits,
+                        box.transform.rotation,
+                        maxDistance,
+                        layerMask,
+                        triggerInteraction);
+                case SphereCollider sphere:
+                    return Physics.SphereCastNonAlloc(
+                        sphere.transform.TransformPoint(sphere.center),
+                        sphere.radius * scale - padding,
+                        direction,
+                        hits,
+                        maxDistance,
+                        layerMask,
+                        triggerInteraction);
+                case CapsuleCollider capsule:
+                    GetCapsuleInfo(capsule, out Vector3 point1, out Vector3 point2, out _, out _);
+                    return Physics.CapsuleCastNonAlloc(
+                        point1,
+                        point2,
+                        capsule.radius * scale - padding,
+                        direction,
+                        hits,
+                        maxDistance,
+                        layerMask,
+                        triggerInteraction);
+                default:
+                    throw new ArgumentException($"Collider of type {collider.GetType()} is not supported.");
+            }
+        }
+
+        /// <summary>
         /// Set the parent of the given transform, and reset it's local position, rotation, and scale.
         /// </summary>
         /// <param name="transform">The transform to reset.</param>
