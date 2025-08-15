@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2025-8-14
+
+### Added
+* Added missing editor drawer script for SceneRef.
+* Added a method to get a human-readable display name for a type.
+* Added a multi-hit ColliderCast.
+
+### Changed
+* Made some additional properties of PassiveTimer writable.
+* A few small optimizations.
+
+### Fixed
+* Fixed adding a duplicate .asset file extension when using ExpandableAttribute on Mac.
+
 ## [1.4.1] - 2025-3-5
 
 ### Added
