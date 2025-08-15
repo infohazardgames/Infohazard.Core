@@ -86,6 +86,14 @@ namespace Infohazard.Core {
             return null;
         }
 
+        /// <summary>
+        /// Get a human-readable name of a type (mostly used for generic types).
+        /// Generally equivalent to the name you use in C# code.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="includeNamespace">Whether to include namespaces in the result.</param>
+        /// <param name="capitalizeFirst">If true, force the first character to a capital.</param>
+        /// <returns>A human-readable name of the type.</returns>
         public static string GetDisplayName(this Type type, bool includeNamespace = false,
                                             bool capitalizeFirst = false) {
             if (type == null) return string.Empty;
