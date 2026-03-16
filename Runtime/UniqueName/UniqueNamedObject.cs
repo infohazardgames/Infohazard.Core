@@ -22,6 +22,10 @@ namespace Infohazard.Core {
         [Tooltip("Unique name asset for the object.")]
         private UniqueNameListEntry _uniqueName;
 
+        [SerializeField]
+        [Tooltip("Whether to automatically remove the object from the dictionary when it is disabled.")]
+        private bool _removeOnDisable = true;
+
         /// <summary>
         /// Unique name asset for the object.
         /// </summary>
@@ -32,8 +36,31 @@ namespace Infohazard.Core {
         /// </summary>
         public string UniqueName { get; private set; }
 
-        private static readonly Dictionary<string, UniqueNamedObject> InternalObjects =
-            new Dictionary<string, UniqueNamedObject>();
+        /// <summary>
+        /// Whether to automatically remove the object from the dictionary when it is disabled.
+        /// Setting this property while disabled or inactive will immediately add or remove the object
+        /// from the dictionary as appropriate.
+        /// If this is false, the object will only be removed from the dictionary when it is destroyed.
+        /// This means you can find the object when it is inactive, but only if it has been active at least once
+        /// since it was created (due to how Unity works).
+        /// </summary>
+        public bool RemoveOnDisable {
+            get => _removeOnDisable;
+            set {
+                if (_removeOnDisable == value) return;
+                _removeOnDisable = value;
+
+                if (isActiveAndEnabled) return;
+
+                if (value) {
+                    Register();
+                } else {
+                    Unregister();
+                }
+            }
+        }
+
+        private static readonly Dictionary<string, UniqueNamedObject> InternalObjects = new();
 
         /// <summary>
         /// Dictionary of all active UniqueNamedObjects keyed by their unique names.
@@ -77,9 +104,22 @@ namespace Infohazard.Core {
 
         private void Awake() {
             UniqueName = _uniqueName ? _uniqueName.name : null;
+            if (!_removeOnDisable) Register();
         }
 
         private void OnEnable() {
+            if (_removeOnDisable) Register();
+        }
+
+        private void OnDisable() {
+            if (_removeOnDisable) Unregister();
+        }
+
+        private void OnDestroy() {
+            if (!_removeOnDisable) Unregister();
+        }
+
+        private void Register() {
             if (UniqueName == null) return;
             if (InternalObjects.TryGetValue(UniqueName, out UniqueNamedObject other) && other != null) {
                 Debug.LogError(
@@ -91,7 +131,7 @@ namespace Infohazard.Core {
             ObjectAdded?.Invoke(this);
         }
 
-        private void OnDisable() {
+        private void Unregister() {
             if (UniqueName == null) return;
             if (!ReferenceEquals(InternalObjects[UniqueName], this)) return;
             InternalObjects.Remove(UniqueName);
