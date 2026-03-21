@@ -16,7 +16,7 @@ namespace Infohazard.Core {
     /// </remarks>
     public static class Pause {
         private static bool _paused;
-        private static float _timeScale;
+        private static float _timeScale = 1;
 
         /// <summary>
         /// Get or set the non-paused timescale. Only affects current Time.timeScale if not paused.
@@ -35,14 +35,14 @@ namespace Infohazard.Core {
         /// Invoked when the game pauses.
         /// </summary>
         public static event Action GamePaused;
-        
+
         /// <summary>
         /// Invoked when the game un-pauses.
         /// </summary>
         public static event Action GameResumed;
 
         /// <summary>
-        /// Controls paused state of the game. 
+        /// Controls paused state of the game.
         /// </summary>
         /// <remarks>
         /// This cannot completely prevent game actions from happening,
