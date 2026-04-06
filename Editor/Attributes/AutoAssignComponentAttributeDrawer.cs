@@ -20,9 +20,9 @@ namespace Infohazard.Core {
             
             Component component = property.serializedObject.targetObject as Component;
             if (component == null) return;
-            Type fieldType = fieldInfo.FieldType;
-            if (fieldType.IsInterface || typeof(Component).IsAssignableFrom(fieldType)) {
-                property.objectReferenceValue = component.GetComponent(fieldType);
+            Type type = ((AutoAssignComponentAttribute)attribute).ComponentType ?? fieldInfo.FieldType;
+            if (type.IsInterface || typeof(Component).IsAssignableFrom(type)) {
+                property.objectReferenceValue = component.GetComponent(type);
             }
         }
     }
