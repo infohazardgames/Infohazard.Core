@@ -1,8 +1,5 @@
 ﻿// This file is part of the Infohazard.Core package.
-// Copyright (c) 2022-present Vincent Miller (Infohazard Games).
-
-// This file is part of the Infohazard.Core package.
-// Copyright (c) 2026-present Vincent Miller (Infohazard Games).
+// Copyright (c) 2026-present Val Miller (Infohazard Games).
 
 using System;
 using UnityEditor;
@@ -17,7 +14,7 @@ namespace Infohazard.Core {
                 property.objectReferenceValue != null) {
                 return;
             }
-            
+
             Component component = property.serializedObject.targetObject as Component;
             if (component == null) return;
             Type type = ((AutoAssignComponentAttribute)attribute).ComponentType ?? fieldInfo.FieldType;
