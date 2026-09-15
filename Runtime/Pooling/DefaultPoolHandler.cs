@@ -155,8 +155,10 @@ namespace Infohazard.Core {
         /// <summary>
         /// <see cref="Clear"/> the pool if <see cref="ShouldClear"/> returns true.
         /// </summary>
-        protected void CheckClear() {
-            if (ShouldClear()) Clear();
+        protected bool CheckClear() {
+            bool shouldClear = ShouldClear();
+            if (shouldClear) Clear();
+            return shouldClear;
         }
 
         /// <summary>
