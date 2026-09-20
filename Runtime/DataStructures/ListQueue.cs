@@ -34,7 +34,7 @@ namespace Infohazard.Core {
         public bool IsReadOnly => false;
 
         private int InsertionPoint => (_firstItem + Count) % _array.Length;
-        
+
         /// <inheritdoc cref="System.Collections.Generic.IList{T}.this[int]"/>
         public T this[int index] {
             get {
@@ -127,7 +127,7 @@ namespace Infohazard.Core {
             if (TryDequeue(out T item)) return item;
             throw new InvalidOperationException("Queue is empty.");
         }
-        
+
         /// <summary>
         /// Get the element at the front of the queue if it is not empty,
         /// remove it, and return whether this was successful.
@@ -146,8 +146,11 @@ namespace Infohazard.Core {
             return true;
         }
 
-        /// <inheritdoc cref="System.Collections.Generic.IEnumerable{T}.GetEnumerator()"/>
-        public IEnumerator<T> GetEnumerator() {
+        public Enumerator GetEnumerator() {
+            return new Enumerator(this);
+        }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() {
             for (int i = 0; i < Count; i++) {
                 yield return this[i];
             }
@@ -156,7 +159,7 @@ namespace Infohazard.Core {
         IEnumerator IEnumerable.GetEnumerator() {
             return GetEnumerator();
         }
-        
+
         /// <inheritdoc cref="System.Collections.Generic.IList{T}.Add(T)"/>
         public void Add(T item) {
             Enqueue(item);
@@ -193,9 +196,22 @@ namespace Infohazard.Core {
         public bool Remove(T item) {
             int index = IndexOf(item);
             if (index < 0) return false;
-            
+
             RemoveAt(index);
             return true;
+        }
+
+        public void RemoveWhere(Predicate<T> predicate) {
+            int skip = 0;
+            for (int i = 0; i < Count; i++) {
+                if (predicate(this[i])) {
+                    skip++;
+                } else {
+                    this[i - skip] = this[i];
+                }
+            }
+
+            Count -= skip;
         }
 
         /// <inheritdoc cref="System.Collections.Generic.IList{T}.IndexOf(T)"/>
@@ -213,7 +229,7 @@ namespace Infohazard.Core {
             for (int i = Count; i > index; i--) {
                 _array[ToInternalIndex(i)] = _array[ToInternalIndex(i - 1)];
             }
-            
+
             _array[ToInternalIndex(index)] = item;
             Count++;
         }
@@ -253,6 +269,40 @@ namespace Infohazard.Core {
         private int ToExternalIndex(int i) {
             if (i < _firstItem) i += _array.Length;
             return i - _firstItem;
+        }
+
+        public struct Enumerator : IEnumerator<T> {
+            private readonly ListQueue<T> _listQueue;
+            private int _index;
+
+            public T Current {
+                get {
+                    if (_index < 0 || _index >= _listQueue.Count) throw new InvalidOperationException();
+                    return _listQueue[_index];
+                }
+            }
+
+            object IEnumerator.Current => Current;
+
+            public Enumerator(ListQueue<T> listQueue) {
+                _listQueue = listQueue;
+                _index = -1;
+            }
+
+            public bool MoveNext() {
+                if (_index < _listQueue.Count - 1) {
+                    _index++;
+                    return true;
+                }
+
+                return false;
+            }
+
+            public void Reset() {
+                _index = -1;
+            }
+
+            public void Dispose() { }
         }
     }
 }
