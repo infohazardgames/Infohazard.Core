@@ -29,6 +29,7 @@
     - [Tags](#tags)
     - [Unique Names](#unique-names)
     - [Utility](#utility)
+    - [Editor Tools](#editor-tools)
     - [Miscellaneous](#miscellaneous)
   - [Integrations](#integrations)
     - [Addressables](#addressables)
@@ -122,7 +123,7 @@ This demo, located at `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Scenes/De
 
 ### Tags and Trigger Volume
 
-This demo, located at `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Scenes/Demo_TagsAndTriggerVolume.unity`, deomonstrates how to use the TriggerVolume script to set up triggers in the editor, as well as how to use a tag mask to filter which objects are considered by the trigger.
+This demo, located at `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Scenes/Demo_TagsAndTriggerVolume.unity`, demonstrates how to use the TriggerVolume script to set up triggers in the editor, as well as how to use a tag mask to filter which objects are considered by the trigger.
 
 ### Unique name
 
@@ -135,21 +136,25 @@ This demo, located at `Assets/Plugins/Infohazard/Demos/Infohazard.Core/Scenes/De
 The package provides several PropertyAttributes that you can use in your scripts to customize how serialized fields are drawn in the inspector. To use any of these attributes, simply add `[AttributeName]` in front of a serialized field in a script. You can also check out the drawers for these attributes in the Editor/Attributes directory.
 
 #### AssetDropdown
-The `[AssetDropdown]` attribute is used to show a dropdown menu on a field whose type is a UnityEngine.Object reference. It will find all assets in your project that match this type and display them as options in the dropdown. The standard drag/drop interface still works as well. This functionality is also available the `[Expandable]` attribute.
+The `[AssetDropdown]` attribute is used to show a dropdown menu on a field whose type is a UnityEngine.Object reference. It will find all assets in your project that match this type and display them as options in the dropdown. The standard drag/drop interface still works as well. This functionality is also available in the `[Expandable]` attribute.
 #### ConditionalDraw
 The `[ConditionalDraw]` attribute is used to conditionally hide a serialized field in the inspector depending on some other condition. The supplied condition should be the name of another serialized field in the same script. You can also optionally pass in a value to compare that condition field with, and whether they must be equal or unequal to display the field.
 #### DrawSingleChildProperty
 The `[DrawSingleChildProperty]` attribute is used to render a hierarchy of fields as just a single value. Say you have a struct called Data with a string field called _name. Adding `[DrawSingleChildProperty(“_name”)]` to a field of type Data would cause just the _name field to be drawn in the inspector.
-#### EditNameOnlyAttribute
+#### EditNameOnly
 The `[EditNameOnly]` attribute displays a Unity Object reference field as a text entry, which is used to control the name of the referenced object. If the reference is set to null, the standard drag-drop box is used.
-#### ExpandableAttribute
+#### Expandable
 The `[Expandable]` attribute is used to optionally draw the child properties of a Unity Object reference field, such that the referenced object can be edited without changing the inspector context. If the type of the field is not a GameObject or Component and is not abstract, new instances can also be created from the inspector. If the type specified is abstract, has child classes, or a required interface is specified, then the type of object to be created can be chosen from a dropdown. Additionally, a dropdown is provided to select assets from the project, similar to `[AssetDropdown]`.
-#### MustImplementAttribute
+#### MustImplement
 The `[MustImplement]` attribute is used on a Unity Object reference field to restrict values to implement one or more interfaces. While Unity does not support serializing references to interfaces directly, you can use this attribute on a field of type Object to allow both ScriptableObjects and MonoBehaviours that implement your interface. This functionality is also provided in the `[Expandable]` attribute.
-#### TypeSelectAttribute
+#### TypeSelect
 The `[TypeSelect]` attribute is used on a string field to show a dropdown where any valid C# type can be selected. The selected type is saved in the string as its full class name. This attribute is useful with the TypeUtility class to find the selected type.
 #### HelpBox
 The `[HelpBox]` attribute is used to add additional information on a serialized field for the user. It will add a clickable ? button that toggles a help box containing the given text. Note that unlike other attributes, `[HelpBox]` requires the use of a custom editor. This is to enable support for additional custom drawers (since Unity only allows one custom drawer on each serialized field). To support help boxes, draw the SerializedProperty in your custom editor using `CoreDrawers.DrawPropertyWithHelpBoxSupport(property);`. You can safely use this on all properties regardless of whether they actually contain a help box.
+#### AutoAssignComponent
+The `[AutoAssignComponent]` attribute automatically searches and assigns component references on self. This only works on serializable types (no interfaces) and only takes affect when the object is viewed in the inspector. It has no effect at runtime.
+#### NewObjectName
+The `NewObjectNameAttribute` base class enables providing custom logic for naming objects created by `[Expandable]` fields. You can create a subclass of this attribute and override `GetNewObjectName` to determine the name of the new objects. See `ExampleNewObjectNameAttribute` for an example of how to use this attribute.
 ### Data Structures
 #### ListQueue
 The `ListQueue<T>` class is an implementation of a queue data structure similar to C#’s Queue class. The main difference is that a ListQueue implements the IList interface and allows you to access any element of the queue whenever you want, while still maintaining O(1) performance for normal Enqueue and Dequeue operations (as long as there is capacity available).
@@ -161,6 +166,8 @@ To start working with the pooling system, simply add the Spawnable script to you
 The pooling system needs a PoolManager to work. You can either place one PoolManager per scene, have a global instance that is never destroyed, or simply let the system create the manager itself. To create it manually, just add this script to an empty GameObject and you’re good to go. You can use the ClearInactiveObjects() method on PoolManager.Instance to destroy any inactive pooled objects, such as when you change scenes.
 PooledTrail, PooledParticleEffect
 Attach these scripts to TrailRenderer and ParticleSystem GameObjects to make them play nicely with the pooling system.
+#### SpawnRef
+The `SpawnRef` and `SpawnRef<T>` structs provide serialized references to spawnable prefabs. Use `Retain` and `Release` to control whether the pool for the referenced prefab is kept warm; once all `SpawnRef`s to a prefab are released, the pool can be emptied to free memory.
 ### Timing
 The Timing directory contains some useful utilities to deal with in-game time.
 #### PassiveTimer
@@ -174,7 +181,7 @@ This system is meant to make working with GameObject tags in your scripts much e
 #### Tag
 This class provides string constants for all default tags. So instead of writing target.CompareTag(“Player”) you could write target.CompareTag(Tag.Player).
 #### TagMask
-Using a serialized field of type TagMask allows users to pick tags in the editor from a dropdown instead of typing them, just like the Unity-provided LayerMask.. It also allows selecting multiple tags without using an array. Extension methods are provided for common tag operations so that a TagMask can be used in place of a string tag. For example, you can say target.CompareTag(tagMask), which will return true if target’s tag is equal to any of the tags in tagMask.
+Using a serialized field of type TagMask allows users to pick tags in the editor from a dropdown instead of typing them, just like the Unity-provided LayerMask. It also allows selecting multiple tags without using an array. Extension methods are provided for common tag operations so that a TagMask can be used in place of a string tag. For example, you can say target.CompareTag(tagMask), which will return true if target’s tag is equal to any of the tags in tagMask.
 #### GameTag
 This file is generated based on your custom tags, and lives in your project rather than in the package. You should be prompted to generate it if the system detects you have custom tags, or you can use the Tools > Infohazard > Generate > Update GameTag.cs command. Once this file is generated, your game tags will automatically be available for selection in a TagMask, and you can refer to them as constants in code through the generated GameTag class (you will need to reference the Infohazard.Core.Data assembly if you are using assembly definitions).
 ### Unique Names
@@ -197,10 +204,21 @@ Contains various methods for working with GameObjects and Transforms, such as de
 Contains many useful math operations, such as constructing a Quaternion from any two axes, getting a vector with one component changed, solving polynomials up to degree 4 (quartic), and getting the point where two lines are closest to each other.
 #### RandomUtility
 Contains extension methods to System.Random such as generating 64-bit numbers.
-StringUtility
+#### StringUtility
 String processing methods such as splitting a CamelCase string to have spaces between words.
 #### TypeUtility
 Provides methods to get a list of all loaded types using reflection, and to find a type based on its name.
+### Editor Tools
+#### Apply Transform
+`Tools > Infohazard > Apply Transform`: This collection of menu items allows you to apply the position, rotation, and scale of a GameObject to its children. This is useful if you want to reset a parent object’s transform without affecting the childrens' global transforms.
+
+The `Context Menu` option displays the list of menu items under your mouse cursor, making it ideal for a quick keyboard shortcut. The shortcut `Ctrl + Alt + A` is assigned by default, and it can be customized in the Unity shortcut manager.
+#### Replace
+`Tools > Infohazard > Replace`: This tool allows quickly replacing a GameObject in the scene with another prefab or GameObject. The new object will be placed at the same position, rotation, and scale as the original object, and will also inherit the original object's parent. By default, the shortcut `Ctrl + R` is assigned, but it can be customized in the Unity shortcut manager.
+#### Open Scene
+`Tools > Infohazard > Open Scene Context`: This tool allows you to quickly open a scene from the viewport. The `(Additive)` version will load or unload a scene while keeping the other scenes loaded. The default shortcuts are `Ctrl + Shift + O` for single loading and `Ctrl + Alt + O` for additive loading.
+#### Fix Scene Camera Roll
+`Tools > Infohazard > Fix Scene Camera Roll`: This tool will reset the scene camera’s roll to 0 degrees. This is useful in certain situations where the camera can become rolled.
 ### Miscellaneous
 The remaining functionality provided by Infohazard.Core doesn’t fall nicely into one of the previous categories, but was still useful enough to include.
 #### ProgressBar
