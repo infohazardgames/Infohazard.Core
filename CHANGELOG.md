@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-10-24
+
+### Added
+* Added option for UniqueNamedObject to not remove itself on disable.
+* Added an attribute to automatically assign a component reference field on the same GameObject.
+* Added a non-allocating enumerator and `RemoveWhere` method to `ListQueue`.
+* Added new editor tools:
+  * Apply GameObject transform values to children.
+  * Replace an object in the scene with a prefab at the same transform.
+  * Reset scene camera roll to 0 in case it gets messed up.
+  * Open any scene in the project from a context menu.
+
+### Changed
+* `DefaultPoolHandler.CheckClear()` now returns a boolean indicating whether the pool was cleared.
+* Changed the minimum Unity version to 6000.3. The package may continue to work on older versions but they won't be supported.
+
+### Fixed
+* Init pause timescale to 1 to avoid possible time scale bug.
+
 ## [1.4.2] - 2025-8-14
 
 ### Added

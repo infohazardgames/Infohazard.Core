@@ -1,8 +1,8 @@
 {
   "name": "com.infohazard.core",
   "displayName": "Infohazard.Core",
-  "version": "1.4.2",
-  "unity": "2022.3",
+  "version": "1.5.0",
+  "unity": "6000.3",
   "description": "A collection of useful functionality for Unity, which is used by my other packages.",
   "keywords": [],
   "repository": {
