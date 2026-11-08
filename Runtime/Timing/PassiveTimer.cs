@@ -59,12 +59,21 @@ namespace Infohazard.Core {
         }
 
         /// <summary>
-        /// What value for time that the timer uses (scaled, unscaled, or realtime).
+        /// What value for time that the timer uses (scaled, unscaled, realtime, or custom).
         /// </summary>
         public TimeMode Mode {
             get => _mode;
             set => _mode = value;
         }
+
+        /// <summary>
+        /// The source of time and delta time when <see cref="Mode"/> is <see cref="TimeMode.Custom"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is not serialized and must be assigned from code. It is ignored for other modes.
+        /// Copying the timer copies the reference, so both copies share the same source.
+        /// </remarks>
+        public ITimeSource TimeSource { get; set; }
 
         /// <summary>
         /// Whether the timer is in the expired state, meaning the current interval has elapsed.
@@ -141,12 +150,16 @@ namespace Infohazard.Core {
         /// The current time read from Unity, based on the <see cref="Mode"/>.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">If <see cref="Mode"/> is invalid.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// If <see cref="Mode"/> is <see cref="TimeMode.Custom"/> and <see cref="TimeSource"/> is null.
+        /// </exception>
         public float CurrentTimeWithoutPause {
             get {
                 return _mode switch {
                     TimeMode.Realtime => Time.realtimeSinceStartup,
                     TimeMode.Scaled => Time.time,
                     TimeMode.Unscaled => Time.unscaledTime,
+                    TimeMode.Custom => RequireTimeSource().Time,
                     _ => throw new ArgumentOutOfRangeException()
                 };
             }
@@ -166,6 +179,9 @@ namespace Infohazard.Core {
         /// The delta time read from Unity, based on the <see cref="Mode"/>.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">If <see cref="Mode"/> is invalid or realtime.</exception>
+        /// <exception cref="InvalidOperationException">
+        /// If <see cref="Mode"/> is <see cref="TimeMode.Custom"/> and <see cref="TimeSource"/> is null.
+        /// </exception>
         public float DeltaTime {
             get {
                 if (_isPaused) return 0;
@@ -173,9 +189,15 @@ namespace Infohazard.Core {
                 return _mode switch {
                     TimeMode.Scaled => Time.deltaTime,
                     TimeMode.Unscaled => Time.unscaledDeltaTime,
+                    TimeMode.Custom => RequireTimeSource().DeltaTime,
                     _ => throw new ArgumentOutOfRangeException()
                 };
             }
+        }
+
+        private ITimeSource RequireTimeSource() {
+            return TimeSource ?? throw new InvalidOperationException(
+                $"{nameof(TimeMode)}.{nameof(TimeMode.Custom)} requires a {nameof(TimeSource)} to be assigned.");
         }
 
         /// <summary>
@@ -224,10 +246,36 @@ namespace Infohazard.Core {
         /// <param name="mode">Time mode to use.</param>
         /// <param name="initialize">Whether to initialize the timer and start counting immediately.</param>
         public PassiveTimer(float initialInterval, float interval, TimeMode mode = TimeMode.Scaled,
-                            bool initialize = true) {
+                            bool initialize = true) : this(initialInterval, interval, mode, null, initialize) { }
+
+        /// <summary>
+        /// Construct a PassiveTimer with the given interval, using a custom time source.
+        /// The interval will be both the initial and repeat interval.
+        /// </summary>
+        /// <param name="interval">The initial and repeat interval.</param>
+        /// <param name="timeSource">Source of time and delta time. <see cref="Mode"/> is set to
+        /// <see cref="TimeMode.Custom"/>.</param>
+        /// <param name="initialize">Whether to initialize the timer and start counting immediately.</param>
+        public PassiveTimer(float interval, ITimeSource timeSource, bool initialize = true) :
+            this(interval, interval, TimeMode.Custom, timeSource, initialize) { }
+
+        /// <summary>
+        /// Construct a PassiveTimer with the given interval, using a custom time source.
+        /// </summary>
+        /// <param name="initialInterval">The initial interval.</param>
+        /// <param name="interval">The repeat interval.</param>
+        /// <param name="timeSource">Source of time and delta time. <see cref="Mode"/> is set to
+        /// <see cref="TimeMode.Custom"/>.</param>
+        /// <param name="initialize">Whether to initialize the timer and start counting immediately.</param>
+        public PassiveTimer(float initialInterval, float interval, ITimeSource timeSource, bool initialize = true) :
+            this(initialInterval, interval, TimeMode.Custom, timeSource, initialize) { }
+
+        private PassiveTimer(float initialInterval, float interval, TimeMode mode, ITimeSource timeSource,
+                             bool initialize) {
             _initialInterval = initialInterval;
             _interval = interval;
             _mode = mode;
+            TimeSource = timeSource;
 
             IsInitialized = false;
             HasIntervalStarted = false;
@@ -303,6 +351,11 @@ namespace Infohazard.Core {
             /// Use Unity realtime (Time.realtimeSinceStartup).
             /// </summary>
             Realtime,
+
+            /// <summary>
+            /// Use the timer's <see cref="PassiveTimer.TimeSource"/>, which must be assigned from code.
+            /// </summary>
+            Custom,
         }
     }
 }
