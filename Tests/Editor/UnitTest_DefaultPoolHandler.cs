@@ -119,6 +119,15 @@ namespace Infohazard.Core.Tests.Editor {
         }
 
         [Test]
+        public void Despawn_SameInstanceTwice_Throws() {
+            _handler.Retain();
+            Spawnable instance = _handler.Spawn();
+            _handler.Despawn(instance);
+
+            Assert.Throws<System.InvalidOperationException>(() => _handler.Despawn(instance));
+        }
+
+        [Test]
         public void ToString_IncludesTypeAndPrefab() {
             Assert.That(_handler.ToString(), Does.Contain(nameof(TestPoolHandler)).And.Contain("Prefab"));
         }

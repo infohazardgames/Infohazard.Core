@@ -64,15 +64,37 @@ namespace Infohazard.Core.Tests.Editor {
         }
 
         [Test]
-        public void SetCurrentStateKey_UnknownKey_ClearsStateObject() {
+        public void SetCurrentStateKey_UnknownKey_ThrowsAndKeepsState() {
             var machine = new SimpleStateMachine<TestState>();
             machine.AddState(TestState.A, LoggingState("A"));
             machine.CurrentStateKey = TestState.A;
 
-            machine.CurrentStateKey = TestState.B;
+            Assert.Throws<ArgumentException>(() => machine.CurrentStateKey = TestState.B);
 
-            Assert.That(machine.CurrentStateObject, Is.Null);
-            Assert.That(_log, Is.EqualTo(new[] { "enter A", "exit A" }));
+            Assert.That(machine.CurrentStateKey, Is.EqualTo(TestState.A));
+            Assert.That(_log, Is.EqualTo(new[] { "enter A" }));
+        }
+
+        [Test]
+        public void SetCurrentStateKey_SameKeyRepeatedly_DoesNotReenter() {
+            SimpleStateMachine<TestState> machine = CreateMachine();
+            machine.CurrentStateKey = TestState.A;
+            machine.CurrentStateKey = TestState.B;
+            machine.CurrentStateKey = TestState.B;
+            machine.CurrentStateKey = TestState.B;
+            Assert.That(_log, Is.EqualTo(new[] { "enter A", "exit A", "enter B" }));
+        }
+
+        [Test]
+        public void NullArguments_Throw() {
+            var machine = new SimpleStateMachine<string>();
+            machine.AddState("a", new StateMachineState());
+            Assert.Throws<ArgumentNullException>(() => machine.CurrentStateKey = null);
+            Assert.Throws<ArgumentNullException>(() => machine.AddState(null, new StateMachineState()));
+            Assert.Throws<ArgumentNullException>(() => machine.AddState("b", null));
+            Assert.Throws<ArgumentNullException>(() => machine.AddTransition(null, "a", new StateMachineTransition()));
+            Assert.Throws<ArgumentNullException>(() => machine.AddTransition("a", null, new StateMachineTransition()));
+            Assert.Throws<ArgumentNullException>(() => machine.AddTransition("a", "a", null));
         }
 
         [Test]
@@ -125,9 +147,9 @@ namespace Infohazard.Core.Tests.Editor {
         }
 
         [Test]
-        public void Update_NoCurrentState_DoesNothing() {
+        public void Update_NoCurrentState_Throws() {
             SimpleStateMachine<TestState> machine = CreateMachine();
-            Assert.DoesNotThrow(() => machine.Update());
+            Assert.Throws<InvalidOperationException>(() => machine.Update());
             Assert.That(_log, Is.Empty);
         }
 
@@ -159,15 +181,13 @@ namespace Infohazard.Core.Tests.Editor {
         }
 
         [Test]
-        [Ignore("Bug #9: Update with a reference-type key before any state is set throws ArgumentNullException.")]
-        public void Update_ReferenceKeyBeforeStateSet_DoesNotThrow() {
+        public void Update_ReferenceKeyBeforeStateSet_ThrowsInvalidOperation() {
             var machine = new SimpleStateMachine<string>();
             machine.AddState("a", new StateMachineState());
-            Assert.DoesNotThrow(() => machine.Update());
+            Assert.Throws<InvalidOperationException>(() => machine.Update());
         }
 
         [Test]
-        [Ignore("Bug #9: The default(T) state can never be entered because setting it is a no-op.")]
         public void SetCurrentStateKey_DefaultKey_EntersState() {
             var machine = new SimpleStateMachine<TestState>();
             machine.AddState(TestState.None, LoggingState("None"));

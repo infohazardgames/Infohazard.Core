@@ -195,7 +195,6 @@ namespace Infohazard.Core.Tests.Editor {
         }
 
         [Test]
-        [Ignore("Bug #2: Insert does not validate its index.")]
         public void Insert_IndexBeyondCount_Throws() {
             ListQueue<int> queue = CreateQueue(0, 1, 2);
             Assert.Throws<ArgumentOutOfRangeException>(() => queue.Insert(5, 9));
@@ -203,7 +202,6 @@ namespace Infohazard.Core.Tests.Editor {
         }
 
         [Test]
-        [Ignore("Bug #2: RemoveAt/RemoveRange do not validate their arguments.")]
         public void RemoveRange_OutOfRange_Throws() {
             ListQueue<int> queue = CreateQueue(0, 1, 2);
             Assert.Throws<ArgumentOutOfRangeException>(() => queue.RemoveAt(2));
@@ -251,6 +249,63 @@ namespace Infohazard.Core.Tests.Editor {
             Assert.That(queue.Count, Is.Zero);
             queue.Enqueue(4);
             AssertContents(queue, 4);
+        }
+
+        #endregion
+
+        #region Slot Clearing
+
+        // Removed items must not stay referenced by the internal array, or they can't be garbage collected.
+        private static void AssertUnusedSlotsCleared(ListQueue<string> queue) {
+            var array = (string[]) typeof(ListQueue<string>)
+                                   .GetField("_array", System.Reflection.BindingFlags.Instance |
+                                                       System.Reflection.BindingFlags.NonPublic)
+                                   .GetValue(queue);
+            int live = array.Count(s => s != null);
+            Assert.That(live, Is.EqualTo(queue.Count),
+                        $"Expected only {queue.Count} live slots, but found: [{string.Join(", ", array)}]");
+        }
+
+        private static ListQueue<string> CreateStringQueue(int offset, int count) {
+            var queue = new ListQueue<string>(Capacity);
+            for (int i = 0; i < offset; i++) queue.Enqueue("pad");
+            for (int i = 0; i < offset; i++) queue.Dequeue();
+            for (int i = 0; i < count; i++) queue.Enqueue($"item{i}");
+            return queue;
+        }
+
+        [TestCase(0, 1)]
+        [TestCase(1, 3)]
+        [TestCase(3, 2)]
+        [TestCase(0, 5)]
+        public void RemoveRange_ClearsRemovedSlots(int index, int count) {
+            foreach (int offset in new[] { 0, 3, 6 }) {
+                ListQueue<string> queue = CreateStringQueue(offset, 5);
+                queue.RemoveRange(index, count);
+                AssertUnusedSlotsCleared(queue);
+            }
+        }
+
+        [Test]
+        public void RemoveAt_Last_ClearsSlot() {
+            ListQueue<string> queue = CreateStringQueue(0, 3);
+            queue.RemoveAt(2);
+            AssertUnusedSlotsCleared(queue);
+        }
+
+        [Test]
+        public void RemoveWhere_ClearsRemovedSlots([Values(0, 6)] int offset) {
+            ListQueue<string> queue = CreateStringQueue(offset, 5);
+            queue.RemoveWhere(s => s != "item2");
+            AssertUnusedSlotsCleared(queue);
+        }
+
+        [Test]
+        public void Dequeue_ClearsSlot([Values(0, 7)] int offset) {
+            ListQueue<string> queue = CreateStringQueue(offset, 3);
+            queue.Dequeue();
+            queue.TryDequeue(out _);
+            AssertUnusedSlotsCleared(queue);
         }
 
         #endregion

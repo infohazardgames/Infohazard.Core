@@ -162,7 +162,6 @@ namespace Infohazard.Core.Tests.Editor {
         }
 
         [Test]
-        [Ignore("Bug #10: With a zero interval, the ratio properties divide by zero and return NaN.")]
         public void Ratios_ZeroInterval_AreNotNaN() {
             var timer = new PassiveTimer(0, _time);
             Assert.That(timer.RatioUntilIntervalEnd, Is.EqualTo(0));

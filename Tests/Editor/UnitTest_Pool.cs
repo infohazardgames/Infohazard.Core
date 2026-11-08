@@ -4,6 +4,9 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 
+// Pool<T> is obsolete in favor of UnityEngine.Pool.ObjectPool<T>, but is still tested while it exists.
+#pragma warning disable CS0618
+
 namespace Infohazard.Core.Tests.Editor {
     public class UnitTest_Pool {
         private class Item {
@@ -134,13 +137,16 @@ namespace Infohazard.Core.Tests.Editor {
         }
 
         [Test]
-        [Ignore("Bug #14: Releasing the same item twice stores it twice, so it can be handed out twice.")]
-        public void Release_SameItemTwice_DoesNotHandOutItemTwice() {
+        public void Release_SameItemTwice_Throws() {
             Pool<Item> pool = CreatePool();
             Item a = pool.Get();
             pool.Release(a);
-            pool.Release(a);
-            Assert.That(pool.Get(), Is.Not.SameAs(pool.Get()));
+            _log.Clear();
+
+            Assert.Throws<System.InvalidOperationException>(() => pool.Release(a));
+            Assert.That(_log, Is.Empty, "The release callback should not run for a rejected release.");
+            Assert.That(pool.Get(), Is.SameAs(a));
+            Assert.That(pool.Get(), Is.Not.SameAs(a));
         }
     }
 }

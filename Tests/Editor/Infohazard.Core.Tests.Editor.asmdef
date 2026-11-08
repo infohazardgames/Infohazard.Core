@@ -5,7 +5,8 @@
         "Infohazard.Core",
         "Infohazard.Core.Editor",
         "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "UnityEditor.TestRunner",
+        "Infohazard.Core.Tests.PlayMode"
     ],
     "includePlatforms": [
         "Editor"

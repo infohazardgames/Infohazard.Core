@@ -5,6 +5,7 @@ using System.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Object = UnityEngine.Object;
 
 namespace Infohazard.Core.Tests.Editor {
     public class UnitTest_TagMask {
@@ -119,12 +120,30 @@ namespace Infohazard.Core.Tests.Editor {
         }
 
         [Test]
-        [Ignore("Bug #5: TagMask uses int shifts on a long mask, so tags at index 32+ alias to lower bits.")]
         public void GameOverrideTags_IndexAbove31_UsesHighBits() {
             Tag.GameOverrideTags = Enumerable.Range(0, 40).Select(i => $"Tag{i}").ToArray();
             Assert.That(TagMask.GetMask("Tag35"), Is.EqualTo(1L << 35));
             Assert.That(TagMask.GetMask("Tag31"), Is.EqualTo(1L << 31));
             Assert.That(new TagMask(1L << 35).ToStringArray(), Is.EqualTo(new[] { "Tag35" }));
+            Assert.That(new TagMask(1L << 35).ToString(), Is.EqualTo("Tag35"));
+        }
+
+        [Test]
+        public void GetMaskMultiple_IndexAbove31_UsesHighBits() {
+            Tag.GameOverrideTags = Enumerable.Range(0, 40).Select(i => $"Tag{i}").ToArray();
+            Assert.That(TagMask.GetMask("Tag35", "Tag0"), Is.EqualTo((1L << 35) | 1L));
+        }
+
+        [Test]
+        public void CompareTagMask_TagNotInTagList_ReturnsFalse() {
+            // Unity's "Untagged" tag isn't in this override list, so it has no bit in any mask.
+            Tag.GameOverrideTags = new[] { "Alpha", "Beta" };
+            var obj = new GameObject("Obj");
+            try {
+                Assert.That(obj.CompareTagMask(~0L), Is.False);
+            } finally {
+                Object.DestroyImmediate(obj);
+            }
         }
     }
 }
