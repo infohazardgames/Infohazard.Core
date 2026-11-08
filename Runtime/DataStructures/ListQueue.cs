@@ -254,7 +254,7 @@ namespace Infohazard.Core {
 
         private void GrowIfNeeded() {
             if (Count == Capacity) {
-                EnsureCapacity(Capacity * 2);
+                EnsureCapacity(Math.Max(Capacity * 2, 4));
             }
         }
 

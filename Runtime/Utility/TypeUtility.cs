@@ -1,4 +1,4 @@
-﻿// This file is part of the Infohazard.Core package.
+// This file is part of the Infohazard.Core package.
 // Copyright (c) 2026-present Val Miller (Infohazard Games).
 
 using System;
@@ -114,6 +114,10 @@ namespace Infohazard.Core {
             if (!type.IsGenericType) return baseName;
 
             int indexOfBacktick = baseName.IndexOf('`');
+
+            // A non-generic type nested inside a generic type (e.g. Outer<T>.Inner) is still considered generic,
+            // but its name has no generic arity suffix.
+            if (indexOfBacktick < 0) return baseName;
 
             StringBuilder sb = new();
             sb.Append(baseName, 0, indexOfBacktick);

@@ -83,6 +83,12 @@ namespace Infohazard.Core {
 
             var (C1, C2, C3) = ComplexCubeRoot((delta1 - root) / 2.0);
 
+            // When delta0 and delta1 are both zero, C is zero and the cubic has a triple root.
+            if (Complex.Abs(C1) < epsilon) {
+                Complex tripleRoot = -b / (3.0 * a);
+                return (tripleRoot, tripleRoot, tripleRoot);
+            }
+
             Complex r1 = -(1.0 / (3.0 * a)) * (b + C1 + (delta0 / C1));
             Complex r2 = -(1.0 / (3.0 * a)) * (b + C2 + (delta0 / C2));
             Complex r3 = -(1.0 / (3.0 * a)) * (b + C3 + (delta0 / C3));
@@ -109,6 +115,11 @@ namespace Infohazard.Core {
                         ((3 * b * b * b * b) / (256 * a * a * a * a));
 
             var (s1, s2, s3) = SolveCubic(8.0, -4.0 * A, -8.0 * C, (4.0 * A * C) - (B * B));
+
+            // Any root of the resolvent cubic works, except one where 2s - A is zero, which would divide by zero
+            // below (this happens when B is zero). Use the root that keeps 2s - A farthest from zero.
+            if (Complex.Abs((2.0 * s2) - A) > Complex.Abs((2.0 * s1) - A)) s1 = s2;
+            if (Complex.Abs((2.0 * s3) - A) > Complex.Abs((2.0 * s1) - A)) s1 = s3;
 
             Complex cmp1 = 0.5 * Complex.Sqrt((2.0 * s1) - A);
             Complex cmp2 = (-2.0 * s1) - A;
@@ -729,8 +740,8 @@ namespace Infohazard.Core {
                                            float div1 = 1.0f / 3.0f, float div2 = 2.0f / 3.0f) {
             gap /= 2;
             out1 = new Rect(rect.x, rect.y, rect.width * div1 - gap, rect.height);
-            out2 = new Rect(out1.xMax + gap * 2, rect.y, rect.width * (div2 - div1) - gap, rect.height);
-            out3 = new Rect(out2.xMax + gap * 2, rect.y, rect.width * (1 - (div1 + div2)) - gap, rect.height);
+            out2 = new Rect(out1.xMax + gap * 2, rect.y, rect.width * (div2 - div1) - gap * 2, rect.height);
+            out3 = new Rect(out2.xMax + gap * 2, rect.y, rect.width * (1 - div2) - gap, rect.height);
         }
 
         #endregion

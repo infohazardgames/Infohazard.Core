@@ -11,9 +11,20 @@ namespace Infohazard.Core {
         private static byte[] _randBuf = new byte[8];
 
         /// <summary>
-        /// Generate a random long between min and max.
+        /// Generate a random long greater than or equal to min and less than max.
         /// </summary>
+        /// <remarks>
+        /// If min equals max, min is returned.
+        /// </remarks>
+        /// <exception cref="ArgumentOutOfRangeException">If max is less than min.</exception>
         public static long NextLong(this System.Random random, long min, long max) {
+            if (max < min) {
+                throw new ArgumentOutOfRangeException(nameof(max), "max must be greater than or equal to min.");
+            }
+
+            // Match System.Random.Next(min, max), which returns min for an empty range.
+            if (max == min) return min;
+
             ulong uRange = (ulong)(max - min);
             ulong ulongRand;
             do

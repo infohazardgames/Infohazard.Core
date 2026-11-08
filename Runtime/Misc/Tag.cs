@@ -235,7 +235,7 @@ namespace Infohazard.Core {
             bool first = true;
             for (int i = 0; i < Tag.Tags.Length; i++) {
                 if ((_value & (1 << i)) != 0) {
-                    if (first) _toStringBuilder.Append(", ");
+                    if (!first) _toStringBuilder.Append(", ");
                     _toStringBuilder.Append(Tag.Tags[i]);
                     first = false;
                 }

@@ -22,10 +22,10 @@ namespace Infohazard.Core {
             string result = Regex.Replace(
                 Regex.Replace(
                     str,
-                    @"(\P{Ll})(\P{Ll}\p{Ll})",
+                    @"([^\p{Ll}\s])([^\p{Ll}\s]\p{Ll})",
                     "$1 $2"
                 ),
-                @"(\p{Ll})(\P{Ll})",
+                @"(\p{Ll})([^\p{Ll}\s])",
                 "$1 $2"
             );
 
