@@ -82,6 +82,10 @@ namespace Infohazard.Core {
             }
 
             Spawnable instance = pool.Spawn();
+
+            // A handler can fail to spawn (e.g. an addressable that failed to load). It logs its own error.
+            if (!instance) return null;
+
             instance.PoolHandler = pool;
             InitializeSpawnedInstance(instance, spawnParams);
             return instance;
@@ -106,6 +110,10 @@ namespace Infohazard.Core {
             }
 
             Spawnable instance = pool.Spawn();
+
+            // A handler can fail to spawn (e.g. an addressable that failed to load). It logs its own error.
+            if (!instance) return null;
+
             instance.PoolHandler = pool;
             InitializeSpawnedInstance(instance, spawnParams);
             return instance;

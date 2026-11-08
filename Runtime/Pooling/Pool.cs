@@ -81,7 +81,7 @@ namespace Infohazard.Core {
             if (_stack.Contains(item)) {
                 throw new InvalidOperationException("Trying to release an object that is already in the pool.");
             }
-            
+
             ReleaseAction?.Invoke(item);
             if (MaxCount > 0 && _stack.Count >= MaxCount) {
                 DestroyAction?.Invoke(item);
