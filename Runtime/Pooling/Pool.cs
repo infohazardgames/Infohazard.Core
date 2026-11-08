@@ -9,6 +9,7 @@ namespace Infohazard.Core {
     /// Provides a simple pool with an interface similar to the official Unity pool added in 2021.
     /// </summary>
     /// <typeparam name="T">Type of pooled object.</typeparam>
+    [Obsolete("Use ObjectPool<T> instead.")]
     public class Pool<T> : IDisposable {
         private List<T> _stack = new List<T>();
 
@@ -16,22 +17,22 @@ namespace Infohazard.Core {
         /// Function invoked to create an instance, which must not be null.
         /// </summary>
         public Func<T> CreateFunc { get; set; }
-        
+
         /// <summary>
         /// Callback invoked when an object is retrieved from the pool.
         /// </summary>
         public Action<T> GetAction { get; set; }
-        
+
         /// <summary>
         /// Callback invoked when an object is returned to the pool.
         /// </summary>
         public Action<T> ReleaseAction { get; set; }
-        
+
         /// <summary>
         /// Callback invoked when an object is destroyed in the pool.
         /// </summary>
         public Action<T> DestroyAction { get; set; }
-        
+
         /// <summary>
         /// Max objects in pool, or 0 for no limit.
         /// </summary>
@@ -45,7 +46,7 @@ namespace Infohazard.Core {
         /// <param name="releaseAction">Callback invoked when an object is returned to the pool.</param>
         /// <param name="destroyAction">Callback invoked when an object is destroyed in the pool.</param>
         /// <param name="maxCount">Max objects in pool, or 0 for no limit.</param>
-        public Pool(Func<T> createFunc, Action<T> getAction = null, Action<T> releaseAction = null, 
+        public Pool(Func<T> createFunc, Action<T> getAction = null, Action<T> releaseAction = null,
                     Action<T> destroyAction = null, int maxCount = 0) {
             CreateFunc = createFunc;
             GetAction = getAction;
@@ -77,6 +78,10 @@ namespace Infohazard.Core {
         /// </summary>
         /// <param name="item">The object to release.</param>
         public void Release(T item) {
+            if (_stack.Contains(item)) {
+                throw new InvalidOperationException("Trying to release an object that is already in the pool.");
+            }
+            
             ReleaseAction?.Invoke(item);
             if (MaxCount > 0 && _stack.Count >= MaxCount) {
                 DestroyAction?.Invoke(item);

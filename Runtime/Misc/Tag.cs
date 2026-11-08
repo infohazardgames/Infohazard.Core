@@ -234,7 +234,7 @@ namespace Infohazard.Core {
         public override string ToString() {
             bool first = true;
             for (int i = 0; i < Tag.Tags.Length; i++) {
-                if ((_value & (1 << i)) != 0) {
+                if ((_value & (1L << i)) != 0) {
                     if (!first) _toStringBuilder.Append(", ");
                     _toStringBuilder.Append(Tag.Tags[i]);
                     first = false;
@@ -249,7 +249,7 @@ namespace Infohazard.Core {
         public string[] ToStringArray() {
             List<string> result = new();
             for (int i = 0; i < Tag.Tags.Length; i++) {
-                if ((_value & (1 << i)) != 0) {
+                if ((_value & (1L << i)) != 0) {
                     result.Add(Tag.Tags[i]);
                 }
             }
@@ -301,7 +301,7 @@ namespace Infohazard.Core {
                     continue;
                 }
 
-                mask |= (uint)(1 << index);
+                mask |= 1L << index;
             }
 
             return mask;
@@ -318,7 +318,7 @@ namespace Infohazard.Core {
                 return 0;
             }
 
-            return 1 << index;
+            return 1L << index;
         }
     }
 
@@ -334,7 +334,7 @@ namespace Infohazard.Core {
         /// <returns>Whether GameObject matches given tag.</returns>
         public static bool CompareTagMask(this GameObject obj, long tag) {
             int objTag = TagMask.NameToTag(obj.tag);
-            return ((1 << objTag) & tag) != 0;
+            return objTag >= 0 && ((1L << objTag) & tag) != 0;
         }
 
         /// <summary>
@@ -345,7 +345,7 @@ namespace Infohazard.Core {
         /// <returns>Whether Component matches given tag.</returns>
         public static bool CompareTagMask(this Component obj, long tag) {
             int objTag = TagMask.NameToTag(obj.tag);
-            return ((1 << objTag) & tag) != 0;
+            return objTag >= 0 && ((1L << objTag) & tag) != 0;
         }
 
         public static bool CompareTagArray(this Component obj, string[] tags) {

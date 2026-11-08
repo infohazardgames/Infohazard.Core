@@ -23,19 +23,25 @@ namespace Infohazard.Core.Editor {
         /// <param name="interfaces">List of interfaces that must be implemented.</param>
         /// <returns>The object or one of its components that implements all interfaces, or null.</returns>
         public static Func<Object, Object> MustImplement(IReadOnlyList<Type> interfaces) {
-            return obj => {
-                Type resultType = obj.GetType();
+            bool ImplementsAll(Object obj) {
+                Type objType = obj.GetType();
                 foreach (Type type in interfaces) {
-                    if (type.IsAssignableFrom(resultType)) continue;
-                    if (!(obj is GameObject gameObject)) return null;
-
-                    obj = gameObject.GetComponent(type);
-                    if (obj) continue;
-
-                    return null;
+                    if (!type.IsAssignableFrom(objType)) return false;
                 }
 
-                return obj;
+                return true;
+            }
+
+            return obj => {
+                if (ImplementsAll(obj)) return obj;
+                if (obj is not GameObject gameObject) return null;
+
+                // A single component must implement every interface.
+                foreach (Component component in gameObject.GetComponents<Component>()) {
+                    if (component && ImplementsAll(component)) return component;
+                }
+
+                return null;
             };
         }
     }

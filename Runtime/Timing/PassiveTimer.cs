@@ -116,7 +116,8 @@ namespace Infohazard.Core {
         /// <summary>
         /// A ratio going from one at interval start to zero at interval end.
         /// </summary>
-        public float RatioUntilIntervalEnd => Mathf.Clamp01(TimeUntilIntervalEnd / _interval);
+        public float RatioUntilIntervalEnd =>
+            _interval > 0 ? Mathf.Clamp01(TimeUntilIntervalEnd / _interval) : 0;
 
         /// <summary>
         /// The time in seconds since the current interval started.
@@ -129,7 +130,8 @@ namespace Infohazard.Core {
         /// <summary>
         /// A ratio going from zero at interval start to one at interval end.
         /// </summary>
-        public float RatioSinceIntervalStart => Mathf.Clamp01(TimeSinceIntervalStart / _interval);
+        public float RatioSinceIntervalStart =>
+            _interval > 0 ? Mathf.Clamp01(TimeSinceIntervalStart / _interval) : 1;
 
         /// <summary>
         /// Whether the current interval ended during the current frame.
@@ -190,7 +192,7 @@ namespace Infohazard.Core {
                     TimeMode.Scaled => Time.deltaTime,
                     TimeMode.Unscaled => Time.unscaledDeltaTime,
                     TimeMode.Custom => RequireTimeSource().DeltaTime,
-                    _ => throw new ArgumentOutOfRangeException()
+                    _ => throw new ArgumentOutOfRangeException(),
                 };
             }
         }

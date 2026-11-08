@@ -26,7 +26,7 @@ namespace Infohazard.Core.Editor {
         private const string Newline = @"
 ";
         private const string TagTemplate = "        public const string {0} = @\"{1}\";" + Newline;
-        private const string TagMaskTemplate = "        public const long {0}Mask = 1 << {1};" + Newline;
+        private const string TagMaskTemplate = "        public const long {0}Mask = 1L << {1};" + Newline;
         private const string TagArrayTemplate = "@\"{0}\", ";
 
         private const string Template = @"using System;
@@ -84,7 +84,7 @@ namespace Infohazard.Core {{
                 }
             }
         }
-        
+
         /// <summary>
         /// Generate the GameTag file.
         /// </summary>
@@ -112,7 +112,7 @@ namespace Infohazard.Core {{
             string tagDecls = string.Empty;
             string tagMasks = string.Empty;
             string tagArray = string.Empty;
-            
+
             string[] tags = InternalEditorUtility.tags;
 
             int maskTags = 0;
@@ -120,10 +120,10 @@ namespace Infohazard.Core {{
             HashSet<string> tagVars = new HashSet<string>();
             for (int i = 0; i < tags.Length; i++) {
                 string tag = tags[i];
-                
+
                 // Remove all characters except letters, numbers, and underscore.
                 string varName = Regex.Replace(tag, "\\W", "");
-                
+
                 // Strings are generated as verbatim, so replace single quotes with double quotes.
                 string tagString = tag.Replace("\"", "\"\"");
 
@@ -138,7 +138,7 @@ namespace Infohazard.Core {{
 
                     // Add @ character in case var name is a keyword.
                     varName = '@' + varName;
-                    
+
                     tagDecls += string.Format(TagTemplate, varName, tagString);
 
                     if (generateMask) {
@@ -151,7 +151,7 @@ namespace Infohazard.Core {{
                     maskTags++;
                 }
             }
-            
+
             string generated = string.Format(Template, tagDecls, tagMasks, tagArray);
 
             CoreEditorUtility.EnsureDataFolderExists();

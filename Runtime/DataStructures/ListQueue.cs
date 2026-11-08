@@ -141,6 +141,7 @@ namespace Infohazard.Core {
             }
 
             item = _array[_firstItem];
+            _array[_firstItem] = default;
             _firstItem = (_firstItem + 1) % Capacity;
             Count--;
             return true;
@@ -212,6 +213,10 @@ namespace Infohazard.Core {
             }
 
             Count -= skip;
+
+            for (int i = Count; i < Count + skip; i++) {
+                _array[ToInternalIndex(i)] = default;
+            }
         }
 
         /// <inheritdoc cref="System.Collections.Generic.IList{T}.IndexOf(T)"/>
@@ -225,6 +230,8 @@ namespace Infohazard.Core {
 
         /// <inheritdoc cref="System.Collections.Generic.IList{T}.Insert(int, T)"/>
         public void Insert(int index, T item) {
+            if (index < 0 || index > Count) throw new ArgumentOutOfRangeException(nameof(index));
+
             GrowIfNeeded();
             for (int i = Count; i > index; i--) {
                 _array[ToInternalIndex(i)] = _array[ToInternalIndex(i - 1)];
@@ -236,6 +243,7 @@ namespace Infohazard.Core {
 
         /// <inheritdoc cref="System.Collections.Generic.IList{T}.RemoveAt(int)"/>
         public void RemoveAt(int index) {
+            ValidateExternalIndex(index);
             RemoveRange(index, 1);
         }
 
@@ -245,11 +253,19 @@ namespace Infohazard.Core {
         /// <param name="index">The first index to remove.</param>
         /// <param name="count">The number of items to remove.</param>
         public void RemoveRange(int index, int count) {
+            if (index < 0 || index > Count) throw new ArgumentOutOfRangeException(nameof(index));
+            if (count < 0 || index + count > Count) throw new ArgumentOutOfRangeException(nameof(count));
             for (int i = index; i < Count - count; i++) {
-                _array[ToInternalIndex(i)] = _array[ToInternalIndex(i + count)];
+                int index1 = ToInternalIndex(i);
+                int index2 = ToInternalIndex(i + count);
+                _array[index1] = _array[index2];
             }
 
             Count -= count;
+
+            for (int i = Count; i < Count + count; i++) {
+                _array[ToInternalIndex(i)] = default;
+            }
         }
 
         private void GrowIfNeeded() {

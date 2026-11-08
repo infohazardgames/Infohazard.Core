@@ -3,6 +3,7 @@
 
 using System;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
@@ -19,7 +20,7 @@ namespace Infohazard.Core {
         /// <summary>
         /// The pool that will spawn the prefab.
         /// </summary>
-        protected Pool<Spawnable> Pool { get; }
+        protected ObjectPool<Spawnable> Pool { get; }
 
         /// <summary>
         /// The transform that inactive instances in the pool are parented to.
@@ -42,7 +43,7 @@ namespace Infohazard.Core {
         public DefaultPoolHandler(Spawnable prefab, Transform transform) {
             Prefab = prefab;
             Transform = transform;
-            Pool = new Pool<Spawnable>(Instantiate, OnGet, OnRelease, Destroy);
+            Pool = new ObjectPool<Spawnable>(Instantiate, OnGet, OnRelease, Destroy);
         }
 
         /// <inheritdoc/>

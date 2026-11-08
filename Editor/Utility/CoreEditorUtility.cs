@@ -87,7 +87,8 @@ namespace Infohazard.Core.Editor {
                 case SerializedPropertyType.Rect:
                     return property.rectValue;
                 case SerializedPropertyType.ArraySize:
-                    return property.arraySize;
+                    // This is the array's size property itself, whose value is an int.
+                    return property.intValue;
                 case SerializedPropertyType.Character:
                     return (char) property.intValue;
                 case SerializedPropertyType.AnimationCurve:
@@ -269,10 +270,12 @@ namespace Infohazard.Core.Editor {
         /// <param name="path">The path to search for.</param>
         /// <returns>The path relative to a resource folder, or null.</returns>
         public static string GetResourcePath(string path) {
-            int index = path.LastIndexOf(ResourceFolder, StringComparison.Ordinal);
+            // Match only a folder named exactly "Resources", not one like "MyResources".
+            string normalized = "/" + path.Replace('\\', '/');
+            int index = normalized.LastIndexOf("/" + ResourceFolder, StringComparison.Ordinal);
             if (index < 0) return null;
 
-            path = path.Substring(index + ResourceFolder.Length);
+            path = normalized.Substring(index + 1 + ResourceFolder.Length);
             path = Path.ChangeExtension(path, null);
 
             return path;
@@ -289,9 +292,11 @@ namespace Infohazard.Core.Editor {
         public static string GetPathRelativeToAssetsFolder(string path) {
             path = path.Replace('\\', '/');
 
-            if (path.StartsWith(Application.dataPath)) {
-                path = path.Substring(Application.dataPath.Length);
-            } else if (path.StartsWith(AssetsFolder)) {
+            // Match only the whole folder name, not a folder like "AssetsExtra".
+            string dataPath = Application.dataPath;
+            if (path == dataPath || path.StartsWith(dataPath + "/")) {
+                path = path.Substring(dataPath.Length);
+            } else if (path == AssetsFolder || path.StartsWith(AssetsFolder + "/")) {
                 path = path.Substring(AssetsFolder.Length);
             }
 
@@ -402,11 +407,12 @@ namespace Infohazard.Core.Editor {
             }
 
             using SerializedProperty destIterator = destination.Copy();
-            using SerializedProperty next = destination.Copy();
-            next.Next(false);
+            using SerializedProperty end = destination.GetEndProperty();
 
+            // Stop at the end of the destination's children. EqualContents compares positions;
+            // != would compare references and keep going into the following properties.
             bool enterChildren = true;
-            while (destIterator.Next(enterChildren) && destIterator != next)
+            while (destIterator.Next(enterChildren) && !SerializedProperty.EqualContents(destIterator, end))
             {
                 enterChildren = false;
                 SerializedProperty srcChild = source.FindProperty(destIterator.name);
@@ -521,17 +527,18 @@ namespace Infohazard.Core.Editor {
                         {
                             SerializedProperty sourceElement = source.GetArrayElementAtIndex(i);
                             SerializedProperty destinationElement = destination.GetArrayElementAtIndex(i);
-                            sourceElement.CopyFrom(destinationElement);
+                            destinationElement.CopyFrom(sourceElement);
                         }
                     }
                     else
                     {
                         using SerializedProperty destIterator = destination.Copy();
-                        using SerializedProperty next = destination.Copy();
-                        next.Next(false);
+                        using SerializedProperty end = destination.GetEndProperty();
 
+                        // Stop at the end of the destination's children. EqualContents compares positions;
+                        // != would compare references and keep going into the following properties.
                         bool enterChildren = true;
-                        while (destIterator.Next(enterChildren) && destIterator != next)
+                        while (destIterator.Next(enterChildren) && !SerializedProperty.EqualContents(destIterator, end))
                         {
                             enterChildren = false;
                             SerializedProperty srcChild = source.FindPropertyRelative(destIterator.name);
