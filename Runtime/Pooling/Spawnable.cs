@@ -122,7 +122,7 @@ namespace Infohazard.Core {
         /// <param name="prefab">The prefab to spawn.</param>
         /// <param name="spawnParams">Spawn properties.</param>
         /// <returns>The spawned instance.</returns>
-        public static Spawnable Spawn(Spawnable prefab, in SpawnParams spawnParams = default) {
+        public static Spawnable Spawn(Spawnable prefab, in SpawnParams spawnParams) {
             return PoolManager.Instance.SpawnPrefab(prefab, spawnParams);
         }
 
@@ -171,7 +171,7 @@ namespace Infohazard.Core {
         /// <param name="prefab">The prefab to spawn.</param>
         /// <param name="spawnParams">Spawn properties.</param>
         /// <returns>The spawned instance.</returns>
-        public static GameObject Spawn(GameObject prefab, in SpawnParams spawnParams = default) {
+        public static GameObject Spawn(GameObject prefab, in SpawnParams spawnParams) {
             if (prefab.TryGetComponent(out Spawnable spawnable)) {
                 return Spawn(spawnable, spawnParams).gameObject;
             } else {
@@ -231,7 +231,7 @@ namespace Infohazard.Core {
         /// <param name="prefab">The prefab to spawn.</param>
         /// <param name="spawnParams">Spawn properties.</param>
         /// <returns>The spawned instance.</returns>
-        public static T Spawn<T>(T prefab, in SpawnParams spawnParams = default) where T : Component {
+        public static T Spawn<T>(T prefab, in SpawnParams spawnParams) where T : Component {
             return Spawn(prefab.gameObject, spawnParams).GetComponent<T>();
         }
     }

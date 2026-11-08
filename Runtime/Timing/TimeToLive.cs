@@ -27,7 +27,7 @@ namespace Infohazard.Core {
 
         [SerializeField]
         [Tooltip("Optional object that will be spawned when the time to live has passed (but before the linger).")]
-        private SpawnRef _spawnObjectOnDeath;
+        private SpawnRef _spawnObjectOnDeath = new();
 
         private float _initialTimeToLive;
         private bool _destroyed;

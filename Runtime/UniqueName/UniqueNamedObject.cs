@@ -53,9 +53,9 @@ namespace Infohazard.Core {
                 if (isActiveAndEnabled) return;
 
                 if (value) {
-                    Register();
-                } else {
                     Unregister();
+                } else {
+                    Register();
                 }
             }
         }
@@ -146,7 +146,10 @@ namespace Infohazard.Core {
 
         private void Unregister() {
             if (UniqueName == null) return;
-            if (!ReferenceEquals(InternalObjects[UniqueName], this)) return;
+            if (!InternalObjects.TryGetValue(UniqueName, out UniqueNamedObject registered) ||
+                !ReferenceEquals(registered, this)) {
+                return;
+            }
             InternalObjects.Remove(UniqueName);
             ObjectRemoved?.Invoke(this);
         }

@@ -28,7 +28,7 @@ namespace Infohazard.Core {
 
         [SerializeField]
         [Tooltip("UnityEvents that enable you to assign functionality in the editor.")]
-        private TriggerEvents _events = default;
+        private TriggerEvents _events = new();
 
         /// <summary>
         /// UnityEvents that enable you to assign functionality in the editor.
@@ -74,7 +74,7 @@ namespace Infohazard.Core {
         private void OnEnable() {
             if (_controlledColliders != null) {
                 foreach (Collider col in _controlledColliders) {
-                    col.enabled = true;
+                    if (col) col.enabled = true;
                 }
             }
         }
@@ -82,7 +82,8 @@ namespace Infohazard.Core {
         private void OnDisable() {
             if (_controlledColliders != null) {
                 foreach (Collider col in ControlledColliders) {
-                    col.enabled = false;
+                    // A controlled collider may already be destroyed, e.g. during scene unload.
+                    if (col) col.enabled = false;
                 }
             }
 
@@ -201,15 +202,15 @@ namespace Infohazard.Core {
         public class TriggerEvents {
             [SerializeField]
             [Tooltip("Invoked when an object matching the tag filter enters the trigger.")]
-            private UnityEvent _onTriggerEnter;
+            private UnityEvent _onTriggerEnter = new();
 
             [SerializeField]
             [Tooltip("Invoked when an object matching the tag filter exits the trigger.")]
-            private UnityEvent _onTriggerExit;
+            private UnityEvent _onTriggerExit = new();
 
             [SerializeField]
             [Tooltip("Invoked when the last object matching the tag filter exits the trigger.")]
-            private UnityEvent _onAllExit;
+            private UnityEvent _onAllExit = new();
 
             /// <summary>
             /// Invoked when an object matching the tag filter enters the trigger.

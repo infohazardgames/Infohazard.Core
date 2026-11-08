@@ -100,7 +100,7 @@ namespace Infohazard.Core {
         /// <returns>The spawned object.</returns>
         public T Spawn(in SpawnParams spawnParams = default) {
             if (_hasCheckedSpawnable && _spawnable == null && _gameObject != null) {
-                return Spawnable.Spawn(_gameObject, spawnParams).GetComponent<T>();
+                return GetResult(Spawnable.Spawn(_gameObject, spawnParams));
             }
 
             if (_handler == null) {
@@ -108,7 +108,7 @@ namespace Infohazard.Core {
                 return null;
             }
 
-            return PoolManager.Instance.SpawnFromKey(_spawnable, spawnParams).GetComponent<T>();
+            return GetResult(PoolManager.Instance.SpawnFromKey(_spawnable, spawnParams));
         }
 
         /// <summary>
@@ -117,6 +117,14 @@ namespace Infohazard.Core {
         /// <param name="obj">The attached object.</param>
         /// <param name="spawnable">The <see cref="Spawnable"/> script for <see cref="obj"/>.</param>
         /// <param name="gameObject">The GameObject for <see cref="obj"/>.</param>
+        // T may be GameObject itself, which GetComponent can't return.
+        private static T GetResult(Component instance) => instance ? GetResult(instance.gameObject) : null;
+
+        private static T GetResult(GameObject instance) {
+            if (!instance) return null;
+            return typeof(T) == typeof(GameObject) ? instance as T : instance.GetComponent<T>();
+        }
+
         protected abstract void GetSpawnableAndGameObject(T obj, out Spawnable spawnable, out GameObject gameObject);
 
         /// <summary>
