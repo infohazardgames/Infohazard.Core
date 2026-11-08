@@ -401,6 +401,9 @@ namespace Infohazard.Core {
         /// <param name="path">The slash-separated path to search for.</param>
         /// <returns>The found child Transform, or null if not found.</returns>
         public static Transform GetTransformAtRelativePath(this Transform from, string path) {
+            // An empty path is what GetRelativeTransformPath returns for the root itself.
+            if (string.IsNullOrEmpty(path)) return from;
+
             string[] parts = path.Split('/');
             Transform current = from;
 
