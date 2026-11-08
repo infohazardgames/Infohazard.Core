@@ -1,4 +1,4 @@
-// This file is part of the Infohazard.Core package.
+﻿// This file is part of the Infohazard.Core package.
 // Copyright (c) 2026-present Val Miller (Infohazard Games).
 
 using System;
@@ -30,6 +30,17 @@ namespace Infohazard.Core {
         };
 
         private static Assembly[] _allAssemblies;
+
+        /// <summary>
+        /// Reset all static state of <see cref="TypeUtility"/>, clearing the cached assembly list to its initial values.
+        /// </summary>
+        /// <remarks>
+        /// This exists for unit tests and editor tooling (such as entering play mode without a domain reload).
+        /// It typically should not be called from game code.
+        /// </remarks>
+        public static void ResetStaticState() {
+            _allAssemblies = null;
+        }
 
         /// <summary>
         /// Returns an array of all loaded assemblies.

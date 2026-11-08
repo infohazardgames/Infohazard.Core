@@ -24,6 +24,17 @@ namespace Infohazard.Core {
         private static T _instance;
 
         /// <summary>
+        /// Reset all static state of this singleton type to its initial values.
+        /// </summary>
+        /// <remarks>
+        /// This exists for unit tests and editor tooling (such as entering play mode without a domain reload).
+        /// It typically should not be called from game code.
+        /// </remarks>
+        public static void ResetStaticState() {
+            _instance = null;
+        }
+
+        /// <summary>
         /// Get the singleton instance of the script.
         /// </summary>
         /// <remarks>

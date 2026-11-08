@@ -78,6 +78,19 @@ namespace Infohazard.Core {
         public static event Action<UniqueNamedObject> ObjectRemoved;
 
         /// <summary>
+        /// Reset all static state of <see cref="UniqueNamedObject"/>, clearing all registered objects and event subscribers to its initial values.
+        /// </summary>
+        /// <remarks>
+        /// This exists for unit tests and editor tooling (such as entering play mode without a domain reload).
+        /// It typically should not be called from game code.
+        /// </remarks>
+        public static void ResetStaticState() {
+            InternalObjects.Clear();
+            ObjectAdded = null;
+            ObjectRemoved = null;
+        }
+
+        /// <summary>
         /// Try to get a GameObject with the given unique name, and return whether it was found.
         /// </summary>
         /// <param name="name">The name to search for.</param>

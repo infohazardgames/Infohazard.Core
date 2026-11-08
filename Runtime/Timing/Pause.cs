@@ -42,6 +42,20 @@ namespace Infohazard.Core {
         public static event Action GameResumed;
 
         /// <summary>
+        /// Reset all static state of <see cref="Pause"/>, clearing event subscribers. Does not modify <see cref="Time.timeScale"/> to its initial values.
+        /// </summary>
+        /// <remarks>
+        /// This exists for unit tests and editor tooling (such as entering play mode without a domain reload).
+        /// It typically should not be called from game code.
+        /// </remarks>
+        public static void ResetStaticState() {
+            _paused = false;
+            _timeScale = 1;
+            GamePaused = null;
+            GameResumed = null;
+        }
+
+        /// <summary>
         /// Controls paused state of the game.
         /// </summary>
         /// <remarks>

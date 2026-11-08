@@ -26,6 +26,17 @@ namespace Infohazard.Core {
         private static PoolManager _instance = null;
 
         /// <summary>
+        /// Reset all static state of <see cref="PoolManager"/> to its initial values.
+        /// </summary>
+        /// <remarks>
+        /// This exists for unit tests and editor tooling (such as entering play mode without a domain reload).
+        /// It typically should not be called from game code.
+        /// </remarks>
+        public static void ResetStaticState() {
+            _instance = null;
+        }
+
+        /// <summary>
         /// The singleton PoolManager instance.
         /// </summary>
         /// <remarks>
