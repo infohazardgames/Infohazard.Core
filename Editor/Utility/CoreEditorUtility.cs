@@ -285,10 +285,11 @@ namespace Infohazard.Core.Editor {
         /// Convert the given path to be relative to the Assets folder.
         /// </summary>
         /// <remarks>
-        /// Accepts absolute paths, paths staring with "Assets/", and paths starting with "/"'".
+        /// Accepts absolute paths inside the Assets folder, paths starting with "Assets/", and paths starting
+        /// with "/". Backslashes are converted to forward slashes.
         /// </remarks>
-        /// <param name="path"></param>
-        /// <returns></returns>
+        /// <param name="path">The path to convert.</param>
+        /// <returns>The path relative to the Assets folder, without a leading slash.</returns>
         public static string GetPathRelativeToAssetsFolder(string path) {
             path = path.Replace('\\', '/');
 
