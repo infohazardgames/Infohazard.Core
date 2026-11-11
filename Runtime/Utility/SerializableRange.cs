@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Infohazard.Core {
     [Serializable]
-    public struct SerializableRange {
+    public struct SerializableRange : IEquatable<SerializableRange> {
         [SerializeField]
         private int _start;
 
@@ -31,6 +31,30 @@ namespace Infohazard.Core {
         public SerializableRange(int start, int length) {
             _start = start;
             _length = length;
+        }
+
+        public override string ToString() {
+            return $"[{Start}, {End}] (length = {_length})";
+        }
+
+        public bool Equals(SerializableRange other) {
+            return _start == other._start && _length == other._length;
+        }
+
+        public override bool Equals(object obj) {
+            return obj is SerializableRange other && Equals(other);
+        }
+
+        public override int GetHashCode() {
+            return HashCode.Combine(_start, _length);
+        }
+
+        public static bool operator ==(SerializableRange left, SerializableRange right) {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(SerializableRange left, SerializableRange right) {
+            return !left.Equals(right);
         }
     }
 }
